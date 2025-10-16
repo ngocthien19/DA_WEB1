@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Cửa Hàng - PetShop</title>
+
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/stores.css}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+</head>
+<body>
+    <!-- Include Header Fragment -->
+    <div th:replace="~{web/layout/header :: header}"></div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="container">
+            <h1 data-aos="fade-up">Danh Sách Cửa Hàng</h1>
+            <p data-aos="fade-up" data-aos-delay="100">
+                Khám phá <span th:text="${totalElements != null ? totalElements : 0}">0</span> cửa hàng thú cưng trên toàn quốc
+            </p>
+        </div>
+    </div>
+
+    <!-- Store Section -->
+    <section class="store-section">
+        <div class="container">
+            <!-- Search and Controls -->
+			<div class="stores-controls" data-aos="fade-up">
+			    <div class="stores-found">
+			        <span class="desc" th:text="${totalElements} + ' cửa hàng được tìm thấy'"></span>
+			        <span th:if="${searchKeyword != null and !searchKeyword.isEmpty()}" 
+			              class="search-result">
+			            cho "<span th:text="${searchKeyword}"></span>"
+			        </span>
+			    </div>
+			    <div class="search-sort-container">
+			        <!-- Search Form -->
+			        <form th:action="@{/stores}" method="get" class="search-form">
+			            <div class="search-box">
+			                <i class="fa fa-search"></i>
+			                <input type="text" 
+			                       name="search" 
+			                       th:value="${searchKeyword}"
+			                       placeholder="Tìm kiếm theo tên hoặc địa chỉ cửa hàng..." 
+			                       class="search-input">
+			                <button type="submit" class="search-btn">
+			                    Tìm kiếm
+			                </button>
+			            </div>
+			            <!-- Luôn reset về page 1 khi tìm kiếm mới -->
+			            <input type="hidden" name="page" value="1">
+			            <input type="hidden" name="size" th:value="${pageSize}">
+			        </form>
+			        
+			        <!-- Clear Search - Giữ lại page hiện tại -->
+			        <a th:if="${searchKeyword != null and !searchKeyword.isEmpty()}" 
+			           th:href="@{/stores(page=${currentPage}, size=${pageSize})}" 
+			           class="clear-search">
+			            <i class="fa fa-times"></i> Xóa tìm kiếm
+			        </a>
+			    </div>
+			</div>
+
+            <!-- Store Grid -->
+            <div class="store-grid" th:if="${cuaHangs != null and !cuaHangs.isEmpty()}">
+                <div th:each="cuaHang, iterStat : ${cuaHangs}"
+                     class="store-card"
+                     data-aos="fade-up"
+                     th:attr="data-aos-delay=${iterStat.count * 100}">
+                    
+                    <a th:href="@{/store/{maCuaHang}(maCuaHang=${cuaHang.maCuaHang})}">
+                        <img th:src="${cuaHang.hinhAnh != null ? cuaHang.hinhAnh : '/images/store-default.jpg'}"
+                             th:alt="${cuaHang.tenCuaHang}"
+                             class="store-image">
+                    </a>
+                    
+                    <div class="store-info">
+                        <a th:href="@{/store/{maCuaHang}(maCuaHang=${cuaHang.maCuaHang})}">
+                            <h4 th:text="${cuaHang.tenCuaHang}">Cửa hàng Thú Cưng</h4>
+                        </a>
+                        
+                        <p class="store-description" th:text="${cuaHang.moTa != null ? cuaHang.moTa : 'Chuyên cung cấp các loại thú cưng và phụ kiện chất lượng'}">
+                            Mô tả cửa hàng
+                        </p>
+                        
+                        <!-- Store Rating -->
+                        <div class="store-rating" th:if="${cuaHang.danhGiaTrungBinh != null}">
+                            <div class="rating-stars">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= cuaHang.danhGiaTrungBinh} ? ' filled' : ''"></span>
+                            </div>
+                            <span class="rating-text">
+                                <span th:text="${#numbers.formatDecimal(cuaHang.danhGiaTrungBinh, 1, 1)}">4.5</span>/5
+                                (<span th:text="${cuaHang.soLuongDanhGia != null ? cuaHang.soLuongDanhGia : 0}">0</span> đánh giá)
+                            </span>
+                        </div>
+                        
+                        <div class="store-rating" th:unless="${cuaHang.danhGiaTrungBinh != null}">
+                            <span class="no-rating">Chưa có đánh giá</span>
+                        </div>
+                        
+                        <!-- Store Meta -->
+                        <div class="store-meta">
+                            <div class="meta-item" th:if="${cuaHang.diaChi != null}">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span th:text="${cuaHang.diaChi}" class="truncate-text">Địa chỉ</span>
+                            </div>
+                            <div class="meta-item" th:if="${cuaHang.soDienThoai != null}">
+                                <i class="fa-solid fa-phone"></i>
+                                <span th:text="${cuaHang.soDienThoai}">Số điện thoại</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="store-badge"
+                                      th:classappend="${cuaHang.trangThai} ? 'badge-open' : 'badge-closed'"
+                                      th:text="${cuaHang.trangThai} ? 'Đang mở cửa' : 'Tạm đóng'">
+                                    Đang mở cửa
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <a th:href="@{/store/{maCuaHang}(maCuaHang=${cuaHang.maCuaHang})}" class="view-store-btn">
+                            <i class="fa fa-eye"></i> Xem cửa hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Stores Message -->
+            <div class="no-stores" th:if="${cuaHangs == null or cuaHangs.isEmpty()}">
+                <div class="no-stores-content" data-aos="fade-up">
+                    <i class="fa fa-store"></i>
+                    <h3 th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">
+                        Không tìm thấy cửa hàng phù hợp với "<span th:text="${searchKeyword}"></span>"
+                    </h3>
+                    <h3 th:unless="${searchKeyword != null and !searchKeyword.isEmpty()}">
+                        Hiện tại chưa có cửa hàng nào.
+                    </h3>
+                    <p>Vui lòng thử lại với từ khóa tìm kiếm khác hoặc quay lại sau.</p>
+                    <a th:href="@{/stores}" class="back-to-stores" th:if="${searchKeyword != null and !searchKeyword.isEmpty()}">
+                        <i class="fa fa-arrow-left"></i> Quay lại danh sách cửa hàng
+                    </a>
+                </div>
+            </div>
+
+            <!-- Pagination Section -->
+			<div class="pagination-container" th:if="${totalPages > 1}">
+			    <div class="pagination">
+			        <!-- Previous Button -->
+			        <a th:if="${currentPage > 1}"
+			           th:href="@{/stores(page=${currentPage - 1}, size=${pageSize}, search=${searchKeyword})}"
+			           class="pagination-btn prev-btn">
+			            <i class="fa fa-chevron-left"></i> Trước
+			        </a>
+			        <span th:unless="${currentPage > 1}"
+			              class="pagination-btn prev-btn disabled">
+			            <i class="fa fa-chevron-left"></i> Trước
+			        </span>
+			
+			        <!-- Page Numbers -->
+			        <div class="pagination-numbers">
+			            <!-- First Page -->
+			            <a th:if="${currentPage > 3}" 
+			               th:href="@{/stores(page=1, size=${pageSize}, search=${searchKeyword})}"
+			               class="pagination-btn page-number">
+			                1
+			            </a>
+			            <span th:if="${currentPage > 4}" class="pagination-ellipsis">...</span>
+			            
+			            <!-- Pages around current page -->
+			            <th:block th:with="startPage=${currentPage > 2 ? currentPage - 2 : 1}, 
+			                               endPage=${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}">
+			                <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+			                   th:href="@{/stores(page=${i}, size=${pageSize}, search=${searchKeyword})}"
+			                   th:classappend="${i == currentPage} ? 'active' : ''"
+			                   class="pagination-btn page-number">
+			                    <span th:text="${i}"></span>
+			                </a>
+			            </th:block>
+			            
+			            <!-- Last Page -->
+			            <span th:if="${currentPage < totalPages - 3}" class="pagination-ellipsis">...</span>
+			            <a th:if="${currentPage < totalPages - 2}" 
+			               th:href="@{/stores(page=${totalPages}, size=${pageSize}, search=${searchKeyword})}"
+			               class="pagination-btn page-number">
+			                <span th:text="${totalPages}"></span>
+			            </a>
+			        </div>
+			
+			        <!-- Next Button -->
+			        <a th:if="${currentPage < totalPages}"
+			           th:href="@{/stores(page=${currentPage + 1}, size=${pageSize}, search=${searchKeyword})}"
+			           class="pagination-btn next-btn">
+			            Sau <i class="fa fa-chevron-right"></i>
+			        </a>
+			        <span th:unless="${currentPage < totalPages}"
+			              class="pagination-btn next-btn disabled">
+			            Sau <i class="fa fa-chevron-right"></i>
+			        </span>
+			    </div>
+			</div>
+        </div>
+    </section>
+
+    <!-- Include Footer Fragment -->
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <!-- AOS Animation Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true,
+                offset: 100
+            });
+        });
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/web/header.js}"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!-- Floating Chat Button Fragment -->
+<div th:fragment="floatingChat" xmlns:th="http://www.thymeleaf.org">
+    <!-- Floating Chat Button - Chỉ hiện khi đang xem cửa hàng -->
+    <a th:if="${cuaHang != null && nguoiDung != null}" 
+       th:href="@{/chat/store/{id}(id=${cuaHang.maCuaHang})}" 
+       class="floating-chat-btn"
+       title="Chat với cửa hàng">
+        <i class="fa-solid fa-comments"></i>
+    </a>
+</div>

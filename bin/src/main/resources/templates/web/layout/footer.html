@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Shop - Footer</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Footer Section -->
+    <footer th:fragment="footer">
+        <div class="container grid4">
+            <div class="box">
+                <div class="logo width">
+                    <a th:href="@{/}" class="logo-text">
+                        <i class="fa-solid fa-paw"></i>
+                        <span>PetShop</span>
+                    </a>
+                </div>
+                <p>Chúng tôi cung cấp các sản phẩm thú cưng chất lượng, chăm sóc tận tâm cho các bạn yêu thích động vật. Các giống thú cưng đáng yêu, khỏe mạnh và phù hợp với nhiều môi trường sống khác nhau. Hãy đến với chúng tôi để trải nghiệm dịch vụ tuyệt vời và chọn lựa những người bạn bốn chân cho gia đình bạn.</p>
+                <div class="icon d_flex">
+                    <div class="img d_flex">
+                        <i class="fa-brands fa-google-play"></i>
+                        <span>Google Play</span>
+                    </div>
+                    <div class="img d_flex">
+                        <i class="fa-brands fa-app-store-ios"></i>
+                        <span>App Store</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <h2>Về chúng tôi</h2>
+                <ul>
+                    <li>
+                    	<a th:href="@{/}">Giới thiệu về Pet Shop</a>
+                    </li>
+                    <li><a th:href="@{/stores}">Các cửa hàng</a></li>
+                    <li>Chăm sóc thú cưng của chúng tôi</li>
+                    <li>Điều khoản và chính sách</li>
+                    <li>Chính sách bảo mật</li>
+                </ul>
+            </div>
+
+            <div class="box">
+                <h2>Sản phẩm</h2>
+                <ul>
+				    <li>
+				        <a th:href="@{/category/cho-canh}">Chó cảnh</a>
+				    </li>
+				    <li>
+				        <a th:href="@{/category/meo-canh}">Mèo cảnh</a>
+				    </li>
+				    <li>
+				        <a th:href="@{/category/phu-kien}">Phụ kiện cho thú cưng</a>
+				    </li>
+				</ul>
+            </div>
+
+            <div class="box">
+                <h2>Liên hệ</h2>
+                <ul>
+                    <li>Địa chỉ: Thủ Đức, TP Hồ Chí Minh</li>
+                    <li>Email: nhom@gmail.com</li>
+                    <li>Điện thoại: +84 378 240 914</li>
+                    <li>Giờ làm việc: 8:00 AM - 6:00 PM</li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AOS Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+</body>
+</html>

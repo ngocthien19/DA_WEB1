@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat với <span th:text="${cuaHang.tenCuaHang}"></span> - Pet Shop</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/chat.css}">
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="chat-section">
+        <div class="chat-container">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="store-info">
+                    <img th:src="@{'/uploads/stores/' + ${cuaHang.hinhAnh}}" 
+                         th:alt="${cuaHang.tenCuaHang}"
+                         class="store-avatar"
+                         onerror="this.src='/images/default-store.png'">
+                    <div class="store-details">
+                        <h2 th:text="${cuaHang.tenCuaHang}"></h2>
+                        <p class="vendor-name">
+                            <i class="fa-solid fa-user"></i>
+                            <span th:text="${vendor.tenNguoiDung}"></span>
+                        </p>
+                        <span class="online-status">
+                            <i class="fa-solid fa-circle"></i> Đang hoạt động
+                        </span>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="btn-action" title="Thông tin cửa hàng">
+                        <i class="fa-solid fa-info-circle"></i>
+                    </button>
+                    <a th:href="@{/stores/{id}(id=${cuaHang.maCuaHang})}" 
+                       class="btn-action" 
+                       title="Xem cửa hàng">
+                        <i class="fa-solid fa-store"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Chat Messages Area -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <i class="fa-solid fa-comments"></i>
+                    <h3>Chào mừng đến với <span th:text="${cuaHang.tenCuaHang}"></span></h3>
+                    <p>Bắt đầu cuộc trò chuyện với chúng tôi!</p>
+                </div>
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <span th:text="${vendor.tenNguoiDung}"></span> đang gõ
+                <span class="typing-dots">
+                    <span>.</span><span>.</span><span>.</span>
+                </span>
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <button class="btn-attachment" title="Đính kèm file">
+                    <i class="fa-solid fa-paperclip"></i>
+                    <input type="file" id="fileInput" accept="image/*,video/*,application/pdf" style="display: none;">
+                </button>
+                
+                <div class="input-wrapper">
+                    <textarea id="messageInput" 
+                              placeholder="Nhập tin nhắn của bạn..."
+                              rows="1"></textarea>
+                </div>
+                
+                <button class="btn-send" id="sendButton">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+    
+    <!-- Hidden data for JavaScript -->
+    <input type="hidden" id="currentUserId" th:value="${nguoiDung.maNguoiDung}">
+    <input type="hidden" id="currentUserName" th:value="${nguoiDung.tenNguoiDung}">
+    <input type="hidden" id="vendorId" th:value="${vendor.maNguoiDung}">
+    <input type="hidden" id="vendorName" th:value="${vendor.tenNguoiDung}">
+    <input type="hidden" id="storeId" th:value="${cuaHang.maCuaHang}">
+    
+    <!-- SockJS and STOMP libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    
+    <script th:src="@{/js/web/header.js}"></script>
+    <script th:src="@{/js/web/chat.js}"></script>
+</body>
+</html>

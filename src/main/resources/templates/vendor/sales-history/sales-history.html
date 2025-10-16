@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch sử Bán hàng & Doanh thu - Pet Shop Vendor</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+    <link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/sales-history/sales-history.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+            	<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+                <div th:replace="~{vendor/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <div class="vendor-store-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="store-name">
+                                    <i class="fas fa-store me-2"></i>
+                                    <span th:text="${cuaHang.tenCuaHang}">Tên cửa hàng</span>
+                                </h4>
+                                <div class="store-details">
+                                    <span class="store-info-item">
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        Lịch sử Bán hàng & Doanh thu
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div th:class="${cuaHang.trangThai} ? 'store-status-badge status-active' : 'store-status-badge status-inactive'"
+								     th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+								    Đang hoạt động
+								</div>
+                                <div class="store-stats mt-2">
+                                    <small>Tổng đơn đã hoàn thành: <strong th:text="${salesStats.totalCompletedOrders}">0</strong></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sales-stats-cards">
+                        <div class="sales-stat-card revenue">
+                            <div class="stat-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" th:text="${#numbers.formatDecimal(salesStats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</div>
+                                <div class="stat-label">Tổng Doanh thu</div>
+                                <small class="text-muted">Đơn hàng đã hoàn thành</small>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-stat-card orders">
+                            <div class="stat-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" th:text="${salesStats.totalCompletedOrders}">0</div>
+                                <div class="stat-label">Đơn hàng Hoàn thành</div>
+                                <small class="text-muted">Đơn hàng đã giao thành công</small>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-stat-card cancelled">
+                            <div class="stat-icon">
+                                <i class="fas fa-times-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" th:text="${salesStats.totalCancelledOrders}">0</div>
+                                <div class="stat-label">Đơn hàng Đã hủy</div>
+                                <small class="text-muted">Đơn hàng đã bị hủy</small>
+                            </div>
+                        </div>
+                        
+                        <div class="sales-stat-card products">
+                            <div class="stat-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" th:text="${salesStats.totalProductsSold}">0</div>
+                                <div class="stat-label">Sản phẩm Đã bán</div>
+                                <small class="text-muted">Tổng số sản phẩm đã bán</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <form th:action="@{/vendor/sales-history}" method="get" class="row g-3" id="searchForm">
+                            <div class="col-md-4">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm theo mã đơn hàng, email khách hàng..."
+                                       id="searchKeyword">
+                            </div>
+                            <div class="col-md-3">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="productName" 
+                                       th:value="${productName}"
+                                       placeholder="Tìm theo tên sản phẩm..."
+                                       id="productName">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100" id="submitSearchBtn">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-filter"></i>
+                            Lọc theo thời gian
+                            <span class="filter-badge" th:text="${salesHistoryPage.totalElements}">0</span>
+                        </h6>
+                        
+                        <form th:action="@{/vendor/sales-history}" method="get" class="row g-3 align-items-end" id="dateFilterForm">
+                            <input type="hidden" name="keyword" th:value="${keyword}">
+                            <input type="hidden" name="productName" th:value="${productName}">
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Từ ngày</label>
+                                <input type="date" class="form-control" name="startDate" id="startDateFilter" 
+                                       th:value="${startDate}">
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <label class="form-label">Đến ngày</label>
+                                <input type="date" class="form-control" name="endDate" id="endDateFilter" 
+                                       th:value="${endDate}">
+                            </div>
+                            
+                            <div class="col-md-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-search flex-grow-1" id="applyDateFilterBtn">
+                                    <i class="fas fa-check me-2"></i>Áp dụng
+                                </button>
+                                
+                                <button type="button" class="btn btn-clear-filters" onclick="clearDateFilter()" title="Xóa bộ lọc thời gian">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div th:if="${(keyword != null and keyword != '') or productName != null or startDate != null or endDate != null}" class="mt-3">
+                            <div class="d-flex flex-wrap gap-2">
+                                <th:block th:if="${keyword != null and keyword != ''}">
+                                    <span class="active-filter-badge">
+                                        Tìm kiếm: <span th:text="${keyword}"></span>
+                                        <a href="javascript:void(0)" onclick="clearFilter('keyword')" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${productName != null and productName != ''}">
+                                    <span class="active-filter-badge">
+                                        Sản phẩm: <span th:text="${productName}"></span>
+                                        <a href="javascript:void(0)" onclick="clearFilter('product')" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${startDate != null and endDate != null}">
+                                    <span class="active-filter-badge">
+                                        Thời gian: 
+                                        <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+                                        <a href="javascript:void(0)" onclick="clearFilter('date')" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${(keyword != null and keyword != '') or (productName != null and productName != '') or startDate != null or endDate != null}">
+                                    <a href="javascript:void(0)" onclick="clearFilter('all')" class="active-filter-badge" style="background: #e94560; color: white; cursor: pointer;">
+                                        <i class="fas fa-trash me-1"></i>Xóa tất cả
+                                    </a>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <div class="table-header-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-history me-2"></i>
+                                    Lịch sử Bán hàng
+                                    <span class="order-count-badge" th:text="${salesHistoryPage.totalElements}">0</span>
+                                </h4>	
+                                <div class="export-button-group">
+                                    <a th:href="@{/vendor/sales-history/export(keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, productName=${productName})}" 
+                                       class="btn btn-excel-export">
+                                        <i class="fas fa-file-excel me-2"></i>Xuất Excel Tổng
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div id="selectionControls" class="selection-controls" style="display: none;">
+                                <span class="selected-count">
+                                    Đã chọn: <strong id="selectedCount">0</strong> sản phẩm
+                                </span>
+                                <button type="button" class="btn btn-clear-selection btn-sm me-2" onclick="clearSelection()">
+                                    <i class="fas fa-times me-1"></i>Bỏ chọn
+                                </button>
+                                
+                                <button type="button" class="btn btn-excel-export btn-sm" id="exportSelectedBtn">
+                                    <i class="fas fa-file-excel me-1"></i>Xuất Excel đã chọn
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table sales-history-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox">
+                                            </div>
+                                        </th>
+                                        <th width="80">Mã ĐH</th>
+                                        <th>Khách hàng</th>
+                                        <th width="200">Sản phẩm</th>
+                                        <th width="100" class="text-center">Số lượng</th>
+                                        <th width="120" class="text-center">Đơn giá</th>
+                                        <th width="120" class="text-center">Thành tiền</th>
+                                        <th width="120" class="text-center">Ngày thanh toán</th>
+                                        <th width="140" class="text-center">Phương thức TT</th>
+                                        <th width="140" class="text-center">Trạng thái TT</th>
+                                        <th width="140" class="text-center">Người giao hàng</th>
+                                        <th width="120" class="text-center">Trạng thái ĐH</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="orderDetail : ${salesHistoryPage.content}">
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input order-checkbox" 
+                                                       type="checkbox" 
+                                                       th:value="${orderDetail.datHang.maDatHang}"
+                                                       th:attr="data-quantity=${orderDetail.soLuong}">
+                                            </div>
+                                        </td>	
+                                        <td class="text-center">
+                                            <strong th:text="${orderDetail.datHang.maDatHang}">1</strong>
+                                        </td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <strong th:text="${orderDetail.datHang.nguoiDung.tenNguoiDung != null ? orderDetail.datHang.nguoiDung.tenNguoiDung : orderDetail.datHang.nguoiDung.email}">Khách hàng</strong>
+                                                <small class="text-muted d-block" th:text="${orderDetail.datHang.nguoiDung.email}">email@example.com</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="product-info">
+                                                <div class="product-image-small">
+                                                    <img th:src="${orderDetail.sanPham.hinhAnh != null ? '/uploads/products/' + orderDetail.sanPham.hinhAnh : '/images/default-product.jpg'}" 
+                                                         alt="Product Image">
+                                                </div>
+                                                <div class="product-details">
+                                                    <h6 class="product-name" th:text="${orderDetail.sanPham.tenSanPham}">Tên sản phẩm</h6>
+                                                    <small class="text-muted" th:text="${orderDetail.sanPham.loaiSanPham}">Loại sản phẩm</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="quantity-badge" th:text="${orderDetail.soLuong}">1</span>
+                                        </td>
+                                        <td class="text-center price-cell">
+                                            <span th:text="${#numbers.formatDecimal(orderDetail.giaBan, 0, 'COMMA', 0, 'POINT')} + ' ₫'">100,000 ₫</span>
+                                        </td>
+                                        <td class="text-center total-cell">
+                                            <strong th:text="${#numbers.formatDecimal(orderDetail.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'">100,000 ₫</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="date-display" 
+                                                  th:text="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty() and orderDetail.datHang.thanhToans[0].ngayThanhToan != null ? #dates.format(orderDetail.datHang.thanhToans[0].ngayThanhToan, 'dd/MM/yyyy') : 'Chưa thanh toán'}">
+                                                  Chưa thanh toán
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="payment-method-badge" 
+                                                  th:text="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty() ? orderDetail.datHang.thanhToans[0].phuongThuc : 'N/A'}">
+                                                N/A
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span th:if="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty()}" 
+                                                  th:class="${(orderDetail.datHang.thanhToans[0].trangThai == 'completed' or orderDetail.datHang.thanhToans[0].trangThai == 'Hoàn thành') ? 
+                                                  'status-badge payment-completed' : 
+                                                  (orderDetail.datHang.thanhToans[0].trangThai == 'Pending' ? 
+                                                  'status-badge payment-pending' : 
+                                                  'status-badge payment-failed')}"
+                                                  th:text="${orderDetail.datHang.thanhToans[0].trangThai == 'completed' or orderDetail.datHang.thanhToans[0].trangThai == 'Hoàn thành' ? 
+                                                           'Hoàn thành' : 
+                                                           (orderDetail.datHang.thanhToans[0].trangThai == 'Pending' ? 
+                                                           'Đang xử lý' : 
+                                                           'Thất bại')}">
+                                                Trạng thái thanh toán
+                                            </span>
+                                            <span th:if="${orderDetail.datHang.thanhToans == null or orderDetail.datHang.thanhToans.isEmpty()}" 
+                                                  class="status-badge payment-pending">
+                                                Chưa thanh toán
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="shipper-badge" 
+                                                  th:if="${orderDetail.datHang.vanChuyens != null and !orderDetail.datHang.vanChuyens.isEmpty()}"
+                                                  th:text="${orderDetail.datHang.vanChuyens[0].nguoiDung.tenNguoiDung}">
+                                                Người giao hàng
+                                            </span>
+                                            <span th:if="${orderDetail.datHang.vanChuyens == null or orderDetail.datHang.vanChuyens.isEmpty()}" 
+                                                  class="shipper-badge-empty">
+                                                N/A
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+										    <!-- Hiển thị trạng thái đơn hàng với màu sắc khác nhau -->
+										    <span th:if="${orderDetail.datHang.trangThai == 'Hoàn thành'}"
+										          class="status-badge order-completed">
+										        <i class="fas fa-check-double me-1"></i>
+										        Hoàn thành
+										    </span>
+										    <span th:if="${orderDetail.datHang.trangThai == 'Hủy'}"
+										          class="status-badge order-cancelled">
+										        <i class="fas fa-times-circle me-1"></i>
+										        Đã hủy
+										    </span>
+										</td>
+                                    </tr>
+                                    <tr th:if="${salesHistoryPage.content.empty}">
+                                        <td colspan="12">
+                                            <div class="empty-state">
+                                                <i class="fas fa-chart-line"></i>
+                                                <p>Chưa có dữ liệu bán hàng</p>
+                                                <small class="text-muted">Các đơn hàng đã hoàn thành sẽ hiển thị tại đây</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav th:if="${salesHistoryPage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${salesHistoryPage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/sales-history(page=${salesHistoryPage.number - 1}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, productName=${productName})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, salesHistoryPage.totalPages - 1)}"
+                                    th:classappend="${i == salesHistoryPage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/sales-history(page=${i}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, productName=${productName})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${salesHistoryPage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/sales-history(page=${salesHistoryPage.number + 1}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, productName=${productName})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    <script th:if="${cuaHang?.trangThai == false}" th:src="@{/js/vendor/sales-history/sales-history-locked.js}"></script>
+	<script th:if="${cuaHang?.trangThai != false}" th:src="@{/js/vendor/sales-history/sales-history.js}"></script>
+</body>
+</html>

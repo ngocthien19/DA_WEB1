@@ -1,0 +1,35 @@
+<div class="dashboard-header" th:fragment="header">
+	<div class="container-fluid">
+		<div class="d-flex justify-content-between align-items-center">
+			<div>
+				<h2>Kênh Người Bán</h2>
+				<div class="store-info-line d-flex align-items-center">
+				    <p class="mb-0" th:text="${cuaHang?.tenCuaHang} ?: 'Chưa có cửa hàng'"></p>
+				    <div class="header-status-badge" th:classappend="${cuaHang.trangThai} ? 'status-active' : 'status-inactive'"
+				        th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+				        Đang hoạt động</div>
+				</div>
+			</div>
+			<div class="d-flex align-items-center header-actions">
+				<div class="role-badge rounded-pill px-3 py-1 me-3">
+					<small class="text-white">Vai trò: </small> 
+					<strong class="text-white">VENDOR</strong>
+				</div>
+				<div class="dropdown">
+					<button class="btn btn-light dropdown-toggle" type="button"
+						data-bs-toggle="dropdown">
+						<img th:src="${(user?.hinhAnh != null and user.hinhAnh != '')} ? '/uploads/users/' + ${user.hinhAnh} : '/images/default-avatar.jpg'"
+			class="rounded-circle" width="20" height="20" alt="Avatar">
+						<span th:text="${user.tenNguoiDung} + ' (' + (${cuaHang?.tenCuaHang} ?: 'Chưa có cửa hàng') + ')'">Vendor Name (Store Name)</span>
+					</button>
+					<ul class="dropdown-menu">
+						<!-- Sửa thành class để JavaScript có thể bắt sự kiện -->
+						<li><a class="dropdown-item header-logout-link" href="/login?logout=true"> 
+							<i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+						</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

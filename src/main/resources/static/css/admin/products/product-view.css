@@ -1,0 +1,326 @@
+/* Product View Page Styles */
+.product-profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-profile-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="%23ffffff" opacity="0.1"><polygon points="0,0 1000,100 1000,0"/></svg>');
+    background-size: cover;
+    pointer-events: none;
+}
+
+.product-main-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 15px;
+    object-fit: cover;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.product-info-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
+    border-left: 4px solid #e94560;
+    transition: all 0.3s ease;
+}
+
+.product-info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.info-section {
+    margin-bottom: 30px;
+}
+
+.info-section:last-child {
+    margin-bottom: 0;
+}
+
+.info-section h5 {
+    color: #0f3460;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.info-section h5 i {
+    color: #e94560;
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.info-item:hover {
+    background: #f1f5f9;
+    transform: translateX(5px);
+}
+
+.info-item:last-child {
+    margin-bottom: 0;
+}
+
+.info-icon {
+    width: 40px;
+    height: 40px;
+    background: #e94560;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.info-icon i {
+    color: white;
+    font-size: 18px;
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #0f3460;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.price-value {
+    color: #e94560;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.status-badge-view {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-block;
+}
+
+.status-active-view {
+    background: rgba(39, 174, 96, 0.15);
+    color: #28a745;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.status-inactive-view {
+    background: rgba(233, 69, 96, 0.15);
+    color: #e94560;
+    border: 1px solid rgba(233, 69, 96, 0.3);
+}
+
+.quantity-badge-view {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-block;
+}
+
+.quantity-low-view {
+    background: rgba(233, 69, 96, 0.15);
+    color: #e94560;
+    border: 1px solid rgba(233, 69, 96, 0.3);
+}
+
+.quantity-medium-view {
+    background: rgba(255, 165, 0, 0.15);
+    color: #ffa500;
+    border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.quantity-high-view {
+    background: rgba(39, 174, 96, 0.15);
+    color: #28a745;
+    border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.rating-stars-view {
+    color: #ffa500;
+    font-size: 16px;
+}
+
+.rating-stars-view i {
+    margin: 0 2px;
+}
+
+.likes-view {
+    color: #e94560;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.likes-view i {
+    margin-right: 8px;
+}
+
+.action-buttons-view {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.btn-back {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-back:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+    color: white;
+}
+
+.btn-edit-view {
+    background: #ffa500;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-edit-view:hover {
+    background: #e69500;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+    color: white;
+}
+
+.empty-field {
+    color: #999;
+    font-style: italic;
+}
+
+.description-text {
+    line-height: 1.8;
+    color: #555;
+    white-space: pre-wrap;
+}
+
+.stats-container {
+    padding: 0 40px 30px 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .product-profile-header {
+        padding: 30px 20px;
+        text-align: center;
+    }
+    
+    .product-main-image {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .product-info-card {
+        padding: 20px;
+    }
+    
+    .info-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .info-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .action-buttons-view {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-back, .btn-edit-view {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .stats-container {
+        padding: 0 20px 20px 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .product-profile-header {
+        padding: 25px 15px;
+    }
+    
+    .product-main-image {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .product-info-card {
+        padding: 15px;
+    }
+    
+    .info-section h5 {
+        font-size: 18px;
+    }
+    
+    .info-value {
+        font-size: 15px;
+    }
+    
+    .stats-container {
+        padding: 0 15px 15px 15px;
+    }
+}

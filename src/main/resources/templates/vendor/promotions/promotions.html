@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khuyến mãi - Pet Shop Vendor</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+    <link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/promotions/promotions.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+            	<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+                <div th:replace="~{vendor/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Vendor Store Card -->
+                    <div class="vendor-store-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="store-name">
+                                    <i class="fas fa-store me-2"></i>
+                                    <span th:text="${cuaHang.tenCuaHang}">Tên cửa hàng</span>
+                                </h4>
+                                <div class="store-details">
+                                    <span class="store-info-item">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        <span th:text="${cuaHang.diaChi}">Địa chỉ cửa hàng</span>
+                                    </span>
+                                    <span class="store-info-item">
+                                        <i class="fas fa-phone me-1"></i>
+                                        <span th:text="${cuaHang.soDienThoai}">Số điện thoại</span>
+                                    </span>
+                                    <span class="store-info-item">
+                                        <i class="fas fa-envelope me-1"></i>
+                                        <span th:text="${cuaHang.email}">Email</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="store-status-badge" 
+                                     th:classappend="${cuaHang.trangThai} ? 'status-active' : 'status-inactive'"
+                                     th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+                                    Đang hoạt động
+                                </div>
+                                <div class="store-stats mt-2">
+                                    <small>Tổng khuyến mãi: <strong th:text="${khuyenMaiPage.totalElements}">0</strong></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Summary Cards -->
+					<div class="status-summary-cards">
+					    <div class="status-summary-card active">
+					        <div class="status-count active" th:text="${totalActive}">0</div>
+					        <div class="status-label">Đang hoạt động</div>
+					        <small class="text-muted">Khuyến mãi đang có hiệu lực</small>
+					    </div>
+					    <div class="status-summary-card upcoming">
+					        <div class="status-count upcoming" th:text="${totalUpcoming}">0</div>
+					        <div class="status-label">Sắp diễn ra</div>
+					        <small class="text-muted">Chưa đến thời gian áp dụng</small>
+					    </div>
+					    <div class="status-summary-card expired">
+					        <div class="status-count expired" th:text="${totalExpired}">0</div>
+					        <div class="status-label">Hết hạn</div>
+					        <small class="text-muted">Đã quá thời gian sử dụng</small>
+					    </div>
+					    <div class="status-summary-card inactive">
+					        <div class="status-count inactive" th:text="${totalInactive}">0</div>
+					        <div class="status-label">Ngừng kích hoạt</div>
+					        <small class="text-muted">Đã bị tắt thủ công</small>
+					    </div>
+					</div>
+
+                    <div class="search-box">
+                        <form th:action="@{/vendor/promotions}" method="get" class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo mã giảm giá...">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <a th:href="@{/vendor/promotions/add}" class="btn btn-add w-100">
+                                    <i class="fas fa-plus me-2"></i>Thêm mới
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-section">
+					    <h6 class="filter-title">
+					        <i class="fas fa-filter"></i>
+					        Bộ lọc & Sắp xếp
+					        <span class="filter-badge" th:text="${khuyenMaiPage.totalElements}">0</span>
+					    </h6>
+					    
+					    <form th:action="@{/vendor/promotions}" method="get" class="row g-3 align-items-end">
+					        <input type="hidden" name="keyword" th:value="${keyword}">
+					        
+					        <div class="col-md-3">
+					            <label class="form-label">Từ ngày</label>
+					            <input type="date" 
+					                   class="form-control" 
+					                   name="startDate"
+					                   th:value="${startDate}">
+					        </div>
+					        
+					        <div class="col-md-3">
+					            <label class="form-label">Đến ngày</label>
+					            <input type="date" 
+					                   class="form-control" 
+					                   name="endDate"
+					                   th:value="${endDate}">
+					        </div>
+					        
+					        <!-- BỘ LỌC TÌNH TRẠNG HẠN -->
+					        <div class="col-md-2">
+					            <label class="form-label">Tình trạng hạn</label>
+					            <select class="form-select" name="validityStatus" onchange="this.form.submit()">
+					                <option value="">Tất cả</option>
+					                <option value="active" th:selected="${validityStatus == 'active'}">Còn hạn</option>
+					                <option value="expired" th:selected="${validityStatus == 'expired'}">Hết hạn</option>
+					                <option value="upcoming" th:selected="${validityStatus == 'upcoming'}">Sắp diễn ra</option>
+					            </select>
+					        </div>
+					        
+					        <!-- BỘ LỌC TRẠNG THÁI KÍCH HOẠT -->
+							<div class="col-md-2">
+							    <label class="form-label">Trạng thái</label>
+							    <select class="form-select" name="activationStatus" onchange="this.form.submit()">
+							        <option value="">Tất cả</option>
+							        <option value="true" th:selected="${activationStatus == 'true'}">Đang áp dụng</option>
+							        <option value="false" th:selected="${activationStatus == 'false'}">Ngừng áp dụng</option>
+							    </select>
+							</div>
+					        
+					        <div class="col-md-2">
+					            <a th:href="@{/vendor/promotions}" class="btn btn-clear-filters w-100">
+					                <i class="fas fa-times me-2"></i>Xóa lọc
+					            </a>
+					        </div>
+					    </form>
+					    
+					    <!-- HIỂN THỊ CÁC BỘ LỌC ĐANG ACTIVE -->
+						<div th:if="${(keyword != null and keyword != '') or startDate != null or endDate != null or validityStatus != null or (activationStatus != null and activationStatus != '')}" class="mt-3">
+						    <div class="d-flex flex-wrap gap-2">
+						        <th:block th:if="${keyword != null and keyword != ''}">
+						            <span class="active-filter-badge">
+						                Tìm kiếm: <span th:text="${keyword}"></span>
+						                <a th:href="@{/vendor/promotions(startDate=${startDate}, endDate=${endDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}" class="filter-remove">
+						                    <i class="fas fa-times"></i>
+						                </a>
+						            </span>
+						        </th:block>
+						        
+						        <th:block th:if="${startDate != null}">
+						            <span class="active-filter-badge">
+						                Từ: <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')}"></span>
+						                <a th:href="@{/vendor/promotions(keyword=${keyword}, endDate=${endDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}" class="filter-remove">
+						                    <i class="fas fa-times"></i>
+						                </a>
+						            </span>
+						        </th:block>
+						        
+						        <th:block th:if="${endDate != null}">
+						            <span class="active-filter-badge">
+						                Đến: <span th:text="${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+						                <a th:href="@{/vendor/promotions(keyword=${keyword}, startDate=${startDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}" class="filter-remove">
+						                    <i class="fas fa-times"></i>
+						                </a>
+						            </span>
+						        </th:block>
+						        
+						        <th:block th:if="${validityStatus != null}">
+						            <span class="active-filter-badge">
+						                Tình trạng: 
+						                <span th:text="${validityStatus == 'active'} ? 'Còn hạn' : 
+						                               (${validityStatus == 'expired'} ? 'Hết hạn' : 'Sắp diễn ra')"></span>
+						                <a th:href="@{/vendor/promotions(keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, activationStatus=${activationStatus})}" class="filter-remove">
+						                    <i class="fas fa-times"></i>
+						                </a>
+						            </span>
+						        </th:block>
+						        
+						        <!-- SỬA LẠI PHẦN NÀY: chỉ hiển thị khi activationStatus có giá trị và không rỗng -->
+						        <th:block th:if="${activationStatus != null and activationStatus != ''}">
+						            <span class="active-filter-badge">
+						                Trạng thái: <span th:text="${activationStatus == 'true'} ? 'Đang áp dụng' : 'Ngừng áp dụng'"></span>
+						                <a th:href="@{/vendor/promotions(keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, validityStatus=${validityStatus})}" class="filter-remove">
+						                    <i class="fas fa-times"></i>
+						                </a>
+						            </span>
+						        </th:block>
+						    </div>
+						</div>
+					</div>
+                    
+                    <div class="table-container">
+                        <div class="table-header-section">
+					        <div class="d-flex justify-content-between align-items-center mb-3">
+					            <h4 class="mb-0">
+					                <i class="fas fa-tags me-2"></i>
+					                Khuyến mãi của tôi
+					                <span class="promotion-count-badge" th:text="${khuyenMaiPage.totalElements}">0</span>
+					            </h4>
+					            
+					            <div class="vendor-action-buttons">
+					                <a th:href="@{/vendor/promotions/import}" class="btn btn-excel-import me-2">
+					                    <i class="fas fa-file-import me-2"></i>
+					                    <span>Nhập Excel</span>
+					                </a>
+					                
+					                <button type="button" class="btn btn-excel-export" onclick="exportSelectedToExcel()">
+					                    <i class="fas fa-file-export me-2"></i>
+					                    <span>Xuất Excel</span>
+					                </button>
+					            </div>
+					        </div>
+					
+					        <!-- Selection Controls - Di chuyển xuống dưới -->
+					        <div id="selectionControls" class="selection-controls" style="display: none;">
+					            <span class="selected-count">
+					                Đã chọn: <strong id="selectedCount">0</strong> khuyến mãi
+					            </span>
+					            <button type="button" class="btn btn-clear-selection btn-sm me-2" onclick="clearSelection()">
+					                <i class="fas fa-times me-1"></i>Bỏ chọn
+					            </button>
+					            
+					            <button type="button" class="btn btn-bulk-status btn-sm me-2" onclick="showBulkStatusModal()">
+					                <i class="fas fa-toggle-on me-1"></i>Thay đổi trạng thái
+					            </button>
+					            
+					            <button type="button" class="btn btn-bulk-delete btn-sm me-2" onclick="showBulkDeleteModal()">
+					                <i class="fas fa-trash me-1"></i>Xóa đã chọn
+					            </button>
+					        </div>
+					    </div>
+                        
+                        <div class="table-responsive">
+						    <table class="table vendor-promotions-table">
+						        <thead>
+						            <tr>
+						                <th width="50">
+						                    <div class="form-check d-flex justify-content-center">
+						                        <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+						                    </div>
+						                </th>
+						                <th width="80">ID</th>
+						                <th>Mã giảm giá</th>
+						                <th width="120">Giảm giá</th>
+						                <th width="120">Ngày bắt đầu</th>
+						                <th width="120">Ngày kết thúc</th>
+						                <th width="100">Số lượng</th>
+						                <th width="100">Đã sử dụng</th>
+						                <th width="130">Trạng thái kích hoạt</th>
+						                <th width="130">Tình trạng hạn</th>
+						                <th width="120">Thao tác</th>
+						            </tr>
+						        </thead>
+						        <tbody>
+						            <tr th:each="promotion : ${khuyenMaiPage.content}">
+						                <td>
+						                    <div class="form-check d-flex justify-content-center">
+						                        <input class="form-check-input promotion-checkbox" 
+						                               type="checkbox" 
+						                               th:value="${promotion.maKhuyenMai}"
+						                               onchange="updateSelectionControls()">
+						                    </div>
+						                </td>
+						                <td th:text="${promotion.maKhuyenMai}">1</td>
+						                <td>
+						                    <div class="promotion-code-container">
+						                        <span class="promotion-code" th:text="${promotion.maGiamGia}" th:title="${promotion.maGiamGia}"></span>
+						                    </div>
+						                </td>
+						                <td>
+						                    <span class="discount-display" th:text="${promotion.discount} + '%'">10%</span>
+						                </td>
+						                <td>
+										    <span class="date-display" 
+										          th:text="${#temporals.format(promotion.ngayBatDau, 'dd/MM/yyyy')}"
+										          th:attr="data-date=${#temporals.format(promotion.ngayBatDau, 'yyyy-MM-dd')}">
+										          01/01/2024
+										    </span>
+										</td>
+										<td>
+										    <span class="date-display" 
+										          th:text="${#temporals.format(promotion.ngayKetThuc, 'dd/MM/yyyy')}"
+										          th:attr="data-date=${#temporals.format(promotion.ngayKetThuc, 'yyyy-MM-dd')}">
+										          31/01/2024
+										    </span>
+										</td>
+						                <td>
+						                    <span class="quantity-badge"
+						                          th:classappend="${promotion.soLuongMaGiamGia <= 10} ? 'quantity-low' : (${promotion.soLuongMaGiamGia <= 50} ? 'quantity-medium' : 'quantity-high')"
+						                          th:text="${promotion.soLuongMaGiamGia}"></span>
+						                </td>
+						                <td>
+								            <span class="used-quantity-badge"
+								                  th:classappend="${promotion.soLuongDaSuDung != null and promotion.soLuongDaSuDung > 0} ? 'used-quantity-high' : 'used-quantity-low'"
+								                  th:text="${promotion.soLuongDaSuDung != null ? promotion.soLuongDaSuDung : 0}">
+								                  0
+								            </span>
+								        </td>
+						                <!-- TRẠNG THÁI KÍCH HOẠT (có thể bật/tắt) -->
+						                <td>
+						                    <button class="status-toggle"
+						                            th:classappend="${promotion.trangThai} ? 'status-active' : 'status-inactive'"
+						                            th:data-promotion-id="${promotion.maKhuyenMai}"
+						                            th:data-current-status="${promotion.trangThai}"
+						                            type="button">
+						                        <span th:text="${promotion.trangThai} ? 'Đang áp dụng' : 'Ngừng áp dụng'"></span>
+						                        <i class="fas fa-chevron-down ms-1"></i>
+						                    </button>
+						                </td>
+						                <!-- TÌNH TRẠNG HẠN (hiển thị tự động dựa trên thời gian) -->
+						                <td>
+						                    <span class="status-badge" 
+                                                  th:classappend="${promotion.trangThaiHienTai == 'Đang kích hoạt'} ? 'status-active' : 
+                                                                 (${promotion.trangThaiHienTai == 'Sắp diễn ra'} ? 'status-upcoming' : 
+                                                                 (${promotion.trangThaiHienTai == 'Đã hết hạn'} ? 'status-expired' : 'status-inactive'))">
+                                                <i class="fas" 
+                                                   th:classappend="${promotion.trangThaiHienTai == 'Đang kích hoạt'} ? 'fa-check-circle' : 
+                                                                  (${promotion.trangThaiHienTai == 'Sắp diễn ra'} ? 'fa-clock' : 'fa-times-circle')"></i>
+                                                <span th:text="${promotion.trangThaiHienTai}">Còn hạn</span>
+                                            </span>
+						                </td>
+						                <td>
+						                    <div class="vendor-action-buttons action-group-row">
+						                        <a th:href="@{/vendor/promotions/view/{id}(id=${promotion.maKhuyenMai})}" 
+						                           class="action-btn btn-view"
+						                           title="Xem chi tiết">
+						                            <i class="fas fa-eye"></i>
+						                        </a>
+						                        <a th:href="@{/vendor/promotions/edit/{id}(id=${promotion.maKhuyenMai})}" 
+						                           class="action-btn btn-edit"
+						                           title="Chỉnh sửa">
+						                            <i class="fas fa-edit"></i>
+						                        </a>
+						                        <button type="button" 
+						                                class="action-btn btn-delete"
+						                                th:data-promotion-id="${promotion.maKhuyenMai}"
+						                                th:data-promotion-code="${promotion.maGiamGia}"
+						                                onclick="showDeleteModal(this)"
+						                                title="Xóa">
+						                            <i class="fas fa-trash"></i>
+						                        </button>
+						                    </div>
+						                </td>
+						            </tr>
+						          	  <tr th:if="${khuyenMaiPage.content.empty}">
+						                <td colspan="11">
+						                    <div class="empty-state">
+						                        <i class="fas fa-tags"></i>
+						                        <p>Chưa có khuyến mãi nào</p>
+						                        <a th:href="@{/vendor/promotions/add}" class="btn btn-add">
+						                            <i class="fas fa-plus me-2"></i>Thêm khuyến mãi đầu tiên
+						                        </a>
+						                    </div>
+						                </td>
+						            </tr>
+						        </tbody>
+						    </table>
+						</div>
+
+                        <nav th:if="${khuyenMaiPage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${khuyenMaiPage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/promotions(page=${khuyenMaiPage.number - 1}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, khuyenMaiPage.totalPages - 1)}"
+                                    th:classappend="${i == khuyenMaiPage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/promotions(page=${i}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${khuyenMaiPage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/promotions(page=${khuyenMaiPage.number + 1}, keyword=${keyword}, startDate=${startDate}, endDate=${endDate}, validityStatus=${validityStatus}, activationStatus=${activationStatus})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa khuyến mãi <strong id="promotionCodeToDelete"></strong>?</p>
+                    <p class="text-danger small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bulk Delete Modal -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa nhiều khuyến mãi
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa <strong id="bulkDeleteCount">0</strong> khuyến mãi đã chọn?</p>
+                    <p class="text-danger small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                    <div id="bulkDeletePreview" class="mt-3 p-2 bg-light rounded small" style="max-height: 150px; overflow-y: auto;">
+                        <!-- Preview items will be inserted here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa <span id="bulkDeleteCountBtn">0</span> khuyến mãi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusModalLabel">
+                        <i class="fas fa-toggle-on me-2"></i>
+                        Thay đổi trạng thái
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Thay đổi trạng thái cho: <strong id="promotionCodeForStatus"></strong></p>
+                    
+                    <div class="status-options">
+                        <div class="status-option-item mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="statusRadio" id="statusActive" value="true">
+                                <label class="form-check-label d-flex align-items-center" for="statusActive">
+                                    <i class="fas fa-check-circle text-success me-2" style="font-size: 20px;"></i>
+                                    <div>
+                                        <strong>Đang áp dụng</strong>
+                                        <p class="small text-muted mb-0">Khuyến mãi sẽ hiển thị cho khách hàng</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="status-option-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="statusRadio" id="statusInactive" value="false">
+                                <label class="form-check-label d-flex align-items-center" for="statusInactive">
+                                    <i class="fas fa-times-circle text-danger me-2" style="font-size: 20px;"></i>
+                                    <div>
+                                        <strong>Ngừng áp dụng</strong>
+                                        <p class="small text-muted mb-0">Khuyến mãi sẽ bị ẩn khỏi khách hàng</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmStatusBtn">
+                        <i class="fas fa-save me-1"></i>Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Status Modal -->
+    <div class="modal fade" id="bulkStatusModal" tabindex="-1" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkStatusModalLabel">
+                        <i class="fas fa-toggle-on me-2"></i>
+                        Thay đổi trạng thái hàng loạt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Thay đổi trạng thái cho <strong id="bulkStatusCount">0</strong> khuyến mãi đã chọn:</p>
+                    
+                    <div class="status-options">
+                        <div class="status-option-item mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusActive" value="true">
+                                <label class="form-check-label d-flex align-items-center" for="bulkStatusActive">
+                                    <i class="fas fa-check-circle text-success me-2" style="font-size: 20px;"></i>
+                                    <div>
+                                        <strong>Đang áp dụng</strong>
+                                        <p class="small text-muted mb-0">Khuyến mãi sẽ hiển thị cho khách hàng</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="status-option-item">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusInactive" value="false">
+                                <label class="form-check-label d-flex align-items-center" for="bulkStatusInactive">
+                                    <i class="fas fa-times-circle text-danger me-2" style="font-size: 20px;"></i>
+                                    <div>
+                                        <strong>Ngừng áp dụng</strong>
+                                        <p class="small text-muted mb-0">Khuyến mãi sẽ bị ẩn khỏi khách hàng</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="small text-muted mb-2">Khuyến mãi sẽ được cập nhật:</h6>
+                        <div id="bulkStatusPreview" class="p-2 bg-light rounded small" style="max-height: 150px; overflow-y: auto;">
+                            <!-- Preview items will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmBulkStatusBtn">
+                        <i class="fas fa-save me-1"></i>Cập nhật <span id="bulkStatusCountBtn">0</span> khuyến mãi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    
+    <script th:if="${cuaHang?.trangThai == false}" th:src="@{/js/vendor/promotions/promotions-locked.js}"></script> 
+    
+    <script th:if="${cuaHang?.trangThai != false}" th:src="@{/js/vendor/promotions/promotions.js}"></script> 
+</body>
+</html>	

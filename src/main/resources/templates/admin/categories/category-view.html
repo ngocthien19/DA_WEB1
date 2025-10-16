@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Danh mục - Pet Shop Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/categories/category-view.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Category Profile Header -->
+                    <div class="category-profile-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center text-md-start">
+                                <img th:src="${danhMuc.hinhAnh != null ? '/uploads/categories/' + danhMuc.hinhAnh : '/images/default-category.jpg'}" 
+                                     class="category-main-image" 
+                                     alt="Category Image">
+                            </div>
+                            <div class="col-md-6 text-center text-md-start mt-3 mt-md-0">
+                                <h2 th:text="${danhMuc.tenDanhMuc}">Tên danh mục</h2>
+                                <p class="mb-2">
+                                    <span>
+                                        <i class="fas fa-calendar-plus me-1"></i>
+                                        Ngày tạo: <span th:text="${#temporals.format(danhMuc.ngayTao, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-3 text-center text-md-end mt-3 mt-md-0">
+                                <span class="status-badge-view" 
+                                      th:classappend="${danhMuc.trangThai} ? 'status-active-view' : 'status-inactive-view'"
+                                      th:text="${danhMuc.trangThai ? 'Hoạt động' : 'Ngừng hoạt động'}">Hoạt động</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Information Cards -->
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-lg-6">
+                            <div class="category-info-card">
+                                <div class="info-section">
+                                    <h5><i class="fas fa-info-circle"></i> Thông tin cơ bản</h5>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-hashtag"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-label">Mã danh mục</div>
+                                            <div class="info-value" th:text="${danhMuc.maDanhMuc}">1</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-folder"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-label">Tên danh mục</div>
+                                            <div class="info-value" th:text="${danhMuc.tenDanhMuc}">Tên danh mục</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-label">Ngày tạo</div>
+                                            <div class="info-value" th:text="${#temporals.format(danhMuc.ngayTao, 'dd/MM/yyyy HH:mm')}">01/01/2024</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-lg-6">
+                            <div class="category-info-card">
+                                <div class="info-section">
+                                    <h5><i class="fas fa-toggle-on"></i> Trạng thái</h5>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-power-off"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-label">Trạng thái hiện tại</div>
+                                            <div class="info-value">
+                                                <span class="status-badge-view" 
+                                                      th:classappend="${danhMuc.trangThai} ? 'status-active-view' : 'status-inactive-view'"
+                                                      th:text="${danhMuc.trangThai ? 'Hoạt động' : 'Ngừng hoạt động'}">Hoạt động</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="category-info-card">
+                                <div class="info-section">
+                                    <h5><i class="fas fa-align-left"></i> Mô tả danh mục</h5>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-icon">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="info-value description-text" 
+                                                 th:if="${danhMuc.moTa != null and !#strings.isEmpty(danhMuc.moTa)}" 
+                                                 th:text="${danhMuc.moTa}">Mô tả danh mục</div>
+                                            <div class="info-value empty-field" 
+                                                 th:unless="${danhMuc.moTa != null and !#strings.isEmpty(danhMuc.moTa)}">
+                                                Chưa có mô tả
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="category-info-card text-center">
+                                <div class="action-buttons-view">
+                                    <a th:href="@{/admin/categories}" class="btn-back">
+                                        <i class="fas fa-arrow-left"></i>Quay lại danh sách
+                                    </a>
+                                    <a th:href="@{/admin/categories/edit/{id}(id=${danhMuc.maDanhMuc})}" class="btn-edit-view">
+                                        <i class="fas fa-edit"></i>Chỉnh sửa thông tin
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+</body>
+</html>

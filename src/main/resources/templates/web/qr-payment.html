@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Thanh Toán - Pet Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <style>
+        .qr-section {
+            padding: 50px 0;
+            background: #f8f9fa;
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+        }
+        
+        .qr-container {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .qr-title {
+            color: #0f3460;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .qr-image {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            margin: 0 auto 20px;
+        }
+        
+        .payment-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #0f3460;
+        }
+        
+        .info-value {
+            color: #e94560;
+            font-weight: 600;
+        }
+        
+        .instructions {
+            background: #fff5f5;
+            border-left: 4px solid #e94560;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px;
+        }
+        
+        .btn-download:hover {
+            background: #218838;
+        }
+        
+        .btn-back {
+            background: #0f3460;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px;
+        }
+        
+        .btn-back:hover {
+            background: #1e4a7e;
+        }
+        
+        .method-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .momo-badge {
+            background: #c2185b;
+            color: white;
+        }
+        
+        .vnpay-badge {
+            background: #005baa;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="qr-section">
+        <div class="container">
+            <div class="qr-container">
+                <h1 class="qr-title" th:text="${title}">Mã QR Thanh Toán</h1>
+                
+                <div th:if="${method == 'MOMO'}" class="method-badge momo-badge">
+                    <i class="fa-solid fa-money-bill-wave"></i> MoMo
+                </div>
+                
+                <div th:if="${method == 'VNPAY'}" class="method-badge vnpay-badge">
+                    <i class="fa-solid fa-credit-card"></i> VNPay
+                </div>
+                
+                <div class="qr-image">
+                    <img th:if="${qrCode}" 
+                         th:src="'data:image/png;base64,' + ${qrCode}" 
+                         alt="QR Code" 
+                         style="width: 100%; height: 100%;">
+                </div>
+                
+                <div class="payment-info">
+                    <div class="info-row">
+                        <span class="info-label">Số tiền:</span>
+                        <span class="info-value" th:text="'₫' + ${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')}"></span>
+                    </div>
+                    <div class="info-row" th:if="${description}">
+                        <span class="info-label">Nội dung:</span>
+                        <span class="info-value" th:text="${description}"></span>
+                    </div>
+                    <div class="info-row" th:if="${method}">
+                        <span class="info-label">Phương thức:</span>
+                        <span class="info-value" th:text="${method}"></span>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h4><i class="fa-solid fa-circle-info"></i> Hướng dẫn thanh toán:</h4>
+                    <ol>
+                        <li th:if="${method == 'MOMO'}">Mở ứng dụng MoMo trên điện thoại</li>
+                        <li th:if="${method == 'VNPAY'}">Mở ứng dụng ngân hàng hỗ trợ VNPay</li>
+                        <li>Chọn tính năng "Quét mã"</li>
+                        <li>Hướng camera về mã QR này</li>
+                        <li>Kiểm tra thông tin và xác nhận thanh toán</li>
+                    </ol>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-download" onclick="downloadQRCode()">
+                        <i class="fa-solid fa-download"></i>
+                        Tải mã QR
+                    </button>
+                    <a th:href="@{/orders}" class="btn-back">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <script>
+        function downloadQRCode() {
+            const qrImage = document.querySelector('.qr-image img');
+            if (qrImage) {
+                const link = document.createElement('a');
+                link.download = 'qrcode-payment.png';
+                link.href = qrImage.src;
+                link.click();
+            }
+        }
+        
+        // Auto-refresh QR code every 30 seconds để check trạng thái thanh toán
+        setInterval(() => {
+            // Có thể thêm logic check trạng thái thanh toán ở đây
+            console.log('Checking payment status...');
+        }, 30000);
+    </script>
+</body>
+</html>

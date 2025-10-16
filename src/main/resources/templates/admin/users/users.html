@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Quản lý Người dùng - Pet Shop Admin</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/users/users.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                	<!-- Trong file users.html - thêm vào phần stats-cards-row -->
+					<div class="row mb-4 stats-cards-row">
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-vendor">
+					            <div class="stat-icon">
+					                <i class="fas fa-store"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Tổng Vendor</p>
+					                <h5 class="stat-value" th:text="${totalVendors}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-shipper">
+					            <div class="stat-icon">
+					                <i class="fas fa-truck-fast"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Tổng Shipper</p>
+					                <h5 class="stat-value" th:text="${totalShippers}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <!-- THÊM CARD TỔNG USER MỚI -->
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-user">
+					            <div class="stat-icon">
+					                <i class="fas fa-users"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Tổng Người dùng</p>
+					                <h5 class="stat-value" th:text="${totalUsers}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-active">
+					            <div class="stat-icon">
+					                <i class="fas fa-circle-check"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Đang Hoạt động</p>
+					                <h5 class="stat-value" th:text="${totalActive}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-inactive">
+					            <div class="stat-icon">
+					                <i class="fas fa-circle-xmark"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Đã Khóa</p>
+					                <h5 class="stat-value" th:text="${totalInactive}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					</div>
+                    
+                    <!-- Search and Filter Box -->
+                    <div class="search-box">
+                        <form th:action="@{/admin/users}" method="get" class="row g-3">
+                            <div class="col-md-5">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo tên hoặc email...">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="role" id="roleFilter" onchange="this.form.submit()">
+                                    <option value="">Tất cả vai trò</option>
+                                    <option th:each="vaiTro : ${vaiTroList}" 
+                                            th:value="${vaiTro.maVaiTro}"
+                                            th:text="${vaiTro.tenVaiTro}"
+                                            th:selected="${vaiTro.maVaiTro == selectedRole}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <a th:href="@{/admin/users/add}" class="btn btn-add w-100">
+                                    <i class="fas fa-plus me-2"></i>Thêm mới
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Selection Controls -->
+                    <div id="selectionControls" class="selection-controls" style="display: none;">
+                        <span class="selected-count">
+                            Đã chọn: <strong id="selectedCount">0</strong> người dùng
+                        </span>
+                        <button type="button" class="btn btn-clear-selection" onclick="clearSelection()">
+                            <i class="fas fa-times me-1"></i>Bỏ chọn
+                        </button>
+                        <button type="button" class="btn btn-bulk-status" onclick="showBulkStatusModal()">
+						    <i class="fas fa-toggle-on me-1"></i>Thay đổi trạng thái
+						</button>
+                        <button type="button" class="btn btn-bulk-delete" onclick="showBulkDeleteModal()">
+                            <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                        </button>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="table-container">
+                        <div class="table-header-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-users me-2"></i>
+                                    Danh sách người dùng
+                                    <span class="user-count-badge" th:text="${userPage.totalElements}">0</span>
+                                </h4>
+                                
+                                <div class="vendor-action-buttons">
+                                    <button type="button" class="btn btn-excel-export" onclick="exportSelectedUsers()">
+                                        <i class="fas fa-file-export me-2"></i>
+                                        <span>Xuất Excel</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table users-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                                            </div>
+                                        </th>
+                                        <th width="80">ID</th>
+                                        <th width="80">Ảnh</th>
+                                        <th>Tên người dùng</th>
+                                        <th>Email</th>
+                                        <th width="120">Số điện thoại</th>
+                                        <th width="120">Vai trò</th>
+                                        <th width="150">Trạng thái</th>
+                                        <th width="120">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${userPage.content}" th:attr="data-user-id=${user.maNguoiDung}">
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input user-checkbox" type="checkbox" 
+                                                       th:value="${user.maNguoiDung}"
+                                                       onchange="updateSelectionControls()">
+                                            </div>
+                                        </td>
+                                        <td th:text="${user.maNguoiDung}">1</td>
+                                        <td>
+                                            <img th:src="${user.hinhAnh != null ? '/uploads/users/' + user.hinhAnh : '/images/default-avatar.jpg'}" 
+                                                 class="user-avatar" 
+                                                 alt="Avatar">
+                                        </td>
+                                        <td th:text="${user.tenNguoiDung}">Nguyễn Văn A</td>
+                                        <td th:text="${user.email}">user@example.com</td>
+                                        <td th:text="${user.sdt != null ? user.sdt : 'N/A'}">0123456789</td>
+                                        <td>
+                                            <span class="custom-badge" 
+                                                  th:classappend="${user.vaiTro.maVaiTro == 'ADMIN'} ? 'custom-admin' : 
+                                                                 (${user.vaiTro.maVaiTro == 'VENDOR'} ? 'custom-vendor' : 
+                                                                 (${user.vaiTro.maVaiTro == 'SHIPPER'} ? 'custom-shipper' : 'custom-user'))"
+                                                  th:text="${user.vaiTro.tenVaiTro}">Admin</span>
+                                        </td>
+                                        <td>
+										    <button class="status-toggle"
+										            th:classappend="${user.trangThai == 'Hoạt động'} ? 'status-active' : 'status-inactive'"
+										            th:data-user-id="${user.maNguoiDung}"
+										            th:data-user-name="${user.tenNguoiDung}"
+										            th:data-current-status="${user.trangThai}"
+										            type="button"
+										            onclick="showStatusModal(this)">
+										        <span th:text="${user.trangThai}">Hoạt động</span>
+										        <i class="fas fa-chevron-down ms-1"></i>
+										    </button>
+										</td>
+                                        <td>
+                                            <div class="action-buttons action-group-row">
+                                                <a th:href="@{/admin/users/view/{id}(id=${user.maNguoiDung})}" 
+                                                   class="action-btn btn-view"
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/admin/users/edit/{id}(id=${user.maNguoiDung})}" 
+                                                   class="action-btn btn-edit"
+                                                   title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="action-btn btn-delete"
+                                                        th:data-user-id="${user.maNguoiDung}"
+                                                        th:data-user-name="${user.tenNguoiDung}"
+                                                        onclick="showDeleteModal(this)"
+                                                        title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${userPage.content.empty}">
+                                        <td colspan="9">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>Không tìm thấy người dùng nào</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${userPage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${userPage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/users(page=${userPage.number - 1}, keyword=${keyword}, role=${selectedRole})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, userPage.totalPages - 1)}"
+                                    th:classappend="${i == userPage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/users(page=${i}, keyword=${keyword}, role=${selectedRole})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${userPage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/users(page=${userPage.number + 1}, keyword=${keyword}, role=${selectedRole})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============= MODALS ============= -->
+
+    <!-- Delete Modal (Đơn lẻ) -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <p>Bạn có chắc chắn muốn xóa người dùng <strong id="userNameToDelete"></strong>?</p>
+                    <p class="text-danger">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Delete Modal (Hàng loạt) -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa hàng loạt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <p>Bạn có chắc chắn muốn xóa <strong id="bulkDeleteCount" class="bulk-count">0</strong> người dùng đã chọn?</p>
+                    <p class="text-danger">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                    <div id="bulkDeletePreview" class="bulk-preview">
+                        <!-- Preview items will be inserted here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa <span id="bulkDeleteCountBtn">0</span> người dùng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal (Đơn lẻ) - UPDATED -->
+	<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="statusModalLabel">
+	                    <i class="fas fa-toggle-on me-2"></i>
+	                    Thay đổi trạng thái
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p class="mb-3">Thay đổi trạng thái cho: <strong id="userNameForStatus"></strong></p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusActive" value="Hoạt động">
+	                            <label class="form-check-label" for="statusActive">
+	                                <i class="fas fa-check-circle text-success me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Hoạt động</strong>
+	                                    <p class="status-description">Người dùng có thể đăng nhập và sử dụng hệ thống</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusInactive" value="Khóa">
+	                            <label class="form-check-label" for="statusInactive">
+	                                <i class="fas fa-times-circle text-danger me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Khóa</strong>
+	                                    <p class="status-description">Người dùng không thể đăng nhập vào hệ thống</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- Phần nhập lý do khóa -->
+	                <div id="lyDoKhoaSection" class="mt-3" style="display: none;">
+	                    <label for="lyDoKhoaInput" class="form-label">
+	                        <i class="fas fa-comment-dots me-1"></i>Lý do khóa tài khoản
+	                    </label>
+	                    <div class="mb-2">
+	                        <small class="text-muted">Chọn lý do có sẵn hoặc nhập lý do khác:</small>
+	                    </div>
+	                    
+	                    <div class="mb-2">
+	                        <select class="form-select" id="lyDoKhoaPreset" onchange="handleLyDoKhoaPresetChange()">
+	                            <option value="">-- Chọn lý do có sẵn --</option>
+	                            <option value="Vi phạm điều khoản sử dụng">Vi phạm điều khoản sử dụng</option>
+	                            <option value="Hoạt động bất thường">Hoạt động bất thường</option>
+	                            <option value="Spam hoặc quảng cáo">Spam hoặc quảng cáo</option>
+	                            <option value="Tài khoản giả mạo">Tài khoản giả mạo</option>
+	                            <option value="Không hoạt động trong thời gian dài">Không hoạt động trong thời gian dài</option>
+	                            <option value="Yêu cầu của người dùng">Yêu cầu của người dùng</option>
+	                            <option value="other">Lý do khác...</option>
+	                        </select>
+	                    </div>
+	                    
+	                    <textarea class="form-control" id="lyDoKhoaInput" rows="3" 
+	                              placeholder="Nhập lý do khóa tài khoản (tối đa 500 ký tự)..." maxlength="500"></textarea>
+	                    <div class="form-text">Lý do này sẽ được hiển thị cho người dùng khi đăng nhập.</div>
+	                    <div id="lyDoKhoaCounter" class="lyDoKhoaCounter">0/500</div>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Lưu thay đổi
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Bulk Status Modal (Hàng loạt) - UPDATED -->
+	<div class="modal fade" id="bulkStatusModal" tabindex="-1" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="bulkStatusModalLabel">
+	                    <i class="fas fa-toggle-on me-2"></i>
+	                    Thay đổi trạng thái hàng loạt
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p class="mb-3">Thay đổi trạng thái cho <strong id="bulkStatusCount" class="bulk-count">0</strong> người dùng đã chọn:</p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusActive" value="Hoạt động">
+	                            <label class="form-check-label" for="bulkStatusActive">
+	                                <i class="fas fa-check-circle text-success me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Hoạt động</strong>
+	                                    <p class="status-description">Người dùng có thể đăng nhập và sử dụng hệ thống</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusInactive" value="Khóa">
+	                            <label class="form-check-label" for="bulkStatusInactive">
+	                                <i class="fas fa-times-circle text-danger me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Khóa</strong>
+	                                    <p class="status-description">Người dùng không thể đăng nhập vào hệ thống</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- Phần nhập lý do khóa cho hàng loạt -->
+	                <div id="bulkLyDoKhoaSection" class="mt-3" style="display: none;">
+	                    <label for="bulkLyDoKhoaInput" class="form-label">
+	                        <i class="fas fa-comment-dots me-1"></i>Lý do khóa tài khoản (Áp dụng cho tất cả)
+	                    </label>
+	                    <div class="mb-2">
+	                        <small class="text-muted">Chọn lý do có sẵn hoặc nhập lý do khác. Lý do này sẽ được áp dụng cho tất cả người dùng được chọn:</small>
+	                    </div>
+	                    
+	                    <div class="mb-2">
+	                        <select class="form-select" id="bulkLyDoKhoaPreset" onchange="handleBulkLyDoKhoaPresetChange()">
+	                            <option value="">-- Chọn lý do có sẵn --</option>
+	                            <option value="Vi phạm điều khoản sử dụng">Vi phạm điều khoản sử dụng</option>
+	                            <option value="Hoạt động bất thường">Hoạt động bất thường</option>
+	                            <option value="Spam hoặc quảng cáo">Spam hoặc quảng cáo</option>
+	                            <option value="Tài khoản giả mạo">Tài khoản giả mạo</option>
+	                            <option value="Không hoạt động trong thời gian dài">Không hoạt động trong thời gian dài</option>
+	                            <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
+	                            <option value="Kiểm tra định kỳ">Kiểm tra định kỳ</option>
+	                            <option value="Yêu cầu của người dùng">Yêu cầu của người dùng</option>
+	                            <option value="other">Lý do khác...</option>
+	                        </select>
+	                    </div>
+	                    
+	                    <textarea class="form-control" id="bulkLyDoKhoaInput" rows="3" 
+	                              placeholder="Nhập lý do khóa tài khoản (tối đa 500 ký tự)..." maxlength="500"></textarea>
+	                    <div class="form-text">Lý do này sẽ được hiển thị cho tất cả người dùng được chọn.</div>
+	                    <div id="bulkLyDoKhoaCounter" class="lyDoKhoaCounter">0/500</div>
+	                </div>
+	
+	                <div class="mt-3">
+	                    <h6 class="small text-muted mb-2">Người dùng sẽ được cập nhật:</h6>
+	                    <div id="bulkStatusPreview" class="bulk-preview">
+	                        <!-- Preview items will be inserted here -->
+	                    </div>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmBulkStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Cập nhật <span id="bulkStatusCountBtn">0</span> người dùng
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+    <script th:src="@{/js/admin/users/users.js}"></script>
+    
+</body>
+</html>

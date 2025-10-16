@@ -1,0 +1,182 @@
+/* CSS cho Store Locked Banner FIXED */
+.store-locked-banner {
+    background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+    border-left: 5px solid #e65100;
+    position: fixed;
+    top: 0;
+    left: 268px;
+    right: 0;
+    width: 83%;
+    z-index: 1040; /* Dưới modal nhưng trên các phần tử khác */
+    overflow: hidden;
+    animation: slideDown 0.5s ease-out;
+}
+
+.store-locked-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes slideDown {
+    from { 
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.store-locked-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.store-locked-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.store-locked-text {
+    flex: 1;
+}
+
+.store-locked-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    display: flex;
+    align-items: center;
+}
+
+.store-locked-message {
+    font-size: 0.95rem;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.store-locked-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: 15px;
+}
+
+.btn-contact-support {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+
+.btn-contact-support:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: white;
+}
+
+/* Đẩy nội dung chính xuống dưới banner fixed */
+.main-content {
+    margin-top: 80px; /* Chiều cao banner + khoảng cách */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .store-locked-banner {
+        padding: 12px 15px;
+    }
+    
+    .store-locked-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .store-locked-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .store-locked-icon {
+        font-size: 1.5rem;
+    }
+    
+    .store-locked-title {
+        font-size: 1.1rem;
+    }
+    
+    .store-locked-message {
+        font-size: 0.85rem;
+    }
+    
+    .main-content {
+        margin-top: 120px; /* Tăng lên cho mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .store-locked-banner {
+        padding: 10px 12px;
+    }
+    
+    .store-locked-content {
+        padding: 0 10px;
+    }
+    
+    .store-locked-title {
+        font-size: 1rem;
+    }
+    
+    .btn-contact-support {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .main-content {
+        margin-top: 140px; /* Tăng thêm cho mobile nhỏ */
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .store-locked-banner {
+        background: linear-gradient(135deg, #ff6f00 0%, #e64a19 100%);
+    }
+}

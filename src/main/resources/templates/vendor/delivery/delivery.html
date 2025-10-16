@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bàn giao Đơn hàng - Pet Shop Vendor</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+    <link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/delivery/delivery.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+            	<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+                <div th:replace="~{vendor/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <div class="vendor-store-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="store-name">
+                                    <i class="fas fa-truck me-2"></i>
+                                    Quản lý Bàn giao Đơn hàng
+                                </h4>
+                                <div class="store-details">
+                                    <span class="store-info-item">
+                                        <i class="fas fa-store me-1"></i>
+                                        <span th:text="${cuaHang.tenCuaHang}">Tên cửa hàng</span>
+                                    </span>
+                                    <span class="store-info-item">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="${unassignedCount} + ' đơn chờ gán shipper'">0 đơn chờ gán shipper</span>
+                                    </span>
+                                    <span class="store-info-item">
+                                        <i class="fas fa-truck-fast me-1"></i>
+                                        <span th:text="${assignedCount} + ' đơn đang giao'">0 đơn đang giao</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+							    <div class="store-status-badge" 
+							         th:classappend="${cuaHang.trangThai} ? 'status-active' : 'status-inactive'"
+							         th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+							        Đang hoạt động
+							    </div>
+							</div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div class="delivery-tabs">
+                        <ul class="nav nav-tabs" id="deliveryTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" th:classappend="${currentTab == 'unassigned'} ? 'active'"
+                                        id="unassigned-tab" data-bs-toggle="tab" data-bs-target="#unassigned" 
+                                        type="button" role="tab" onclick="switchTab('unassigned')">
+                                    <i class="fas fa-clock me-2"></i>
+                                    Đơn chờ gán Shipper
+                                    <span class="tab-badge" th:text="${unassignedCount}">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" th:classappend="${currentTab == 'assigned'} ? 'active'"
+                                        id="assigned-tab" data-bs-toggle="tab" data-bs-target="#assigned" 
+                                        type="button" role="tab" onclick="switchTab('assigned')">
+                                    <i class="fas fa-truck-fast me-2"></i>
+                                    Đơn đang giao hàng
+                                    <span class="tab-badge" th:text="${assignedCount}">0</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <form th:action="@{/vendor/delivery}" method="get" class="row g-3">
+                            <input type="hidden" name="tab" th:value="${currentTab}">
+                            <div class="col-md-8">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo mã đơn hàng hoặc email khách hàng...">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <a th:href="@{/vendor/delivery}" class="btn btn-secondary w-100">
+                                    <i class="fas fa-refresh me-2"></i>Làm mới
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="deliveryTabContent">
+                        
+                        <!-- Unassigned Orders Tab -->
+                        <div class="tab-pane fade" th:classappend="${currentTab == 'unassigned'} ? 'show active'"
+                             id="unassigned" role="tabpanel" aria-labelledby="unassigned-tab">
+                            
+                            <div class="table-container">
+                                <div class="table-header-section">
+                                    <h4>
+                                        <i class="fas fa-list-check me-2"></i>
+                                        Đơn hàng chờ gán Shipper
+                                        <span class="order-count-badge" th:text="${unassignedCount}">0</span>
+                                    </h4>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table vendor-delivery-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="80">Mã ĐH</th>
+                                                <th>Khách hàng</th>
+                                                <th width="120">Ngày đặt</th>
+                                                <th width="120">Tổng tiền</th>
+                                                <!-- THÊM CÁC CỘT MỚI -->
+                                                <th width="150">Địa chỉ giao</th>
+                                                <th width="120">SĐT giao hàng</th>
+                                                <th width="120">Ghi chú</th>
+                                                <th width="120">Khuyến mãi</th>
+                                                <!-- END THÊM CÁC CỘT MỚI -->
+                                                <th width="150">Trạng thái</th>
+                                                <th width="180">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="order : ${unassignedOrders}">
+                                                <td>
+                                                    <strong th:text="${order.maDatHang}">1</strong>
+                                                </td>
+                                                <td>
+                                                    <div class="customer-info">
+                                                        <strong th:text="${order.nguoiDung.email}">email@example.com</strong>
+                                                        <small class="text-muted d-block" th:text="${order.nguoiDung.tenNguoiDung} ?: 'Chưa có tên'">Tên khách hàng</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="date-display" 
+                                                          th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">
+                                                          01/01/2024
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="amount-display" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                                        1,000,000 ₫
+                                                    </span>
+                                                </td>
+                                                
+                                                <!-- THÊM CÁC CỘT THÔNG TIN MỚI -->
+                                                <td class="info-column">
+                                                    <div class="shipping-info">
+                                                        <span class="shipping-address" 
+														      th:attr="data-bs-toggle=tooltip,data-bs-title=${order?.diaChiGiaoHang}"
+														      th:text="${order?.diaChiGiaoHang} ?: 'Chưa cập nhật'">
+														</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td>
+                                                    <span class="shipping-phone" th:text="${order?.soDienThoaiGiaoHang} ?: 'Chưa cập nhật'"></span>
+                                                </td>
+                                                
+                                                <td class="info-column">
+                                                    <div class="order-notes">
+                                                        <span th:if="${order.ghiChu}" 
+                                                              class="note-text" 
+                                                              th:attr="data-bs-toggle=tooltip,data-bs-title=${order?.ghiChu}"
+                                                              th:text="${#strings.abbreviate(order?.ghiChu, 15)}">
+                                                        </span>
+                                                        <span th:unless="${order.ghiChu}" class="text-muted">Không có</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td class="info-column">
+                                                    <div class="promotion-info">
+                                                        <span th:if="${order?.khuyenMai}" 
+                                                              class="promotion-badge"
+                                                              th:attr="data-bs-toggle=tooltip,data-bs-title=${order?.khuyenMai?.maGiamGia} + ' - Giảm ' + ${#numbers.formatDecimal(order.khuyenMai.discount, 1, 0)} + '%'"
+                                                              th:text="${order?.khuyenMai?.maGiamGia}">
+                                                        </span>
+                                                        <span th:unless="${order?.khuyenMai}" class="text-muted">Không có</span>
+                                                    </div>
+                                                </td>
+                                                <!-- END THÊM CÁC CỘT THÔNG TIN MỚI -->
+                                                
+                                                <td>
+                                                    <span class="status-badge status-confirmed" th:text="${order.trangThai}">
+                                                        Đã xác nhận
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="vendor-action-buttons">
+                                                        <button type="button" 
+                                                                class="action-btn btn-assign"
+                                                                th:data-order-id="${order.maDatHang}"
+                                                                onclick="showAssignShipperModal(this)"
+                                                                title="Gán shipper">
+                                                            <i class="fas fa-user-plus me-1"></i> Gán Shipper
+                                                        </button>
+                                                        <a th:href="@{/vendor/orders/view/{id}(id=${order.maDatHang})}" 
+                                                           class="action-btn btn-view"
+                                                           title="Xem chi tiết">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${unassignedOrders == null or unassignedOrders.empty}">
+											    <td colspan="10">
+											        <div class="empty-state">
+											            <i class="fas fa-clipboard-check"></i>
+											            <p>Không có đơn hàng nào chờ gán shipper</p>
+											            <small class="text-muted">Các đơn hàng ở trạng thái "Đã xác nhận" và chưa bị hủy sẽ xuất hiện ở đây</small>
+											        </div>
+											    </td>
+											</tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Assigned Orders Tab -->
+                        <div class="tab-pane fade" th:classappend="${currentTab == 'assigned'} ? 'show active'"
+                             id="assigned" role="tabpanel" aria-labelledby="assigned-tab">
+                            
+                            <div class="table-container">
+                                <div class="table-header-section">
+                                    <h4>
+                                        <i class="fas fa-truck-fast me-2"></i>
+                                        Đơn hàng đang giao
+                                        <span class="order-count-badge" th:text="${assignedCount}">0</span>
+                                    </h4>
+                                </div>
+                                
+                                <div class="table-responsive">
+                                    <table class="table vendor-delivery-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="80">Mã ĐH</th>
+                                                <th>Khách hàng</th>
+                                                <th width="120">Ngày đặt</th>
+                                                <th width="120">Tổng tiền</th>
+                                                <!-- THÊM CÁC CỘT MỚI -->
+                                                <th width="150">Địa chỉ giao</th>
+                                                <th width="120">SĐT giao hàng</th>
+                                                <th width="120">Ghi chú</th>
+                                                <th width="120">Khuyến mãi</th>
+                                                <!-- END THÊM CÁC CỘT MỚI -->
+                                                <th width="150">Shipper</th>
+                                                <th width="150">Trạng thái VC</th>
+                                                <th width="200">Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="delivery : ${assignedOrders}">
+                                                <td>
+                                                    <strong th:text="${delivery.datHang.maDatHang}">1</strong>
+                                                    <br>
+                                                    <small class="text-muted">VC: <span th:text="${delivery.maVanChuyen}"></span></small>
+                                                </td>
+                                                <td>
+                                                    <div class="customer-info">
+                                                        <strong th:text="${delivery.datHang.nguoiDung.email}">email@example.com</strong>
+                                                        <small class="text-muted d-block" th:text="${delivery.datHang.nguoiDung.tenNguoiDung} ?: 'Chưa có tên'">Tên khách hàng</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="date-display" 
+                                                          th:text="${#temporals.format(delivery.datHang.ngayDat, 'dd/MM/yyyy')}">
+                                                          01/01/2024
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="amount-display" th:text="${#numbers.formatDecimal(delivery.datHang.tongTien, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                                        1,000,000 ₫
+                                                    </span>
+                                                </td>
+                                                
+                                                <!-- THÊM CÁC CỘT THÔNG TIN MỚI -->
+                                                <td class="info-column">
+                                                    <div class="shipping-info">
+                                                        <span class="shipping-address" 
+                                                              th:attr="data-bs-toggle=tooltip,data-bs-title=${delivery.datHang.diaChiGiaoHang}"
+                                                              th:text="${delivery.datHang.diaChiGiaoHang} ?: 'Chưa cập nhật'">
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td>
+                                                    <span class="shipping-phone" th:text="${delivery.datHang.soDienThoaiGiaoHang} ?: 'Chưa cập nhật'"></span>
+                                                </td>
+                                                
+                                                <td class="info-column">
+                                                    <div class="order-notes">
+                                                        <span th:if="${delivery.datHang.ghiChu}" 
+                                                              class="note-text" 
+                                                              th:attr="data-bs-toggle=tooltip,data-bs-title=${delivery.datHang.ghiChu}"
+                                                              th:text="${#strings.abbreviate(delivery.datHang.ghiChu, 15)}">
+                                                        </span>
+                                                        <span th:unless="${delivery.datHang.ghiChu}" class="text-muted">Không có</span>
+                                                    </div>
+                                                </td>
+                                                
+                                                <td class="info-column">
+                                                    <div class="promotion-info">
+                                                        <span th:if="${delivery.datHang.khuyenMai}" 
+                                                              class="promotion-badge"
+                                                              th:attr="data-bs-toggle=tooltip,data-bs-title=${delivery.datHang.khuyenMai.maGiamGia} + ' - Giảm ' + ${#numbers.formatDecimal(delivery.datHang.khuyenMai.discount, 1, 0)} + '%'"
+                                                              th:text="${delivery.datHang.khuyenMai.maGiamGia}">
+                                                        </span>
+                                                        <span th:unless="${delivery.datHang.khuyenMai}" class="text-muted">Không có</span>
+                                                    </div>
+                                                </td>
+                                                <!-- END THÊM CÁC CỘT THÔNG TIN MỚI -->
+                                                
+                                                <td>
+                                                    <div class="shipper-info">
+                                                        <strong th:text="${delivery.nguoiDung.tenNguoiDung}">Shipper Name</strong>
+                                                        <small class="text-muted d-block" th:text="${delivery.nguoiDung.sdt} ?: 'Chưa có SĐT'">SĐT shipper</small>
+                                                        <small class="text-muted" th:text="${delivery.nguoiDung.email}">email shipper</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span th:classappend="'status-badge status-' + ${delivery.trangThai == 'Đang giao' ? 'shipping' : 
+                                                                          delivery.trangThai == 'Hoàn thành' ? 'completed' : 
+                                                                          delivery.trangThai == 'Hủy' ? 'cancelled' : 'shipping'}"
+                                                          th:text="${delivery.trangThai}">
+                                                        Đang giao
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="vendor-action-buttons">
+                                                        <button type="button" 
+                                                                class="action-btn btn-status"
+                                                                th:data-delivery-id="${delivery.maVanChuyen}"
+                                                                th:data-order-id="${delivery.datHang.maDatHang}"
+                                                                onclick="showUpdateStatusModal(this)"
+                                                                title="Cập nhật trạng thái">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <a th:href="@{/vendor/orders/view/{id}(id=${delivery.datHang.maDatHang})}" 
+                                                           class="action-btn btn-view"
+                                                           title="Xem chi tiết">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <button type="button" 
+                                                                class="action-btn btn-cancel"
+                                                                th:data-delivery-id="${delivery.maVanChuyen}"
+                                                                onclick="showUnassignModal(this)"
+                                                                title="Hủy gán shipper">
+                                                            <i class="fas fa-user-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr th:if="${assignedOrders == null or assignedOrders.empty}">
+											    <td colspan="11">
+											        <div class="empty-state">
+											            <i class="fas fa-truck"></i>
+											            <p>Không có đơn hàng nào đang giao</p>
+											            <small class="text-muted">Các đơn hàng đã được gán shipper và chưa hoàn thành/hủy sẽ xuất hiện ở đây</small>
+											        </div>
+											    </td>
+											</tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav th:if="${ordersPage.totalPages > 1}">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${ordersPage.first} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/vendor/delivery(page=${ordersPage.number - 1}, keyword=${keyword}, tab=${currentTab})}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            
+                            <li class="page-item" 
+                                th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}"
+                                th:classappend="${i == ordersPage.number} ? 'active'">
+                                <a class="page-link" 
+                                   th:href="@{/vendor/delivery(page=${i}, keyword=${keyword}, tab=${currentTab})}"
+                                   th:text="${i + 1}">1</a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${ordersPage.last} ? 'disabled'">
+                                <a class="page-link" 
+                                   th:href="@{/vendor/delivery(page=${ordersPage.number + 1}, keyword=${keyword}, tab=${currentTab})}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Assign Shipper Modal -->
+    <div class="modal fade" id="assignShipperModal" tabindex="-1" aria-labelledby="assignShipperModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignShipperModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Gán Shipper cho Đơn hàng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Gán shipper cho đơn hàng <strong id="orderIdToAssign" class="text-primary">#</strong></p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Chọn Shipper</label>
+                        <select class="form-select" id="shipperSelect">
+                            <option value="">-- Chọn shipper --</option>
+                            <option th:each="shipper : ${shippers}" 
+                                    th:value="${shipper.maNguoiDung}"
+                                    th:text="${shipper.tenNguoiDung} + ' - ' + ${shipper.sdt != null ? shipper.sdt : 'Chưa có SĐT'} + ' - ' + ${shipper.diaChi != null ? shipper.diaChi : 'Chưa có địa chỉ'}">
+                                Shipper Name - Phone - Address
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="shipper-list">
+                        <h6 class="small text-muted mb-2">Danh sách Shipper có sẵn:</h6>
+                        <div class="shipper-items">
+                            <div th:each="shipper : ${shippers}" class="shipper-item">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="shipperRadio" 
+                                           th:id="'shipper_' + ${shipper.maNguoiDung}"
+                                           th:value="${shipper.maNguoiDung}">
+                                    <label class="form-check-label" th:for="'shipper_' + ${shipper.maNguoiDung}">
+                                        <strong th:text="${shipper.tenNguoiDung}"></strong>
+                                        <small class="text-muted d-block" th:text="${shipper.sdt} ?: 'Chưa có SĐT'"></small>
+                                        <small class="text-muted d-block" th:text="${shipper.email}"></small>
+                                        <small class="text-muted" th:text="${shipper.diaChi}"></small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmAssignBtn">
+                        <i class="fas fa-user-check me-1"></i>Gán Shipper
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Status Modal -->
+	<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="updateStatusModalLabel">
+	                    <i class="fas fa-sync-alt me-2"></i>
+	                    Cập nhật Trạng thái Giao hàng
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p>Cập nhật trạng thái cho đơn hàng <strong id="orderIdForStatus" class="text-primary">#</strong></p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusShipping" value="Đang giao" checked>
+	                            <label class="form-check-label d-flex align-items-center" for="statusShipping">
+	                                <i class="fas fa-truck text-purple me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Đang giao</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đang được vận chuyển</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusCompleted" value="Hoàn thành">
+	                            <label class="form-check-label d-flex align-items-center" for="statusCompleted">
+	                                <i class="fas fa-check-double text-success me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Hoàn thành</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đã giao thành công</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusCancelled" value="Hủy">
+	                            <label class="form-check-label d-flex align-items-center" for="statusCancelled">
+	                                <i class="fas fa-times-circle text-danger me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Hủy</strong>
+	                                    <p class="small text-muted mb-0">Hủy đơn hàng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	                
+	                <!-- Container lý do hủy (chỉ hiển thị khi chọn Hủy) -->
+	                <div id="lyDoHuyDeliveryContainer" style="display: none;" class="mt-3">
+	                    <label for="lyDoHuyDeliveryInput" class="form-label">
+	                        <i class="fas fa-comment-dots me-1"></i>
+	                        Lý do hủy đơn hàng
+	                    </label>
+	                    <textarea class="form-control" id="lyDoHuyDeliveryInput" rows="3" 
+	                              placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+	                              maxlength="500"></textarea>
+	                    <div class="d-flex justify-content-between align-items-center mt-2">
+	                        <small class="text-muted">Tối đa 500 ký tự</small>
+	                        <small class="char-counter" id="lyDoHuyDeliveryCounter">0/500</small>
+	                    </div>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Cập nhật Trạng thái
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Unassign Shipper Modal -->
+    <div class="modal fade" id="unassignModal" tabindex="-1" aria-labelledby="unassignModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unassignModalLabel">
+                        <i class="fas fa-user-times me-2"></i>
+                        Hủy Gán Shipper
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn hủy gán shipper cho đơn hàng <strong id="orderIdToUnassign" class="text-primary">#</strong>?</p>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Đơn hàng sẽ được chuyển về trạng thái "Đã xác nhận" và có thể gán shipper khác sau.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmUnassignBtn">
+                        <i class="fas fa-user-times me-1"></i>Hủy Gán
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <!-- CSRF Token -->
+    <input type="hidden" id="csrfToken" th:value="${_csrf?.token}">
+    <input type="hidden" id="csrfHeader" th:value="${_csrf?.headerName}">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    
+	<script th:if="${cuaHang?.trangThai == false}" th:src="@{/js/vendor/delivery/delivery-locked.js}"></script> 
+	<script th:if="${cuaHang?.trangThai != false}" th:src="@{/js/vendor/delivery/delivery.js}"></script>
+    <script>
+        // Khởi tạo tooltip
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+</body>
+</html>

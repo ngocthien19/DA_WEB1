@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng thành công - Pet Shop</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/order-success.css}">
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="success-section">
+        <div class="container">
+            <div class="success-content">
+                <div class="success-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                
+                <h1 class="success-title">Đặt hàng thành công!</h1>
+                
+                <div class="success-info" th:if="${datHang}">
+                    <p class="order-number">
+                        <span>Mã đơn hàng:</span> 
+                        <strong th:text="${datHang.maDatHang}"></strong>
+                    </p>
+                    <p class="order-total">
+                        <span>Tổng tiền:</span> 
+                        <strong th:text="'₫' + ${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')}"></strong>
+                    </p>
+                    <p class="order-status">
+                        <span>Trạng thái:</span> 
+                        <span class="status" th:text="${datHang.trangThai}"></span>
+                    </p>
+                </div>
+                
+                <p class="success-message">
+                    Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn trong thời gian sớm nhất.
+                    Bạn có thể theo dõi trạng thái đơn hàng trong mục "Theo dõi đơn hàng".
+                </p>
+                
+                <div class="success-actions">
+                    <a th:href="@{/products}" class="btn-continue">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        Tiếp tục mua sắm
+                    </a>
+                    
+                    <a th:href="@{/track-order}" class="btn-track-order">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        Theo dõi đơn hàng
+                    </a>
+                    
+                    <button onclick="printInvoice()" class="btn-print">
+				        <i class="fa-solid fa-receipt"></i>
+				        In hóa đơn
+				    </button>
+                    
+                    <a th:href="@{/}" class="btn-home">
+                        <i class="fa-solid fa-house"></i>
+                        Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+    <script th:src="@{/js/web/header.js}"></script>
+    
+    <script>
+        // Tạo hiệu ứng confetti
+        document.addEventListener('DOMContentLoaded', function() {
+            const colors = ['#e94560', '#28a745', '#ffc107', '#0f3460', '#17a2b8'];
+            const successContent = document.querySelector('.success-content');
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 5 + 's';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    successContent.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 100);
+            }
+        });
+    </script>
+</body>
+</html>

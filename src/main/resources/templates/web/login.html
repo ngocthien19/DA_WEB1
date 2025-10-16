@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - PetStore</title>
+    <link rel="stylesheet" th:href="@{/css/web/login.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-background">
+            <div class="pet-pattern"></div>
+        </div>
+
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo">
+                    <i class="fas fa-paw"></i>
+                    <span>PetShop</span>
+                </div>
+                <h2>Đăng nhập tài khoản</h2>
+                <p>Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục</p>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            
+            <!-- Hiển thị lỗi từ server (khi JavaScript không hoạt động) -->
+            <div th:if="${error}" class="error-message" style="display: block;" th:text="${error}"></div>
+
+            <form id="loginForm" class="login-form" th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Nhập email của bạn" required>
+                    </div>
+                    <div class="error-text" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="matKhau" name="matKhau" placeholder="Nhập mật khẩu" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-text" id="matKhauError"></div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember">
+                        <span class="checkmark"></span>
+                        Ghi nhớ đăng nhập
+                    </label>
+                    <a th:href="@{/forgot-password}" class="forgot-password">Quên mật khẩu?</a>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Đăng nhập
+                </button>
+            </form>
+
+            <div class="register-link">
+                <p>Chưa có tài khoản? <a th:href="@{/register}">Tạo tài khoản mới</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/web/loginValidate.js}"></script>
+</body>
+</html>

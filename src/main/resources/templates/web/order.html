@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt hàng - Pet Shop</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/order.css}">
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="order-section">
+        <div class="container">
+            <h1 class="order-title">
+                <i class="fa-solid fa-clipboard-list"></i>
+                Đặt hàng
+            </h1>
+            
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+            
+            <form th:action="@{/orders/place}" method="post" th:object="${datHangRequest}" class="order-form" id="orderForm">
+                <div class="order-content">
+                    <div class="order-items">
+                        <div th:each="store : ${productsByStore}" class="store-section" th:data-store-id="${store.key.maCuaHang}">
+                            <div class="store-header">
+                                <h3>
+                                    <i class="fa-solid fa-store"></i>
+                                    <span th:text="${store.key.tenCuaHang}"></span>
+                                </h3>
+                                
+                                <!-- Chọn khuyến mãi -->
+								<div class="promotion-selector" 
+								     th:if="${promotionsByStore.get(store.key.maCuaHang) != null and !promotionsByStore.get(store.key.maCuaHang).empty}">
+								    <label>Chọn khuyến mãi:</label>
+								    <select th:name="selectedPromotions[__${store.key.maCuaHang}__]" 
+								            th:onchange="calculateTotal()"
+								            class="promotion-select">
+								        <option value="">-- Không chọn khuyến mãi --</option>
+								        <option th:each="promo : ${promotionsByStore.get(store.key.maCuaHang)}"
+								                th:value="${promo.maKhuyenMai}"
+								                th:data-discount="${promo.discount}"
+								                th:text="${promo.maGiamGia} + ' (Giảm ' + ${#numbers.formatDecimal(promo.discount, 1, 0)} + '%)'">
+								        </option>
+								    </select>
+								</div>
+                                
+                                <!-- Thông báo khi không có khuyến mãi hợp lệ -->
+                                <div class="no-promotion-message" 
+                                     th:if="${promotionsByStore.get(store.key.maCuaHang) == null or promotionsByStore.get(store.key.maCuaHang).empty}">
+                                    <small>Hiện không có khuyến mãi nào khả dụng</small>
+                                </div>
+                            </div>
+                            
+                            <div th:each="matHang : ${store.value}" class="order-item">
+                                <div class="item-product">
+                                    <img th:src="@{'/uploads/products' + ${matHang.sanPham.hinhAnh}}"
+                                         th:alt="${matHang.sanPham.tenSanPham}" 
+                                         class="product-image">
+                                    <div class="product-info">
+                                        <h4 class="product-name" th:text="${matHang.sanPham.tenSanPham}"></h4>
+                                        <p class="product-price" th:text="'₫' + ${#numbers.formatDecimal(matHang.sanPham.giaBan, 0, 'COMMA', 0, 'POINT')}"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="item-quantity">
+                                    <span class="quantity" th:text="'Số lượng: ' + ${matHang.soLuongDat}"></span>
+                                </div>
+                                
+                                <div class="item-total">
+                                    <span class="total-price store-item-total" 
+                                          th:data-store-id="${store.key.maCuaHang}"
+                                          th:data-original-price="${matHang.sanPham.giaBan * matHang.soLuongDat}"
+                                          th:text="'₫' + ${#numbers.formatDecimal(matHang.sanPham.giaBan * matHang.soLuongDat, 0, 'COMMA', 0, 'POINT')}">
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Tổng tiền cửa hàng -->
+						    <div class="store-total">
+						        <div class="store-total-row">
+						            <span>Tổng cửa hàng:</span>
+						            <span class="store-total-amount" 
+						                  th:data-store-id="${store.key.maCuaHang}"
+						                  th:data-original-total="${storeTotals.get(store.key)}"
+						                  th:text="'₫' + ${#numbers.formatDecimal(storeTotals.get(store.key), 0, 'COMMA', 0, 'POINT')}">
+						            </span>
+						        </div>
+						    </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary">
+                        <h3>Thông tin đơn hàng</h3>
+                        
+                        <div class="form-group">
+                            <label for="diaChiGiaoHang">Địa chỉ giao hàng *</label>
+                            <input type="text" 
+                                   id="diaChiGiaoHang" 
+                                   th:field="*{diaChiGiaoHang}"
+                                   class="form-control"
+                                   required
+                                   placeholder="Nhập địa chỉ giao hàng">
+                            <small class="form-text">Địa chỉ này sẽ được lưu cho các lần mua hàng sau</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="soDienThoai">Số điện thoại *</label>
+                            <input type="tel" 
+                                   id="soDienThoai" 
+                                   th:field="*{soDienThoai}"
+                                   class="form-control"
+                                   required
+                                   placeholder="Nhập số điện thoại">
+                            <small class="form-text">Số điện thoại để liên hệ khi giao hàng</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ghiChu">Ghi chú</label>
+                            <textarea id="ghiChu" 
+                                      th:field="*{ghiChu}"
+                                      class="form-control"
+                                      placeholder="Ghi chú cho đơn hàng (tùy chọn)"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+						    <label>Phương thức thanh toán *</label>
+						    <div class="payment-methods">
+						        <div class="payment-option" data-method="COD">
+						            <input type="radio" 
+						                   id="cod" 
+						                   th:field="*{phuongThucThanhToan}"
+						                   value="COD"
+						                   class="payment-radio"
+						                   required>
+						            <label for="cod" class="payment-label">
+						                <span class="custom-radio"></span>
+						                <div class="payment-icon">
+						                    <i class="fa-solid fa-truck"></i>
+						                </div>
+						                <div class="payment-info">
+						                    <div class="payment-name">Thanh toán khi nhận hàng (COD)</div>
+						                    <div class="payment-desc">Thanh toán bằng tiền mặt khi nhận hàng</div>
+						                </div>
+						            </label>
+						        </div>
+						        
+						        <div class="payment-option" data-method="MOMO">
+						            <input type="radio" 
+						                   id="momo" 
+						                   th:field="*{phuongThucThanhToan}"
+						                   value="MOMO"
+						                   class="payment-radio"
+						                   required>
+						            <label for="momo" class="payment-label">
+						                <span class="custom-radio"></span>
+						                <div class="payment-icon">
+						                    <i class="fa-solid fa-money-bill-wave"></i>
+						                </div>
+						                <div class="payment-info">
+						                    <div class="payment-name">Ví MoMo</div>
+						                    <div class="payment-desc">Thanh toán qua ứng dụng MoMo</div>
+						                </div>
+						            </label>
+						        </div>
+						        
+						        <div class="payment-option" data-method="VNPAY">
+						            <input type="radio" 
+						                   id="vnpay" 
+						                   th:field="*{phuongThucThanhToan}"
+						                   value="VNPAY"
+						                   class="payment-radio"
+						                   required>
+						            <label for="vnpay" class="payment-label">
+						                <span class="custom-radio"></span>
+						                <div class="payment-icon">
+						                    <i class="fa-solid fa-credit-card"></i>
+						                </div>
+						                <div class="payment-info">
+						                    <div class="payment-name">VNPay</div>
+						                    <div class="payment-desc">Thanh toán qua cổng VNPay</div>
+						                </div>
+						            </label>
+						        </div>
+						    </div>
+						</div>
+                        
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span>Tạm tính</span>
+                                <span class="subtotal" id="subtotal" th:text="'₫' + ${#numbers.formatDecimal(tongTien, 0, 'COMMA', 0, 'POINT')}"></span>
+                            </div>
+                            
+                            <!-- Khuyến mãi áp dụng -->
+                            <div class="promotion-applied" id="promotionApplied" style="display: none;">
+                                <!-- Sẽ được cập nhật bằng JavaScript -->
+                            </div>
+                            
+                            <div class="fee-section">
+                                <div class="fee-row free">
+                                    <span>Phí vận chuyển</span>
+                                    <span>Miễn phí</span>
+                                </div>
+                            </div>
+                            
+                            <div class="summary-divider"></div>
+                            
+                            <div class="summary-row total">
+                                <span>Tổng tiền</span>
+                                <span class="grand-total" id="grandTotal" th:text="'₫' + ${#numbers.formatDecimal(tongTien, 0, 'COMMA', 0, 'POINT')}"></span>
+                            </div>
+                            
+                            <!-- Tiết kiệm được -->
+                            <div class="savings" id="savingsSection" style="display: none;">
+                                <div class="savings-row">
+                                    <span>Tiết kiệm được</span>
+                                    <span class="savings-amount" id="savingsAmount">₫0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="order-actions">
+                            <a th:href="@{/cart}" class="btn-back">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Quay lại giỏ hàng
+                            </a>
+                            <button type="submit" class="btn-payment">
+                                <i class="fa-solid fa-credit-card"></i>
+                                Thanh Toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+    
+    <script th:src="@{/js/web/order.js}"></script>
+    <script th:src="@{/js/web/header.js}"></script>
+    <script>
+    // Biến toàn cục
+    let storeData = {};
+    
+    // Khởi tạo khi trang load
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== INITIALIZING ORDER PAGE ===');
+        initStoreData();
+        initPromotionSelects();
+        calculateOrderTotal();
+    });
+    
+    // Khởi tạo dữ liệu cửa hàng
+    function initStoreData() {
+        const storeSections = document.querySelectorAll('.store-section');
+        
+        storeSections.forEach(section => {
+            const storeId = section.getAttribute('data-store-id');
+            const storeTotalElement = section.querySelector('.store-total-amount');
+            
+            if (storeTotalElement) {
+                const originalTotal = parseFloat(storeTotalElement.getAttribute('data-original-total')) || 0;
+                
+                storeData[storeId] = {
+                    originalTotal: originalTotal,
+                    discount: 0,
+                    finalTotal: originalTotal,
+                    promotionId: null
+                };
+                
+                console.log(`Store ${storeId}: ${originalTotal}`);
+            }
+        });
+    }
+    
+    // Khởi tạo sự kiện cho select khuyến mãi
+    function initPromotionSelects() {
+        const promotionSelects = document.querySelectorAll('.promotion-select');
+        
+        promotionSelects.forEach(select => {
+            // Lấy storeId từ select
+            const storeId = select.closest('.store-section').getAttribute('data-store-id');
+            
+            // Thêm sự kiện change
+            select.addEventListener('change', function() {
+                const selectedPromoId = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+                
+                console.log(`Store ${storeId} selected promotion: ${selectedPromoId}`);
+                
+                if (selectedPromoId && selectedOption) {
+                    const discount = parseFloat(selectedOption.getAttribute('data-discount')) || 0;
+                    applyStorePromotion(storeId, selectedPromoId, discount);
+                } else {
+                    removeStorePromotion(storeId);
+                }
+                
+                calculateOrderTotal();
+            });
+        });
+    }
+    
+    // Áp dụng khuyến mãi cho cửa hàng
+    function applyStorePromotion(storeId, promotionId, discount) {
+        if (storeData[storeId]) {
+            const originalTotal = storeData[storeId].originalTotal;
+            const discountAmount = (originalTotal * discount) / 100;
+            const finalTotal = originalTotal - discountAmount;
+            
+            storeData[storeId] = {
+                ...storeData[storeId],
+                discount: discountAmount,
+                finalTotal: finalTotal,
+                promotionId: promotionId
+            };
+            
+            // Cập nhật hiển thị tổng cửa hàng
+            updateStoreDisplay(storeId, finalTotal, true);
+            
+            console.log(`Applied promotion to store ${storeId}: -${discount}% = -${discountAmount}`);
+        }
+    }
+    
+    // Xóa khuyến mãi khỏi cửa hàng
+    function removeStorePromotion(storeId) {
+        if (storeData[storeId]) {
+            const originalTotal = storeData[storeId].originalTotal;
+            
+            storeData[storeId] = {
+                ...storeData[storeId],
+                discount: 0,
+                finalTotal: originalTotal,
+                promotionId: null
+            };
+            
+            // Cập nhật hiển thị tổng cửa hàng
+            updateStoreDisplay(storeId, originalTotal, false);
+            
+            console.log(`Removed promotion from store ${storeId}`);
+        }
+    }
+    
+    // Cập nhật hiển thị tổng cửa hàng
+    function updateStoreDisplay(storeId, total, hasDiscount) {
+        const storeTotalElement = document.querySelector(`.store-total-amount[data-store-id="${storeId}"]`);
+        if (storeTotalElement) {
+            storeTotalElement.textContent = formatCurrency(total);
+            
+            if (hasDiscount) {
+                storeTotalElement.style.color = '#28a745';
+                storeTotalElement.style.fontWeight = '600';
+            } else {
+                storeTotalElement.style.color = '';
+                storeTotalElement.style.fontWeight = '';
+            }
+        }
+    }
+    
+    // Tính tổng tiền đơn hàng
+    function calculateOrderTotal() {
+        let subtotal = 0;
+        let totalDiscount = 0;
+        let grandTotal = 0;
+        let appliedPromotions = [];
+        
+        // Tính toán cho từng cửa hàng
+        Object.keys(storeData).forEach(storeId => {
+            const store = storeData[storeId];
+            subtotal += store.originalTotal;
+            totalDiscount += store.discount;
+            grandTotal += store.finalTotal;
+            
+            // Thu thập thông tin khuyến mãi đang áp dụng
+            if (store.promotionId) {
+                const storeSection = document.querySelector(`.store-section[data-store-id="${storeId}"]`);
+                const storeName = storeSection ? storeSection.querySelector('.store-header h3 span').textContent : `Cửa hàng ${storeId}`;
+                const select = storeSection.querySelector('.promotion-select');
+                const selectedOption = select ? select.options[select.selectedIndex] : null;
+                const promoCode = selectedOption ? selectedOption.textContent.split(' (')[0] : 'Mã KM';
+                
+                appliedPromotions.push({
+                    storeId: storeId,
+                    storeName: storeName,
+                    code: promoCode,
+                    discount: (store.discount / store.originalTotal) * 100,
+                    discountAmount: store.discount
+                });
+            }
+        });
+        
+        // Cập nhật giao diện
+        updateOrderSummary(subtotal, grandTotal, totalDiscount, appliedPromotions);
+        
+        console.log('Order Summary:', { subtotal, grandTotal, totalDiscount, appliedPromotions });
+    }
+    
+    // Cập nhật hiển thị tổng đơn hàng
+    function updateOrderSummary(subtotal, grandTotal, totalDiscount, appliedPromotions) {
+        // Cập nhật tổng tiền
+        const subtotalElement = document.getElementById('subtotal');
+        const grandTotalElement = document.getElementById('grandTotal');
+        
+        if (subtotalElement) subtotalElement.textContent = formatCurrency(subtotal);
+        if (grandTotalElement) grandTotalElement.textContent = formatCurrency(grandTotal);
+        
+        // Hiển thị khuyến mãi áp dụng
+        const promotionAppliedElement = document.getElementById('promotionApplied');
+        if (promotionAppliedElement) {
+            if (appliedPromotions.length > 0) {
+                let promotionHTML = '';
+                appliedPromotions.forEach(promo => {
+                    promotionHTML += `
+                        <div class="summary-row promotion">
+                            <span>Khuyến mãi ${promo.storeName}: ${promo.code}</span>
+                            <span class="discount-amount">-${formatCurrency(promo.discountAmount)}</span>
+                        </div>
+                    `;
+                });
+                promotionAppliedElement.innerHTML = promotionHTML;
+                promotionAppliedElement.style.display = 'block';
+            } else {
+                promotionAppliedElement.innerHTML = '';
+                promotionAppliedElement.style.display = 'none';
+            }
+        }
+        
+        // Hiển thị tiết kiệm
+        const savingsSection = document.getElementById('savingsSection');
+        const savingsAmount = document.getElementById('savingsAmount');
+        
+        if (savingsSection && savingsAmount) {
+            if (totalDiscount > 0) {
+                savingsAmount.textContent = `-${formatCurrency(totalDiscount)}`;
+                savingsSection.style.display = 'block';
+            } else {
+                savingsSection.style.display = 'none';
+            }
+        }
+    }
+    
+    // Định dạng tiền tệ
+    function formatCurrency(amount) {
+        return '₫' + new Intl.NumberFormat('vi-VN').format(Math.round(amount));
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theo dõi đơn hàng - Pet Shop</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/track-order.css}">
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="track-order-section">
+        <div class="container">
+            <div class="page-title">
+                <h1>
+                    <i class="fa-solid fa-truck-fast"></i>
+                    Theo dõi đơn hàng
+                </h1>
+                <p class="subtitle">Quản lý và theo dõi tất cả đơn hàng của bạn</p>
+            </div>
+            
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+            
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <span th:text="${success}"></span>
+            </div>
+            
+            <div class="orders-container">
+                <!-- Order Tabs -->
+                <div class="order-tabs">
+                    <button class="tab-button tab-all active" data-tab="all">
+                        <i class="fa-solid fa-list"></i>
+                        <span>Tất cả</span>
+                    </button>
+                    <button class="tab-button tab-cho-xac-nhan" data-tab="cho-xac-nhan">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Chờ xác nhận</span>
+                    </button>
+                    <button class="tab-button tab-da-xac-nhan" data-tab="da-xac-nhan">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Đã xác nhận</span>
+                    </button>
+                    <button class="tab-button tab-dang-giao" data-tab="dang-giao">
+                        <i class="fa-solid fa-shipping-fast"></i>
+                        <span>Đang giao</span>
+                    </button>
+                    <button class="tab-button tab-hoan-thanh" data-tab="hoan-thanh">
+                        <i class="fa-solid fa-check-double"></i>
+                        <span>Hoàn thành</span>
+                    </button>
+                    <button class="tab-button tab-da-huy" data-tab="da-huy">
+                        <i class="fa-solid fa-times-circle"></i>
+                        <span>Đã hủy</span>
+                    </button>
+                </div>
+                
+                <!-- Tab Content: All Orders -->
+                <div class="tab-content active" id="tab-all">
+                    <div th:if="${ordersPage == null || ordersPage.empty}" class="no-orders">
+                        <div class="no-orders-icon">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <h3>Bạn chưa có đơn hàng nào</h3>
+                        <p>Hãy bắt đầu mua sắm để xem đơn hàng của bạn tại đây</p>
+                        <a th:href="@{/products}" class="btn-shopping">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                            Mua sắm ngay
+                        </a>
+                    </div>
+                    
+                    <div th:if="${ordersPage != null && !ordersPage.empty}">
+                        <div th:each="order : ${ordersPage.content}" class="order-card">
+                            <div class="order-header">
+                                <div class="order-info">
+                                    <div class="order-number">
+                                        <i class="fa-solid fa-receipt"></i>
+                                        Đơn hàng #<span th:text="${order.maDatHang}"></span>
+                                    </div>
+                                    <div class="order-date">
+                                        <i class="fa-solid fa-calendar"></i>
+                                        <span th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}"></span>
+                                    </div>
+                                </div>
+                                <div th:classappend="'order-status status-' + ${#strings.toLowerCase(#strings.replace(order.trangThai, ' ', '-'))}" 
+                                     class="order-status"
+                                     th:text="${order.trangThai}">
+                                </div>
+                            </div>
+                            
+                            <div class="order-details">
+                                <div class="order-items">
+                                    <div th:if="${order.datHangChiTiets == null || order.datHangChiTiets.empty}" 
+                                         class="no-products-message">
+                                        <i class="fa-solid fa-box"></i>
+                                        <p>Không có sản phẩm trong đơn hàng này</p>
+                                    </div>
+                                    
+                                    <div th:if="${order.datHangChiTiets != null && !order.datHangChiTiets.empty}">
+                                        <div th:each="detail : ${order.datHangChiTiets}" class="order-item">
+                                            <img th:src="@{'/uploads/products' + ${detail.sanPham.hinhAnh}}" 
+                                                 th:alt="${detail.sanPham.tenSanPham}"
+                                                 class="item-image">
+                                            <div class="item-info">
+                                                <div class="item-name" th:text="${detail.sanPham.tenSanPham}"></div>
+                                                <div class="item-meta">
+                                                    <span class="item-price" 
+                                                         th:text="'₫' + ${#numbers.formatDecimal(detail.giaBan, 0, 'COMMA', 0, 'POINT')}">
+                                                    </span>
+                                                    <span class="item-quantity">
+                                                        <i class="fa-solid fa-times"></i>
+                                                        <span th:text="${detail.soLuong}"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="item-total">
+                                                <strong th:text="'₫' + ${#numbers.formatDecimal(detail.thanhTien, 0, 'COMMA', 0, 'POINT')}"></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="order-summary">
+                                    <div class="summary-info">
+                                        <div class="summary-row">
+                                            <span><i class="fa-solid fa-location-dot"></i> Địa chỉ giao hàng:</span>
+                                            <span th:text="${order.diaChiGiaoHang}"></span>
+                                        </div>
+                                        <div class="summary-row">
+                                            <span><i class="fa-solid fa-phone"></i> Số điện thoại:</span>
+                                            <span th:text="${order.soDienThoaiGiaoHang}"></span>
+                                        </div>
+                                        <div th:if="${order.ghiChu}" class="summary-row">
+                                            <span><i class="fa-solid fa-note-sticky"></i> Ghi chú:</span>
+                                            <span th:text="${order.ghiChu}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="summary-total">
+                                        <span>Tổng tiền:</span>
+                                        <span class="total-amount" th:text="'₫' + ${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')}"></span>
+                                    </div>
+                                </div>
+                                <div th:if="${order.trangThai == 'Hủy'} and ${order.lyDoHuy != null} and ${order.lyDoHuy != ''}" class="cancel-reason">
+								    <i class="fa-solid fa-circle-exclamation"></i>
+								    <strong>Lý do hủy:</strong>
+								    <span th:text="${order.lyDoHuy}"></span>
+								</div>
+                                
+                                <!-- Order Actions -->
+                                <div class="order-actions" th:if="${order.trangThai == 'Chờ xác nhận'}">
+                                    <button class="btn-cancel" 
+                                            th:attr="data-order-id=${order.maDatHang}"
+                                            onclick="showCancelModal(this.getAttribute('data-order-id'))">
+                                        <i class="fa-solid fa-times"></i> Hủy đơn hàng
+                                    </button>
+                                </div>
+                                
+                                <!-- Review Button for Completed Orders -->
+                                <div class="order-actions" th:if="${order.trangThai == 'Hoàn thành'}">
+                                    <a th:href="@{/review/{orderId}(orderId=${order.maDatHang})}" 
+                                       class="btn-review">
+                                        <i class="fa-solid fa-star"></i> Đánh giá
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pagination - Only show if more than 1 page -->
+                        <div th:if="${ordersPage.totalPages > 1}" class="pagination">
+                            <a th:if="${currentPage > 0}" 
+                               th:href="@{/track-order(page=${currentPage - 1})}" 
+                               class="page-link">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </a>
+                            
+                            <span th:each="i : ${#numbers.sequence(0, ordersPage.totalPages - 1)}">
+                                <a th:if="${i == currentPage}" 
+                                   class="page-link current" 
+                                   th:text="${i + 1}"></a>
+                                <a th:if="${i != currentPage}" 
+                                   th:href="@{/track-order(page=${i})}" 
+                                   class="page-link" 
+                                   th:text="${i + 1}"></a>
+                            </span>
+                            
+                            <a th:if="${currentPage < ordersPage.totalPages - 1}" 
+                               th:href="@{/track-order(page=${currentPage + 1})}" 
+                               class="page-link">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Cancel Order Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-exclamation-triangle"></i> Hủy đơn hàng</h3>
+                <span class="close" onclick="closeCancelModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p class="modal-question">Vui lòng chọn lý do hủy đơn hàng:</p>
+                
+                <div class="cancel-reasons">
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="Tôi muốn thay đổi địa chỉ giao hàng">
+                        <span>Tôi muốn thay đổi địa chỉ giao hàng</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="Tôi tìm thấy giá tốt hơn ở nơi khác">
+                        <span>Tôi tìm thấy giá tốt hơn ở nơi khác</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="Tôi đặt nhầm sản phẩm">
+                        <span>Tôi đặt nhầm sản phẩm</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="Thời gian giao hàng quá lâu">
+                        <span>Thời gian giao hàng quá lâu</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="Tôi không còn nhu cầu nữa">
+                        <span>Tôi không còn nhu cầu nữa</span>
+                    </label>
+                    <label class="reason-option">
+                        <input type="radio" name="cancelReason" value="other">
+                        <span>Lý do khác</span>
+                    </label>
+                </div>
+                
+                <div id="otherReasonContainer" style="display: none;">
+                    <textarea id="otherReasonText" 
+                              placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+                              maxlength="500"></textarea>
+                    <small class="char-count">0/500 ký tự</small>
+                </div>
+                
+                <p class="modal-warning">
+                    <i class="fa-solid fa-info-circle"></i>
+                    Đơn hàng sẽ bị hủy và không thể khôi phục. Bạn có chắc chắn muốn tiếp tục?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeCancelModal()">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại
+                </button>
+                <button class="btn-confirm" onclick="confirmCancelOrder()">
+                    <i class="fa-solid fa-check"></i> Xác nhận hủy
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <button id="scrollToTopBtn" class="scroll-to-top-btn" title="Lên đầu trang">
+        <i class="fa-solid fa-angles-up"></i>
+    </button>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+    
+    <script th:src="@{/js/web/header.js}"></script>
+    <script th:src="@{/js/web/track-order.js}"></script>
+</body>
+</html>

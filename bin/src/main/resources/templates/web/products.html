@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tất cả sản phẩm</title>
+
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/Product.css}">
+    <link rel="stylesheet" th:href="@{/css/web/FilterProCat.css}">
+    <link rel="stylesheet" th:href="@{/css/web/pagination.css}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+</head>
+<body>
+    <!-- Include Header Fragment -->
+    <div th:replace="~{web/layout/header :: header}"></div>
+
+    <!-- Product Detail Section -->
+    <div class="product-detail">
+        <!-- Banner -->
+        <img th:src="@{${bannerUrl}}" alt="All Products Banner" class="banner" data-aos="fade-down" />
+        
+        <!-- Title -->
+        <h2 class="title" data-aos="fade-down" th:text="${categoryName}">Tất cả sản phẩm</h2>
+        
+        <div class="content">
+            <!-- Left Sidebar - Filter -->
+            <div class="product-detail-left">
+                <form th:action="@{/products}" method="get" id="filter-form">
+                    <!-- Preserve search keyword and sort -->
+                    <input type="hidden" name="search" th:value="${searchKeyword}">
+                    <input type="hidden" name="sort" th:value="${selectedSort}">
+                    
+                    <!-- Price Range Filter -->
+                    <div class="price-range active">
+                        <div class="box-price">
+                            <span>Giá</span>
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </div>
+                        <div class="checkbox-container">
+                            <div class="checkbox">
+                                <input type="checkbox" id="below10" name="price" value="below10"
+                                       th:checked="${selectedPrices.contains('below10')}"
+                                       onchange="this.form.submit()" />
+                                <label for="below10">Dưới 10.000.000₫</label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="1015" name="price" value="1015"
+                                       th:checked="${selectedPrices.contains('1015')}"
+                                       onchange="this.form.submit()" />
+                                <label for="1015">10.000.000₫ - 15.000.000₫</label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="1520" name="price" value="1520"
+                                       th:checked="${selectedPrices.contains('1520')}"
+                                       onchange="this.form.submit()" />
+                                <label for="1520">15.000.000₫ - 20.000.000₫</label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="2025" name="price" value="2025"
+                                       th:checked="${selectedPrices.contains('2025')}"
+                                       onchange="this.form.submit()" />
+                                <label for="2025">20.000.000₫ - 25.000.000₫</label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="above25" name="price" value="above25"
+                                       th:checked="${selectedPrices.contains('above25')}"
+                                       onchange="this.form.submit()" />
+                                <label for="above25">Trên 25.000.000₫</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cửa hàng Filter -->
+                    <div class="price-range active">
+                        <div class="box-price">
+                            <span>Cửa hàng</span>
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </div>
+                        <div class="checkbox-container">
+                            <div th:each="store, iterStat : ${stores}" class="checkbox">
+                                <input type="checkbox" th:id="'store-' + ${iterStat.index}" 
+                                       name="store" th:value="${store}"
+                                       th:checked="${selectedStores.contains(store)}"
+                                       onchange="this.form.submit()" />
+                                <label th:for="'store-' + ${iterStat.index}" th:text="${store}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loại sản phẩm Filter -->
+                    <div class="price-range active">
+                        <div class="box-price">
+                            <span>Loại sản phẩm</span>
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </div>
+                        <div class="checkbox-container">
+                            <div th:each="loai, iterStat : ${loaiSanPhams}" class="checkbox">
+                                <input type="checkbox" th:id="'loai-' + ${iterStat.index}" 
+                                       name="loai" th:value="${loai}"
+                                       th:checked="${selectedLoais.contains(loai)}"
+                                       onchange="this.form.submit()" />
+                                <label th:for="'loai-' + ${iterStat.index}" th:text="${loai}"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Đánh giá Filter -->
+                    <div class="price-range active">
+                        <div class="box-price">
+                            <span>Đánh giá</span>
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </div>
+                        <div class="checkbox-container">
+                            <div class="checkbox">
+                                <input type="checkbox" id="star-none" name="star" value="0"
+                                       th:checked="${selectedStars.contains('0')}"
+                                       onchange="this.form.submit()" />
+                                <label for="star-none">Không có đánh giá</label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="star-12" name="star" value="12"
+                                       th:checked="${selectedStars.contains('12')}"
+                                       onchange="this.form.submit()" />
+                                <label for="star-12">
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    (1-2 sao)
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="star-23" name="star" value="23"
+                                       th:checked="${selectedStars.contains('23')}"
+                                       onchange="this.form.submit()" />
+                                <label for="star-23">
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    (2-3 sao)
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="star-34" name="star" value="34"
+                                       th:checked="${selectedStars.contains('34')}"
+                                       onchange="this.form.submit()" />
+                                <label for="star-34">
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star"></i>
+                                    (3-4 sao)
+                                </label>
+                            </div>
+                            <div class="checkbox">
+                                <input type="checkbox" id="star-45" name="star" value="45"
+                                       th:checked="${selectedStars.contains('45')}"
+                                       onchange="this.form.submit()" />
+                                <label for="star-45">
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    <i class="fa fa-star filled"></i>
+                                    (4-5 sao)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Content - Products -->
+            <div class="product-detail-right">
+                <!-- Sort and Count Section -->
+                <div class="content-found">
+                    <span class="desc">
+                        <span th:text="${totalElements}">0</span> sản phẩm
+                    </span>
+                    
+                    <!-- Active Filters Display -->
+                    <div class="active-filters" th:if="${!selectedPrices.isEmpty() || !selectedStores.isEmpty() || !selectedLoais.isEmpty() || !selectedStars.isEmpty()}">
+                        <!-- Price Filters -->
+                        <a th:each="p : ${selectedPrices}" 
+                           href="#"
+                           th:attr="data-type='price', data-value=${p}"
+                           class="filter-tag"
+                           onclick="removeFilter(this); return false;">
+                            <span th:text="${p == 'below10' ? 'Giá: < 10tr' : (p == '1015' ? 'Giá: 10-15tr' : (p == '1520' ? 'Giá: 15-20tr' : (p == '2025' ? 'Giá: 20-25tr' : 'Giá: > 25tr')))}"></span>
+                            <i class="fa fa-times"></i>
+                        </a>
+                        
+                        <!-- Store Filters -->
+                        <a th:each="s : ${selectedStores}" 
+                           href="#"
+                           th:attr="data-type='store', data-value=${s}"
+                           class="filter-tag"
+                           onclick="removeFilter(this); return false;">
+                            <span th:text="'CH: ' + ${s}"></span>
+                            <i class="fa fa-times"></i>
+                        </a>
+                        
+                        <!-- Loai Filters -->
+                        <a th:each="l : ${selectedLoais}" 
+                           href="#"
+                           th:attr="data-type='loai', data-value=${l}"
+                           class="filter-tag"
+                           onclick="removeFilter(this); return false;">
+                            <span th:text="'Loại: ' + ${l}"></span>
+                            <i class="fa fa-times"></i>
+                        </a>
+                        
+                        <!-- Star Filters -->
+                        <a th:each="st : ${selectedStars}" 
+                           href="#"
+                           th:attr="data-type='star', data-value=${st}"
+                           class="filter-tag"
+                           onclick="removeFilter(this); return false;">
+                            <span th:text="${st == '0' ? 'Chưa đánh giá' : (st == '12' ? '1-2 sao' : (st == '23' ? '2-3 sao' : (st == '34' ? '3-4 sao' : '4-5 sao')))}"></span>
+                            <i class="fa fa-times"></i>
+                        </a>
+                        
+                        <!-- Clear All Button -->
+                        <a href="/products" class="clear-all-filters">
+                            <i class="fa fa-trash"></i> Xóa tất cả
+                        </a>
+                    </div>
+                    
+                    <div class="sort-by">
+                        <span>Sắp xếp:</span>
+                        <form th:action="@{/products}" method="get" style="display: inline;">
+                            <!-- Preserve all filters -->
+                            <input type="hidden" th:each="p : ${selectedPrices}" name="price" th:value="${p}">
+                            <input type="hidden" th:each="s : ${selectedStores}" name="store" th:value="${s}">
+                            <input type="hidden" th:each="l : ${selectedLoais}" name="loai" th:value="${l}">
+                            <input type="hidden" th:each="st : ${selectedStars}" name="star" th:value="${st}">
+                            <input type="hidden" name="search" th:value="${searchKeyword}">
+                            
+                            <select name="sort" onchange="this.form.submit()">
+                                <option value="default" th:selected="${selectedSort == 'default'}">Mặc định</option>
+                                <option value="asc-name" th:selected="${selectedSort == 'asc-name'}">Tên (A-Z)</option>
+                                <option value="dsc-name" th:selected="${selectedSort == 'dsc-name'}">Tên (Z-A)</option>
+                                <option value="asc-price" th:selected="${selectedSort == 'asc-price'}">Giá thấp đến cao</option>
+                                <option value="dsc-price" th:selected="${selectedSort == 'dsc-price'}">Giá cao đến thấp</option>
+                                <option value="asc-like" th:selected="${selectedSort == 'asc-like'}">Ít yêu thích</option>
+                                <option value="dsc-like" th:selected="${selectedSort == 'dsc-like'}">Nhiều yêu thích</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- No Products Found -->
+                <div class="no-found" th:if="${totalElements == 0}">
+                    <span class="no-item">Không tìm thấy sản phẩm</span>
+                    <p class="no-item-desc">Rất tiếc, không có sản phẩm nào phù hợp với bộ lọc của bạn.</p>
+                    <img th:src="@{/images/order.png}" alt="No products" />
+                </div>
+
+                <!-- Products Grid -->
+				<div class="container-product" th:if="${totalElements > 0}">
+				    <div th:each="product : ${products}" class="product-card">
+				        <div class="product-image-container">
+					        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+					            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+					        </a>
+					        <div class="product-like">
+					            <i class="fa-solid fa-heart like-icon"></i>
+					            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+					        </div>
+					    </div>
+				        <div class="product-info">
+				            <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.maSanPham})}">
+				                <h4 th:text="${product.tenSanPham}"></h4>
+				            </a>
+				            <div class="product-price" th:text="'₫' + ${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')} + ' VND'"></div>
+				            <div class="product-stats">
+				                <div class="rating">
+				                    <span th:each="i : ${#numbers.sequence(1, 5)}"
+				                          class="fa fa-star"
+				                          th:classappend="${product.saoDanhGia != null && i <= product.saoDanhGia} ? ' filled' : ''"></span>
+				                </div>
+				                <div class="product-sold">
+				                    <span class="sold-label">Đã bán:</span>
+				                    <span class="sold-count" th:text="${product.soLuongDaBan}"></span>
+				                </div>
+				            </div>
+				            <button class="add-to-cart-btn" th:onclick="|addToCart('${product.maSanPham}')|">
+				                <i class="fa fa-shopping-cart"></i> Thêm vào giỏ hàng
+				            </button>
+				        </div>
+				    </div>
+				</div>
+
+                <!-- Pagination Section -->
+                <div class="pagination-container" th:if="${totalPages > 1}">
+                    <div class="pagination">
+                        <!-- Previous Button -->
+                        <a th:if="${currentPage > 1}" 
+                           th:href="@{/products(page=${currentPage - 1}, price=${selectedPrices}, store=${selectedStores}, loai=${selectedLoais}, star=${selectedStars}, sort=${selectedSort}, search=${searchKeyword})}"
+                           class="pagination-btn prev-btn">
+                            <i class="fa fa-chevron-left"></i> Trước
+                        </a>
+                        <span th:unless="${currentPage > 1}" 
+                              class="pagination-btn prev-btn disabled">
+                            <i class="fa fa-chevron-left"></i> Trước
+                        </span>
+                        
+                        <!-- Page Numbers -->
+                        <div class="pagination-numbers">
+                            <!-- First Page -->
+                            <a th:if="${currentPage > 3}" 
+                               th:href="@{/products(page=1, price=${selectedPrices}, store=${selectedStores}, loai=${selectedLoais}, star=${selectedStars}, sort=${selectedSort}, search=${searchKeyword})}"
+                               class="pagination-btn page-number">
+                                1
+                            </a>
+                            <span th:if="${currentPage > 4}" class="pagination-ellipsis">...</span>
+                            
+                            <!-- Pages around current page -->
+                            <th:block th:with="startPage=${currentPage > 2 ? currentPage - 2 : 1}, 
+                                               endPage=${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}">
+                                <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                                   th:href="@{/products(page=${i}, price=${selectedPrices}, store=${selectedStores}, loai=${selectedLoais}, star=${selectedStars}, sort=${selectedSort}, search=${searchKeyword})}"
+                                   th:classappend="${i == currentPage} ? 'active' : ''"
+                                   class="pagination-btn page-number">
+                                    <span th:text="${i}"></span>
+                                </a>
+                            </th:block>
+                            
+                            <!-- Last Page -->
+                            <span th:if="${currentPage < totalPages - 3}" class="pagination-ellipsis">...</span>
+                            <a th:if="${currentPage < totalPages - 2}" 
+                               th:href="@{/products(page=${totalPages}, price=${selectedPrices}, store=${selectedStores}, loai=${selectedLoais}, star=${selectedStars}, sort=${selectedSort}, search=${searchKeyword})}"
+                               class="pagination-btn page-number">
+                                <span th:text="${totalPages}"></span>
+                            </a>
+                        </div>
+                        
+                        <!-- Next Button -->
+                        <a th:if="${currentPage < totalPages}" 
+                           th:href="@{/products(page=${currentPage + 1}, price=${selectedPrices}, store=${selectedStores}, loai=${selectedLoais}, star=${selectedStars}, sort=${selectedSort}, search=${searchKeyword})}"
+                           class="pagination-btn next-btn">
+                            Sau <i class="fa fa-chevron-right"></i>
+                        </a>
+                        <span th:unless="${currentPage < totalPages}" 
+                              class="pagination-btn next-btn disabled">
+                            Sau <i class="fa fa-chevron-right"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Footer Fragment -->
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <!-- AOS Animation Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true
+            });
+
+            // Toggle filter sections
+            document.querySelectorAll('.box-price').forEach(header => {
+                header.addEventListener('click', function() {
+                    const priceRange = this.parentElement;
+                    priceRange.classList.toggle('active');
+                });
+            });
+        });
+
+        // Remove individual filter function
+        function removeFilter(element) {
+            const type = element.getAttribute('data-type');
+            const value = element.getAttribute('data-value');
+            
+            // Get current URL parameters
+            const url = new URL(window.location);
+            const params = new URLSearchParams(url.search);
+            
+            // Get all values for this filter type
+            const currentValues = params.getAll(type);
+            
+            // Remove all existing values for this type
+            params.delete(type);
+            
+            // Add back all values except the one to remove
+            currentValues.forEach(v => {
+                if (v !== value) {
+                    params.append(type, v);
+                }
+            });
+            
+            // Redirect to updated URL
+            window.location.href = '/products?' + params.toString();
+        }
+
+        // Add to cart function
+        function addToCart(productId) {
+            console.log('Add to cart:', productId);
+            alert('Đã thêm sản phẩm vào giỏ hàng!');
+        }
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/web/header.js}"></script>
+</body>
+</html>

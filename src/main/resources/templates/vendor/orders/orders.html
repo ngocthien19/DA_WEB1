@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đơn hàng - Pet Shop Vendor</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+   	<link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/orders/orders.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+            	<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+                <div th:replace="~{vendor/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <div class="vendor-store-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h4 class="store-name">
+                                    <i class="fas fa-store me-2"></i>
+                                    <span th:text="${cuaHang.tenCuaHang}">Tên cửa hàng</span>
+                                </h4>
+                                <div class="store-details">
+                                    <span class="store-info-item">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        <span th:text="${cuaHang.diaChi}">Địa chỉ cửa hàng</span>
+                                    </span>
+                                    <span class="store-info-item">
+                                        <i class="fas fa-phone me-1"></i>
+                                        <span th:text="${cuaHang.soDienThoai}">Số điện thoại</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="store-status-badge" 
+                                     th:classappend="${cuaHang.trangThai} ? 'status-active' : 'status-inactive'"
+                                     th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+                                    Đang hoạt động
+                                </div>
+                                <div class="store-stats mt-2">
+                                    <small>Tổng đơn hàng: <strong th:text="${datHangPage.totalElements}">0</strong></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-summary-cards">
+                        <div class="status-summary-card pending">
+                            <div class="status-count pending" th:text="${orderStats.pending}">0</div>
+                            <div class="status-label">Chờ xác nhận</div>
+                            <small class="text-muted">Đơn hàng mới</small>
+                        </div>
+                        <div class="status-summary-card confirmed">
+                            <div class="status-count confirmed" th:text="${orderStats.confirmed}">0</div>
+                            <div class="status-label">Đã xác nhận</div>
+                            <small class="text-muted">Đang chờ xử lý</small>
+                        </div>
+                        <div class="status-summary-card shipping">
+                            <div class="status-count shipping" th:text="${orderStats.shipping}">0</div>
+                            <div class="status-label">Đang giao</div>
+                            <small class="text-muted">Đang vận chuyển</small>
+                        </div>
+                        <div class="status-summary-card completed">
+                            <div class="status-count completed" th:text="${orderStats.completed}">0</div>
+                            <div class="status-label">Hoàn thành</div>
+                            <small class="text-muted">Giao hàng thành công</small>
+                        </div>
+                        <div class="status-summary-card cancelled">
+                            <div class="status-count cancelled" th:text="${orderStats.cancelled}">0</div>
+                            <div class="status-label">Đã hủy</div>
+                            <small class="text-muted">Đơn hàng bị hủy</small>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <form th:action="@{/vendor/orders}" method="get" class="row g-3" id="searchForm">
+                            <div class="col-md-6">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo tên khách hàng hoặc mã đơn hàng..."
+                                       id="searchKeyword">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-section">
+					    <h6 class="filter-title">
+					        <i class="fas fa-filter"></i>
+					        Bộ lọc & Sắp xếp
+					        <span class="filter-badge" th:text="${datHangPage.totalElements}">0</span>
+					    </h6>
+					    
+					    <form th:action="@{/vendor/orders}" method="get" class="row g-3 align-items-end" id="mainFilterForm">
+					        <input type="hidden" name="keyword" th:value="${keyword}">
+					        
+					        <div class="col-md-3">
+					            <label class="form-label">Từ ngày</label>
+					            <input type="date" class="form-control" name="startDate" id="startDateFilter" 
+					                   th:value="${startDate}">
+					        </div>
+					        
+					        <div class="col-md-3">
+					            <label class="form-label">Đến ngày</label>
+					            <input type="date" class="form-control" name="endDate" id="endDateFilter" 
+					                   th:value="${endDate}">
+					        </div>
+					        
+					        <div class="col-md-3">
+					            <label class="form-label">Trạng thái</label>
+					            <select class="form-select" name="trangThai" id="statusFilterSelect">
+					                <option value="">Tất cả trạng thái</option>
+					                <option value="Chờ xác nhận" th:selected="${trangThai == 'Chờ xác nhận'}">Chờ xác nhận</option>
+					                <option value="Đã xác nhận" th:selected="${trangThai == 'Đã xác nhận'}">Đã xác nhận</option>
+					                <option value="Đang giao" th:selected="${trangThai == 'Đang giao'}">Đang giao</option>
+					                <option value="Hoàn thành" th:selected="${trangThai == 'Hoàn thành'}">Hoàn thành</option>
+					                <option value="Hủy" th:selected="${trangThai == 'Hủy'}">Hủy</option>
+					            </select>
+					        </div>
+					        
+					        <div class="col-md-3 d-flex gap-2">
+					            <button type="submit" class="btn btn-search flex-grow-1" id="applyFilterBtn">
+					                <i class="fas fa-check me-2"></i>Áp dụng
+					            </button>
+					            
+					            <button type="button" class="btn btn-clear-filters" onclick="clearFilter('all')" title="Xóa tất cả bộ lọc">
+					                <i class="fas fa-times"></i>
+					            </button>
+					        </div>
+					    </form>
+					    
+					    <div th:if="${(keyword != null and keyword != '') or trangThai != null or startDate != null or endDate != null}" class="mt-3">
+					        <div class="d-flex flex-wrap gap-2">
+					            <th:block th:if="${keyword != null and keyword != ''}">
+					                <span class="active-filter-badge">
+					                    Tìm kiếm: <span th:text="${keyword}"></span>
+					                    <a href="javascript:void(0)" onclick="clearFilter('keyword')" class="filter-remove">
+					                        <i class="fas fa-times"></i>
+					                    </a>
+					                </span>
+					            </th:block>
+					            
+					            <th:block th:if="${startDate != null and endDate != null}">
+					                <span class="active-filter-badge">
+					                    Thời gian: 
+					                    <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+					                    <a href="javascript:void(0)" onclick="clearFilter('date')" class="filter-remove">
+					                        <i class="fas fa-times"></i>
+					                    </a>
+					                </span>
+					            </th:block>
+					            
+					            <th:block th:if="${trangThai != null and trangThai != ''}">
+					                <span class="active-filter-badge">
+					                    Trạng thái: <span th:text="${trangThai}"></span>
+					                    <a href="javascript:void(0)" onclick="clearFilter('status')" class="filter-remove">
+					                        <i class="fas fa-times"></i>
+					                    </a>
+					                </span>
+					            </th:block>
+					            
+					            <th:block th:if="${(keyword != null and keyword != '') or (trangThai != null and trangThai != '') or startDate != null or endDate != null}">
+					                <a href="javascript:void(0)" onclick="clearFilter('all')" class="active-filter-badge" style="background: #e94560; color: white; cursor: pointer;">
+					                    <i class="fas fa-trash me-1"></i>Xóa tất cả
+					                </a>
+					            </th:block>
+					        </div>
+					    </div>
+					</div>
+                    
+                    <div class="table-container">
+                        <div class="table-header-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    Đơn hàng của tôi
+                                    <span class="order-count-badge" th:text="${datHangPage.totalElements}">0</span>
+                                </h4>
+                                
+                                
+                            </div>
+                        
+                            <div id="selectionControls" class="selection-controls" style="display: none;">
+                                <span class="selected-count">
+                                    Đã chọn: <strong id="selectedCount">0</strong> đơn hàng
+                                </span>
+                                <button type="button" class="btn btn-clear-selection btn-sm me-2" onclick="clearSelection()">
+                                    <i class="fas fa-times me-1"></i>Bỏ chọn
+                                </button>
+                                
+                                <button type="button" class="btn btn-bulk-status btn-sm me-2" onclick="showBulkStatusModal()">
+                                    <i class="fas fa-sync-alt me-1"></i>Cập nhật trạng thái
+                                </button>
+                                
+                                <button type="button" class="btn btn-bulk-delete btn-sm me-2" onclick="showBulkDeleteModal()">
+                                    <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table vendor-orders-table">
+                                <thead>
+								    <tr>
+								        <th width="50">
+								            <div class="form-check d-flex justify-content-center">
+								                <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+								            </div>
+								        </th>
+								        <th width="80">Mã ĐH</th>
+								        <th>Khách hàng</th>
+								        <th width="120">Ngày đặt</th>
+								        <th width="120">Tổng tiền</th>
+								        <!-- THÊM CÁC CỘT MỚI -->
+								        <th width="150">Địa chỉ giao</th>
+								        <th width="120">SĐT giao hàng</th>
+								        <th width="120">Ghi chú</th>
+								        <th width="120">Khuyến mãi</th>
+								        <!-- END THÊM CỘT MỚI -->
+								        <th width="150">Trạng thái</th>
+								        <th width="120">Thao tác</th>
+								    </tr>
+								</thead>
+                                <tbody>
+                                    <tr th:each="order : ${datHangPage.content}">
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input order-checkbox" 
+                                                       type="checkbox" 
+                                                       th:value="${order.maDatHang}"
+                                                       onchange="updateSelectionControls()">
+                                            </div>
+                                        </td>
+                                        <td th:text="${order.maDatHang}">1</td>
+                                        <td>
+                                            <div class="customer-info">
+                                                <strong th:text="${order.nguoiDung.tenNguoiDung}">[Tên Khách hàng]</strong>
+                                                <small class="text-muted d-block" th:text="${order.nguoiDung.email}">email@example.com</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="date-display" 
+                                                  th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">
+                                                  01/01/2024
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="amount-display" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
+                                                1,000,000 ₫
+                                            </span>
+                                        </td>
+                                        <td>
+								            <div class="shipping-info">
+								                <span class="shipping-address" th:text="${order.diaChiGiaoHang} ?: 'Chưa cập nhật'"></span>
+								            </div>
+								        </td>
+								        
+								        <td>
+								            <span class="shipping-phone" th:text="${order.soDienThoaiGiaoHang} ?: 'Chưa cập nhật'"></span>
+								        </td>
+								        
+								        <td>
+										    <div class="order-notes">
+										        <span th:if="${order.ghiChu ?: false}" 
+										              class="note-text" 
+										              th:attr="data-bs-toggle=tooltip,data-bs-title=${order.ghiChu}"
+										              th:text="${#strings.abbreviate(order.ghiChu, 20)}">
+										        </span>
+										        <span th:unless="${order.ghiChu ?: false}" 
+										              class="text-muted">Không có</span>
+										    </div>
+										</td>
+								        
+								        <td>
+								            <div class="promotion-info">
+								                <span th:if="${order.khuyenMai}" 
+												      class="promotion-badge"
+												      th:attr="data-bs-toggle=tooltip,data-bs-title=${order.khuyenMai.maGiamGia} + ' - Giảm ' + ${#numbers.formatDecimal(order.khuyenMai.discount, 1, 0)} + '%'"
+												      th:text="${order.khuyenMai.maGiamGia}">
+												</span>
+								                <span th:unless="${order.khuyenMai}" class="text-muted">Không có</span>
+								            </div>
+								        </td>
+                                        <td>
+										    <div class="status-display" 
+										         th:classappend="${order.trangThai == 'Chờ xác nhận'} ? 'pending' : 
+										                        (${order.trangThai == 'Đã xác nhận'} ? 'confirmed' : 
+										                        (${order.trangThai == 'Đang giao'} ? 'shipping' : 
+										                        (${order.trangThai == 'Hoàn thành'} ? 'completed' : 'cancelled')))"
+										         th:data-order-id="${order.maDatHang}"
+										         th:data-current-status="${order.trangThai}"
+										         th:attr="data-lydohuy=${order.trangThai == 'Hủy' and order.lyDoHuy != null} ? ${order.lyDoHuy} : ''"
+										         th:onclick="${order.trangThai != 'Hoàn thành' and order.trangThai != 'Hủy'} ? 'showStatusModal(this)' : ''">
+										        <i class="fas" 
+										           th:classappend="${order.trangThai == 'Chờ xác nhận'} ? 'fa-clock' : 
+										                          (${order.trangThai == 'Đã xác nhận'} ? 'fa-check-circle' : 
+										                          (${order.trangThai == 'Đang giao'} ? 'fa-shipping-fast' : 
+										                          (${order.trangThai == 'Hoàn thành'} ? 'fa-check-double' : 'fa-times-circle')))"></i>
+										        <span th:text="${order.trangThai}">Chờ xác nhận</span>
+										        <i th:if="${order.trangThai != 'Hoàn thành' and order.trangThai != 'Hủy'}" class="fas fa-chevron-down ms-1"></i>
+										        <small th:if="${order.trangThai == 'Hoàn thành' or order.trangThai == 'Hủy'}" class="ms-1 text-muted">(Khóa)</small>
+										        
+										        <!-- Tooltip hiển thị lý do hủy -->
+										        <div th:if="${order.trangThai == 'Hủy' and order.lyDoHuy != null}" 
+										             class="cancelled-reason-tooltip">
+										            <div class="tooltip-content">
+										                <div class="tooltip-header">
+										                    <i class="fas fa-exclamation-circle"></i>
+										                    Lý do hủy:
+										                </div>
+										                <div class="tooltip-text" th:text="${order.lyDoHuy}"></div>
+										            </div>
+										        </div>
+										    </div>
+										</td>
+                                        <td>
+                                            <div class="vendor-action-buttons action-group-row">
+                                                <a th:href="@{/vendor/orders/view/{id}(id=${order.maDatHang})}" 
+                                                   class="action-btn btn-view"
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="action-btn btn-delete"
+                                                        th:data-order-id="${order.maDatHang}"
+                                                        th:data-customer-name="${order.nguoiDung.email}"
+                                                        onclick="showDeleteModal(this)"
+                                                        title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${datHangPage.content.empty}">
+                                        <td colspan="7">
+                                            <div class="empty-state">
+                                                <i class="fas fa-shopping-cart"></i>
+                                                <p>Chưa có đơn hàng nào</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav th:if="${datHangPage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${datHangPage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/orders(page=${datHangPage.number - 1}, keyword=${keyword}, trangThai=${trangThai}, startDate=${startDate}, endDate=${endDate})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, datHangPage.totalPages - 1)}"
+                                    th:classappend="${i == datHangPage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/orders(page=${i}, keyword=${keyword}, trangThai=${trangThai}, startDate=${startDate}, endDate=${endDate})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${datHangPage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/vendor/orders(page=${datHangPage.number + 1}, keyword=${keyword}, trangThai=${trangThai}, startDate=${startDate}, endDate=${endDate})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa đơn hàng của <strong id="customerNameToDelete"></strong>?</p>
+                    <p class="text-danger small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa nhiều đơn hàng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa <strong id="bulkDeleteCount">0</strong> đơn hàng đã chọn?</p>
+                    <p class="text-danger small">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác.
+                    </p>
+                    <div id="bulkDeletePreview" class="mt-3 p-2 bg-light rounded small" style="max-height: 150px; overflow-y: auto;">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa <span id="bulkDeleteCountBtn">0</span> đơn hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="statusModalLabel">
+	                    <i class="fas fa-sync-alt me-2"></i>
+	                    Thay đổi trạng thái đơn hàng
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p class="mb-3">Thay đổi trạng thái cho đơn hàng của: <strong id="customerNameForStatus"></strong></p>
+	                <p class="text-muted small mb-3" id="currentStatusInfo"></p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusPending" value="Chờ xác nhận">
+	                            <label class="form-check-label d-flex align-items-center" for="statusPending">
+	                                <i class="fas fa-clock text-warning me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Chờ xác nhận</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng mới, chờ xác nhận từ cửa hàng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusConfirmed" value="Đã xác nhận">
+	                            <label class="form-check-label d-flex align-items-center" for="statusConfirmed">
+	                                <i class="fas fa-check-circle text-primary me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Đã xác nhận</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đã được xác nhận</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusShipping" value="Đang giao">
+	                            <label class="form-check-label d-flex align-items-center" for="statusShipping">
+	                                <i class="fas fa-shipping-fast text-purple me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Đang giao</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đang được vận chuyển</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item mb-3">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusCompleted" value="Hoàn thành">
+	                            <label class="form-check-label d-flex align-items-center" for="statusCompleted">
+	                                <i class="fas fa-check-double text-success me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Hoàn thành</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đã giao thành công</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusCancelled" value="Hủy">
+	                            <label class="form-check-label d-flex align-items-center" for="statusCancelled">
+	                                <i class="fas fa-times-circle text-danger me-2" style="font-size: 20px;"></i>
+	                                <div>
+	                                    <strong>Hủy</strong>
+	                                    <p class="small text-muted mb-0">Đơn hàng đã bị hủy</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	                
+	                <div id="lyDoHuyContainer" style="display: none;" class="mt-3">
+					    <label for="lyDoHuyInput" class="form-label">
+					        <i class="fas fa-comment-dots me-1"></i>
+					        Lý do hủy đơn hàng
+					    </label>
+					    <textarea class="form-control" id="lyDoHuyInput" rows="3" 
+					              placeholder="Vui lòng nhập lý do hủy đơn hàng..."
+					              maxlength="500"></textarea>
+					    <div class="d-flex justify-content-between align-items-center mt-2">
+					        <small class="text-muted">Tối đa 500 ký tự</small>
+					        <small class="char-counter" id="lyDoHuyCounter">0/500</small>
+					    </div>
+					</div>
+	                
+	                <!-- Thông báo validation -->
+	                <div class="alert alert-warning mt-3" id="statusValidationAlert" style="display: none;">
+	                    <i class="fas fa-exclamation-triangle me-2"></i>
+	                    <span id="validationMessage"></span>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Cập nhật trạng thái
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <div class="modal fade" id="bulkStatusModal" tabindex="-1" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkStatusModalLabel">
+                        <i class="fas fa-sync-alt me-2"></i>
+                        Cập nhật trạng thái hàng loạt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3">Cập nhật trạng thái cho <strong id="bulkStatusCount">0</strong> đơn hàng đã chọn:</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Trạng thái mới</label>
+                        <select class="form-select" id="bulkStatusSelect">
+                            <option value="Chờ xác nhận">Chờ xác nhận</option>
+                            <option value="Đã xác nhận">Đã xác nhận</option>
+                            <option value="Đang giao">Đang giao</option>
+                            <option value="Hoàn thành">Hoàn thành</option>
+                            <option value="Hủy">Hủy</option>
+                        </select>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6 class="small text-muted mb-2">Đơn hàng sẽ được cập nhật:</h6>
+                        <div id="bulkStatusPreview" class="p-2 bg-light rounded small" style="max-height: 150px; overflow-y: auto;">
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmBulkStatusBtn">
+                        <i class="fas fa-save me-1"></i>Cập nhật <span id="bulkStatusCountBtn">0</span> đơn hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    
+	<script th:if="${cuaHang?.trangThai == false}" th:src="@{/js/vendor/orders/orders-locked.js}"></script> 
+	<script th:if="${cuaHang?.trangThai != false}" th:src="@{/js/vendor/orders/orders.js}"></script>
+</body>
+</html>

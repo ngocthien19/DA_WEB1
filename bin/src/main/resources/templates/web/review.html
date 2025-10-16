@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Product Reviews Section -->
+    <section class="product-reviews" th:fragment="review">
+        <div class="container">
+            <div class="reviews-header" data-aos="fade-down">
+                <h2 class="reviews-title">Đánh giá sản phẩm</h2>
+                <div class="reviews-summary">
+                    <div class="average-rating">
+                        <span class="rating-number" th:text="${averageRating != null} ? ${#numbers.formatDecimal(averageRating, 1, 1)} : '0.0'">0.0</span>
+                        <div class="stars-large">
+                            <i class="fa fa-star" th:classappend="${(averageRating != null and averageRating >= 1)} ? 'filled' : ''"></i>
+                            <i class="fa fa-star" th:classappend="${(averageRating != null and averageRating >= 2)} ? 'filled' : ''"></i>
+                            <i class="fa fa-star" th:classappend="${(averageRating != null and averageRating >= 3)} ? 'filled' : ''"></i>
+                            <i class="fa fa-star" th:classappend="${(averageRating != null and averageRating >= 4)} ? 'filled' : ''"></i>
+                            <i class="fa fa-star" th:classappend="${(averageRating != null and averageRating >= 5)} ? 'filled' : ''"></i>
+                        </div>
+                        <span class="total-reviews" th:text="'(' + (${totalReviews != null} ? ${totalReviews} : 0) + ' đánh giá)'"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews List Container - sẽ được load bởi JavaScript -->
+            <div class="reviews-list" id="reviewsList">
+                <!-- Nội dung sẽ được load bởi JavaScript -->
+            </div>
+
+            <!-- Pagination Container - sẽ được tạo bởi JavaScript -->
+            <div id="paginationContainer" class="pagination-container" style="display: none;">
+                <!-- Phân trang sẽ được tạo bởi JavaScript -->
+            </div>
+
+            <!-- No Reviews Message - hiển thị khi không có đánh giá -->
+            <div th:if="${totalReviews == 0}" class="no-reviews" data-aos="fade-up">
+                <div class="no-reviews-icon">
+                    <i class="fa-solid fa-comment-dots"></i>
+                </div>
+                <h3>Chưa có đánh giá nào</h3>
+                <p>Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

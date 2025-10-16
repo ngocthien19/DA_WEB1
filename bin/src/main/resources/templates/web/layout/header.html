@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+    <!-- Header Fragment -->
+    <header th:fragment="header">
+        <!-- Head Section -->
+        <section class="head">
+            <div class="container d_flex" data-aos="fade-right">
+                <div class="left row1">
+                    <i class="fa fa-phone"></i>
+                    <label>+8437 8240 914</label>
+                    <i class="fa fa-envelope"></i>
+                    <label>example@gmail.com</label>
+                </div>
+                <div class="right row1 RText" data-aos="fade-left">
+                    <label>Theme FAQ's</label>
+                    <label>Need Helps</label>
+                    <i class="fa-solid fa-flag"></i>
+                    <label>EN</label>
+                    <i class="fa-solid fa-flag"></i>
+                    <label>VND</label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section class="search">
+            <div class="container c_flex">
+                <div class="logo width" data-aos="fade-right">
+                    <a th:href="@{/}" class="logo-text">
+                        <i class="fa-solid fa-paw"></i>
+                        <span>PetShop</span>
+                    </a>
+                </div>
+                <div class="search-box f_flex" data-aos="fade-left">
+                    <form th:action="@{/products}" method="get" accept-charset="UTF-8" style="display: flex; width: 100%; align-items: center;">
+                        <i class="fa fa-search"></i>
+                        <input
+                            id="search-input"
+                            type="text"
+                            placeholder="Tìm kiếm sản phẩm..."
+                            th:value="${searchKeyword}"
+                            name="search"
+                            accept-charset="UTF-8"
+                            autocomplete="off"
+                        />
+                        <button type="submit" style="display: none;"></button>
+                    </form>
+                    <span>Tất cả danh mục</span>
+                    
+                    <!-- Modal Search -->
+                    <div class="modal-search hide">
+                        <!-- Search Results will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="icon f_flex width" data-aos="fade-left">
+                    <!-- Hiển thị khi CHƯA đăng nhập -->
+                    <div class="auth-buttons" id="authButtons">
+                        <a th:href="@{/login}" class="login-btn">
+                            <i class="fa fa-sign-in icon-circle"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                        <a th:href="@{/register}" class="register-btn">
+                            <i class="fa fa-user-plus icon-circle"></i>
+                            <span>Đăng ký</span>
+                        </a>
+                    </div>
+
+                    <!-- Hiển thị khi ĐÃ đăng nhập -->
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-dropdown">
+                            <a href="#" class="user-info">
+                                <i class="fa fa-user icon-circle"></i>
+                                <span id="userName">User</span>
+                                <i class="fa fa-chevron-down"></i>
+                            </a>
+                            <div class="dropdown-content">
+                                <a href="#" onclick="goToProfile()">
+                                    <i class="fa fa-user"></i>
+                                    Tài khoản
+                                </a>
+                                <a th:href="@{/orders}">
+                                    <i class="fa fa-shopping-bag"></i>
+                                    Đơn hàng
+                                </a>
+                                <a href="#" onclick="logout()">
+                                    <i class="fa fa-sign-out"></i>
+                                    Đăng xuất
+                                </a>
+                            </div>
+                        </div>
+                        <div class="cart">
+                            <a th:href="@{/cart}">
+                                <i class="fa fa-shopping-bag icon-circle"></i>
+                                <span id="cartQty">0</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navbar Section -->
+        <section class="header">
+            <div class="container d_flex">
+                <!-- Categories Dropdown -->
+                <div style="position: relative;">
+                    <div class="categories-cont">
+                        <div class="categories d_flex" data-aos="fade-right">
+                            <span class="fa-solid fa-border-all"></span>
+                            <h4>Danh mục<i class="fa fa-chevron-down"></i></h4>
+                        </div>
+                        
+                        <a class="categories" data-aos="fade-right" th:href="@{/stores}">
+                            <span class="fa-solid fa-store"></span>
+                            <h4>Các cửa hàng</h4>
+                        </a>
+                    </div>
+
+                    <!-- Modal Category -->
+                    <div class="modal-category">
+                        <ul>
+                            <li>
+                                <a th:href="@{/category/cho-canh}">
+                                    <i class="fa-solid fa-dog"></i>
+                                    <span>Chó cảnh</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/category/meo-canh}">
+                                    <i class="fa-solid fa-cat"></i>
+                                    <span>Mèo cảnh</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/category/phu-kien}">
+                                    <i class="fa-solid fa-bone"></i>
+                                    <span>Phụ kiện</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a th:href="@{/products}">
+                                    <i class="fa-solid fa-shop"></i>
+                                    <span>Tất cả sản phẩm</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="nav_link" data-aos="fade-left">
+                    <ul th:class="${mobileMenu} ? 'nav-link-mobileMenu' : 'link f_flex'" id="mainNav">
+                        <li>
+                            <a th:href="@{/}" class="nav-link" data-menu="home">
+                                <span class="nav_link_item">
+                                    Home
+                                    <hr class="nav-indicator"/>
+                                </span>
+                            </a>
+                        </li>
+                        <!-- Ẩn User account khi chưa đăng nhập -->
+                        <li>
+                            <a href="#" onclick="goToProfile(); return false;" class="nav-link" data-menu="user" id="userAccountLink">
+                                <span class="nav_link_item">
+                                    Tài khoản
+                                    <hr class="nav-indicator"/>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="@{/track-order}" class="nav-link" data-menu="track-order">
+                                <span class="nav_link_item">
+                                    Theo dõi đơn hàng
+                                    <hr class="nav-indicator"/>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                    <button class="toggle">
+                        <i th:class="${mobileMenu} ? 'fa fa-times close home-bth' : 'fas fa-bars open'"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <script src="/js/header.js"></script>
+    </header>
+</body>
+</html>

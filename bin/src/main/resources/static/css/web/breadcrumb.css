@@ -1,0 +1,104 @@
+.breadcrumbs {
+    background: #f6f9fc;
+    padding: 0;
+}
+
+.breadcrumb {
+    padding: 50px 95px;
+    max-width: 1400px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* QUAN TRỌNG: Đặt font-size cho tất cả span trong breadcrumb */
+.breadcrumb span {
+    font-size: 18px;  /* ✅ Đặt ở đây để áp dụng cho tất cả */
+    transition: color 0.3s ease;
+    text-transform: capitalize;
+}
+
+.breadcrumb a span {
+    color: #666;  /* Chỉ định màu, không định nghĩa font-size lại */
+}
+
+.breadcrumb a:first-child span {
+    color: rgb(129, 129, 250);
+    font-weight: 500;
+}
+
+.breadcrumb a:first-child:hover span {
+    color: rgb(99, 99, 220);
+    text-decoration: underline;
+}
+
+.breadcrumb a:nth-child(3) span {
+    color: rgb(129, 129, 250);
+    font-weight: 500;
+}
+
+.breadcrumb a:nth-child(3):hover span {
+    color: rgb(99, 99, 220);
+    text-decoration: underline;
+}
+
+.breadcrumb span:last-child {
+    color: #333;
+    font-weight: 600;
+    /* KHÔNG định nghĩa font-size ở đây nữa */
+}
+
+.breadcrumb i {
+    font-size: 14px;
+    color: #999;
+    margin: 0;
+}
+
+/* Responsive - chỉ ghi đè khi cần */
+@media (max-width: 768px) {
+    .breadcrumb {
+        padding: 15px 20px;
+        gap: 6px;
+    }
+    
+    .breadcrumb span {
+        font-size: 16px;  /* ✅ Ghi đè tất cả span */
+    }
+    
+    .breadcrumb i {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .breadcrumb {
+        padding: 12px 15px;
+        gap: 4px;
+    }
+    
+    .breadcrumb span {
+        font-size: 14px;  /* ✅ Ghi đè tất cả span */
+    }
+    
+    .breadcrumb i {
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 400px) {
+    .breadcrumb {
+        padding: 10px 12px;
+    }
+    
+    .breadcrumb span {
+        font-size: 12px;  /* ✅ Ghi đè tất cả span */
+    }
+}

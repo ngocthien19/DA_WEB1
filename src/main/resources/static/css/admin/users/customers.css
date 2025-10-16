@@ -1,0 +1,221 @@
+.export-section {
+	background: white;
+	border-radius: 15px;
+	padding: 20px;
+	box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+	margin-bottom: 25px;
+	border-left: 4px solid #28a745;
+}
+
+.btn-export {
+	background: #28a745;
+	color: white;
+	border: none;
+	padding: 12px 25px;
+	border-radius: 10px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+
+.btn-export:hover {
+	background: #218838;
+	transform: translateY(-2px);
+	box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-export:disabled {
+	background: #6c757d;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: none;
+}
+
+.selected-count {
+	font-weight: 600;
+	color: #0f3460;
+	margin-right: 15px;
+}
+
+/* Checkbox trong bảng Khách hàng */
+.table-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    border: 2px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+/* Khi checkbox được chọn */
+.table-checkbox:checked {
+    background-color: #e94560; /* Màu nền khi chọn */
+    border-color: #e94560; /* Màu viền khi chọn */
+}
+
+/* Khi checkbox có tiêu điểm (focus) */
+.table-checkbox:focus {
+    box-shadow: 0 0 0 0.2rem rgba(233, 69, 96, 0.25); /* Hiệu ứng sáng viền khi có tiêu điểm */
+}
+
+/* Checkbox "Chọn tất cả" */
+.select-all-checkbox:checked {
+    background-color: #e94560; /* Màu nền khi chọn "Chọn tất cả" */
+    border-color: #e94560; /* Màu viền khi chọn "Chọn tất cả" */
+}
+/* Animation for showing the selection controls */
+.selection-controls {
+    animation: slideInDown 0.3s ease-out;
+}
+
+/* Slide in animation */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.action-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.select-all-checkbox {
+	margin-right: 10px;
+}
+
+/* Toast Container */
+#toastContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+}
+
+/* Toast Base Styles */
+.toast {
+    position: relative;
+    min-width: 300px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    animation: slideInRight 0.3s ease-out;
+    opacity: 0;
+    transform: translateX(400px);
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast.hide {
+    animation: slideOutRight 0.3s ease-out forwards;
+}
+
+/* Toast Types */
+.toast-success {
+    border-left-color: #28a745;
+}
+
+.toast-error {
+    border-left-color: #e94560;
+}
+
+.toast-warning {
+    border-left-color: #ffc107;
+}
+
+.toast-info {
+    border-left-color: #17a2b8;
+}
+
+/* Toast Icon */
+.toast-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+    color: #28a745;
+}
+
+.toast-error .toast-icon {
+    color: #e94560;
+}
+
+.toast-warning .toast-icon {
+    color: #ffc107;
+}
+
+.toast-info .toast-icon {
+    color: #17a2b8;
+}
+
+/* Toast Content */
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #0f3460;
+}
+
+.toast-message {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Toast Close Button */
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s ease;
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    color: #666;
+}
+
+/* Animations */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(400px);
+    }
+}

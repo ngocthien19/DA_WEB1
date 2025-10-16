@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Cửa Hàng - Pet Shop Admin</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/stores/stores.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Stats Cards -->
+					<div class="row mb-4 stats-cards-row">
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-total">
+					            <div class="stat-icon">
+					                <i class="fas fa-store"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Tổng Cửa Hàng</p>
+					                <h5 class="stat-value" th:text="${totalStores}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-active">
+					            <div class="stat-icon">
+					                <i class="fas fa-circle-check"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Đang Hoạt động</p>
+					                <h5 class="stat-value" th:text="${totalActiveStores}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-inactive">
+					            <div class="stat-icon">
+					                <i class="fas fa-circle-xmark"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Đã Khóa</p>
+					                <h5 class="stat-value" th:text="${totalInactiveStores}">0</h5>
+					            </div>
+					        </div>
+					    </div>
+					    <div class="col-lg-3 col-md-6 mb-3">
+					        <div class="stat-card stat-card-rating">
+					            <div class="stat-icon">
+					                <i class="fas fa-star"></i>
+					            </div>
+					            <div class="stat-content">
+					                <p class="stat-label">Đánh giá TB</p>
+					                <h5 class="stat-value" th:text="${averageRating}">0.0</h5>
+					            </div>
+					        </div>
+					    </div>
+					</div>
+
+                    <!-- Search and Filter Box -->
+                    <div class="search-box">
+                        <form th:action="@{/admin/stores}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo tên hoặc địa chỉ...">
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" name="sortBy" onchange="this.form.submit()">
+                                    <option value="ngayTao" th:selected="${sortBy == 'ngayTao'}">Sắp xếp theo ngày tạo</option>
+                                    <option value="namThanhLap" th:selected="${sortBy == 'namThanhLap'}">Sắp xếp theo năm thành lập</option>
+                                    <option value="danhGiaTrungBinh" th:selected="${sortBy == 'danhGiaTrungBinh'}">Sắp xếp theo đánh giá</option>
+                                    <option value="tenCuaHang" th:selected="${sortBy == 'tenCuaHang'}">Sắp xếp theo tên</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" name="sortDir" onchange="this.form.submit()">
+                                    <option value="desc" th:selected="${sortDir == 'desc'}">Giảm dần</option>
+                                    <option value="asc" th:selected="${sortDir == 'asc'}">Tăng dần</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                            <div class="col-md-1">
+                                <a th:href="@{/admin/stores/add}" class="btn btn-add w-100">
+                                    <i class="fas fa-plus"></i>
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div th:if="${(keyword != null and !#strings.isEmpty(keyword))} or 
+					             ${(sortBy != null and sortBy != 'maCuaHang') or (sortBy == 'maCuaHang' and sortDir != 'desc')} or 
+					             ${sortDir != null and sortDir != 'desc'}"
+					     class="filter-summary">
+					    <span class="summary-label me-2"><i class="fas fa-filter me-1"></i>Bộ lọc đang áp dụng:</span>
+					    
+					    <span th:if="${keyword != null and !#strings.isEmpty(keyword)}" class="filter-badge filter-keyword">
+					        <i class="fas fa-tag me-1"></i>Tìm kiếm: <strong th:text="${keyword}"></strong>
+					    </span>
+					    
+					    <span th:if="${sortBy != 'maCuaHang' or sortDir != 'desc'}" class="filter-badge filter-sort">
+					        <i class="fas fa-sort me-1"></i>Sắp xếp: 
+					        <strong th:switch="${sortBy}">
+					            <span th:case="'ngayTao'">Ngày tạo</span>
+					            <span th:case="'namThanhLap'">Năm TL</span>
+					            <span th:case="'danhGiaTrungBinh'">Đánh giá</span>
+					            <span th:case="'tenCuaHang'">Tên cửa hàng</span>
+					            <span th:case="*">Mã Cửa Hàng</span>
+					        </strong> 
+					        (<span th:text="${sortDir == 'desc' ? 'Giảm dần' : 'Tăng dần'}"></span>)
+					    </span>
+					    
+					    <a th:href="@{/admin/stores}" class="btn btn-sm btn-clear-filters ms-3">
+					        <i class="fas fa-times me-1"></i>Xóa bộ lọc
+					    </a>
+					</div>
+
+                    <!-- Selection Controls -->
+                    <div id="selectionControls" class="selection-controls" style="display: none;">
+                        <span class="selected-count">
+                            Đã chọn: <strong id="selectedCount">0</strong> cửa hàng
+                        </span>
+                        <button type="button" class="btn btn-clear-selection" onclick="clearSelection()">
+                            <i class="fas fa-times me-1"></i>Bỏ chọn
+                        </button>
+                        <button type="button" class="btn btn-bulk-status" onclick="showBulkStatusModal()">
+                            <i class="fas fa-toggle-on me-1"></i>Thay đổi trạng thái
+                        </button>
+                        <button type="button" class="btn btn-bulk-delete" onclick="showBulkDeleteModal()">
+                            <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                        </button>
+                    </div>
+
+                    <!-- Stores Table -->
+                    <div class="table-container">
+                        <div class="table-header-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-store me-2"></i>
+                                    Danh sách cửa hàng
+                                    <span class="store-count-badge" th:text="${storePage.totalElements}">0</span>
+                                </h4>
+                                
+                                <div class="store-action-buttons">
+                                    <button type="button" class="btn btn-excel-import" onclick="showImportExcelModal()">
+                                        <i class="fas fa-file-import me-2"></i>
+                                        <span>Nhập Excel</span>
+                                    </button>
+                                    <button type="button" class="btn btn-excel-export" onclick="exportSelectedStores()">
+                                        <i class="fas fa-file-export me-2"></i>
+                                        <span>Xuất Excel</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table stores-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                                            </div>
+                                        </th>
+                                        <th width="80">ID</th>
+                                        <th width="80">Ảnh</th>
+                                        <th>Tên cửa hàng</th>
+                                        <th>Chủ cửa hàng</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Ngày tạo</th>
+                                        <th width="120">Năm thành lập</th>
+                                        <th width="120">Đánh giá</th>
+                                        <th width="150">Trạng thái</th>
+                                        <th width="120">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="store : ${storePage.content}" th:attr="data-store-id=${store.maCuaHang}">
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input store-checkbox" type="checkbox" 
+                                                       th:value="${store.maCuaHang}"
+                                                       onchange="updateSelectionControls()">
+                                            </div>
+                                        </td>
+                                        <td th:text="${store.maCuaHang}">1</td>
+                                        <td>
+                                            <img th:src="${store.hinhAnh != null ? '/uploads/stores/' + store.hinhAnh : '/images/default-store.jpg'}" 
+                                                 class="store-avatar" 
+                                                 alt="Store avatar">
+                                        </td>
+                                        <td th:text="${store.tenCuaHang}">Cửa hàng Pet</td>
+                                        <td>
+                                            <div class="vendor-info">
+                                                <div class="vendor-name" th:text="${store.nguoiDung.tenNguoiDung}">Nguyễn Văn A</div>
+                                                <small class="vendor-email text-muted" th:text="${store.nguoiDung.email}">user@example.com</small>
+                                            </div>
+                                        </td>
+                                        <td th:text="${store.diaChi}">123 Đường ABC</td>
+                                        <td th:text="${#dates.format(store.ngayTao, 'dd/MM/yyyy')}">15/05/2023</td>
+                                        <td th:text="${store.namThanhLap}">2020</td>
+                                        <td>
+                                            <div class="rating-info">
+                                                <span class="rating-value" th:text="${store.danhGiaTrungBinh}">4.5</span>
+                                                <i class="fas fa-star text-warning"></i>
+                                                <small class="text-muted" th:text="'(' + ${store.soLuongDanhGia} + ')'">(10)</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button class="status-toggle"
+                                                    th:classappend="${store.trangThai} ? 'status-active' : 'status-inactive'"
+                                                    th:data-store-id="${store.maCuaHang}"
+                                                    th:data-store-name="${store.tenCuaHang}"
+                                                    th:data-current-status="${store.trangThai}"
+                                                    type="button"
+                                                    onclick="showStatusModal(this)">
+                                                <span th:text="${store.trangThai} ? 'Hoạt động' : 'Đã khóa'">Hoạt động</span>
+                                                <i class="fas fa-chevron-down ms-1"></i>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons action-group-row">
+                                                <a th:href="@{/admin/stores/view/{id}(id=${store.maCuaHang})}" 
+                                                   class="action-btn btn-view"
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/admin/stores/edit/{id}(id=${store.maCuaHang})}" 
+                                                   class="action-btn btn-edit"
+                                                   title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="action-btn btn-delete"
+                                                        th:data-store-id="${store.maCuaHang}"
+                                                        th:data-store-name="${store.tenCuaHang}"
+                                                        onclick="showDeleteModal(this)"
+                                                        title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${storePage.content.empty}">
+                                        <td colspan="10">
+                                            <div class="empty-state">
+                                                <i class="fas fa-inbox"></i>
+                                                <p>Không tìm thấy cửa hàng nào</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav th:if="${storePage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${storePage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/stores(page=${storePage.number - 1}, keyword=${keyword}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, storePage.totalPages - 1)}"
+                                    th:classappend="${i == storePage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/stores(page=${i}, keyword=${keyword}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${storePage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/stores(page=${storePage.number + 1}, keyword=${keyword}, sortBy=${sortBy}, sortDir=${sortDir})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============= MODALS ============= -->
+
+    <!-- Delete Modal (Đơn lẻ) -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <p>Bạn có chắc chắn muốn xóa cửa hàng <strong id="storeNameToDelete"></strong>?</p>
+                    <p class="text-danger">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác. Tất cả sản phẩm và đánh giá liên quan cũng sẽ bị xóa.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Delete Modal (Hàng loạt) -->
+    <div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkDeleteModalLabel">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        Xác nhận xóa hàng loạt
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="warning-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <p>Bạn có chắc chắn muốn xóa <strong id="bulkDeleteCount" class="bulk-count">0</strong> cửa hàng đã chọn?</p>
+                    <p class="text-danger">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác. Tất cả sản phẩm và đánh giá liên quan cũng sẽ bị xóa.
+                    </p>
+                    <div id="bulkDeletePreview" class="bulk-preview">
+                        <!-- Preview items will be inserted here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy bỏ
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">
+                        <i class="fas fa-trash me-1"></i>Xóa <span id="bulkDeleteCountBtn">0</span> cửa hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cập nhật Status Modal -->
+	<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="statusModalLabel">
+	                    <i class="fas fa-toggle-on me-2"></i>
+	                    Thay đổi trạng thái
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p class="mb-3">Thay đổi trạng thái cho: <strong id="storeNameForStatus"></strong></p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusActive" value="true">
+	                            <label class="form-check-label" for="statusActive">
+	                                <i class="fas fa-check-circle text-success me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Hoạt động</strong>
+	                                    <p class="status-description">Cửa hàng có thể hoạt động và hiển thị với người dùng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="statusRadio" id="statusInactive" value="false">
+	                            <label class="form-check-label" for="statusInactive">
+	                                <i class="fas fa-times-circle text-danger me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Đã khóa</strong>
+	                                    <p class="status-description">Cửa hàng không thể hoạt động và bị ẩn với người dùng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- Phần nhập lý do khóa -->
+	                <div id="lyDoKhoaSection" class="mt-3" style="display: none;">
+	                    <label for="lyDoKhoaInput" class="form-label">
+	                        <i class="fas fa-comment-dots me-1"></i>Lý do khóa cửa hàng
+	                    </label>
+	                    <div class="mb-2">
+	                        <small class="text-muted">Chọn lý do có sẵn hoặc nhập lý do khác:</small>
+	                    </div>
+	                    
+	                    <div class="mb-2">
+	                        <select class="form-select" id="lyDoKhoaPreset" onchange="handleLyDoKhoaPresetChange()">
+	                            <option value="">-- Chọn lý do có sẵn --</option>
+	                            <option value="Vi phạm chính sách bán hàng">Vi phạm chính sách bán hàng</option>
+	                            <option value="Sản phẩm không đúng chất lượng">Sản phẩm không đúng chất lượng</option>
+	                            <option value="Không hoạt động trong thời gian dài">Không hoạt động trong thời gian dài</option>
+	                            <option value="Vi phạm điều khoản sử dụng">Vi phạm điều khoản sử dụng</option>
+	                            <option value="Yêu cầu của chủ cửa hàng">Yêu cầu của chủ cửa hàng</option>
+	                            <option value="other">Lý do khác...</option>
+	                        </select>
+	                    </div>
+	                    
+	                    <textarea class="form-control" id="lyDoKhoaInput" rows="3" 
+	                              placeholder="Nhập lý do khóa cửa hàng (tối đa 500 ký tự)..."></textarea>
+	                    <div class="form-text">Lý do này sẽ được hiển thị cho chủ cửa hàng.</div>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Lưu thay đổi
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Bulk Status Modal (Hàng loạt) - UPDATED -->
+	<div class="modal fade" id="bulkStatusModal" tabindex="-1" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-dialog-centered modal-lg">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="bulkStatusModalLabel">
+	                    <i class="fas fa-toggle-on me-2"></i>
+	                    Thay đổi trạng thái hàng loạt
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body">
+	                <p class="mb-3">Thay đổi trạng thái cho <strong id="bulkStatusCount" class="bulk-count">0</strong> cửa hàng đã chọn:</p>
+	                
+	                <div class="status-options">
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusActive" value="true">
+	                            <label class="form-check-label" for="bulkStatusActive">
+	                                <i class="fas fa-check-circle text-success me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Hoạt động</strong>
+	                                    <p class="status-description">Cửa hàng có thể hoạt động và hiển thị với người dùng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                    
+	                    <div class="status-option-item">
+	                        <div class="form-check">
+	                            <input class="form-check-input" type="radio" name="bulkStatusRadio" id="bulkStatusInactive" value="false">
+	                            <label class="form-check-label" for="bulkStatusInactive">
+	                                <i class="fas fa-times-circle text-danger me-2"></i>
+	                                <div class="status-info">
+	                                    <strong>Đã khóa</strong>
+	                                    <p class="status-description">Cửa hàng không thể hoạt động và bị ẩn với người dùng</p>
+	                                </div>
+	                            </label>
+	                        </div>
+	                    </div>
+	                </div>
+	
+	                <!-- Phần nhập lý do khóa cho hàng loạt -->
+	                <div id="bulkLyDoKhoaSection" class="mt-3" style="display: none;">
+	                    <label for="bulkLyDoKhoaInput" class="form-label">
+	                        <i class="fas fa-comment-dots me-1"></i>Lý do khóa cửa hàng (Áp dụng cho tất cả)
+	                    </label>
+	                    <div class="mb-2">
+	                        <small class="text-muted">Chọn lý do có sẵn hoặc nhập lý do khác. Lý do này sẽ được áp dụng cho tất cả cửa hàng được chọn:</small>
+	                    </div>
+	                    
+	                    <div class="mb-2">
+	                        <select class="form-select" id="bulkLyDoKhoaPreset" onchange="handleBulkLyDoKhoaPresetChange()">
+	                            <option value="">-- Chọn lý do có sẵn --</option>
+	                            <option value="Vi phạm chính sách bán hàng">Vi phạm chính sách bán hàng</option>
+	                            <option value="Sản phẩm không đúng chất lượng">Sản phẩm không đúng chất lượng</option>
+	                            <option value="Không hoạt động trong thời gian dài">Không hoạt động trong thời gian dài</option>
+	                            <option value="Vi phạm điều khoản sử dụng">Vi phạm điều khoản sử dụng</option>
+	                            <option value="Bảo trì hệ thống">Bảo trì hệ thống</option>
+	                            <option value="Kiểm tra định kỳ">Kiểm tra định kỳ</option>
+	                            <option value="Yêu cầu của chủ cửa hàng">Yêu cầu của chủ cửa hàng</option>
+	                            <option value="other">Lý do khác...</option>
+	                        </select>
+	                    </div>
+	                    
+	                    <textarea class="form-control" id="bulkLyDoKhoaInput" rows="3" 
+	                              placeholder="Nhập lý do khóa cửa hàng (tối đa 500 ký tự)..."></textarea>
+	                    <div class="form-text">Lý do này sẽ được hiển thị cho tất cả chủ cửa hàng được chọn.</div>
+	                    <div id="bulkLyDoKhoaCounter" class="lyDoKhoaCounter">0/500</div>
+	                </div>
+	
+	                <div class="mt-3">
+	                    <h6 class="small text-muted mb-2">Cửa hàng sẽ được cập nhật:</h6>
+	                    <div id="bulkStatusPreview" class="bulk-preview">
+	                        <!-- Preview items will be inserted here -->
+	                    </div>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Hủy bỏ
+	                </button>
+	                <button type="button" class="btn btn-primary" id="confirmBulkStatusBtn">
+	                    <i class="fas fa-save me-1"></i>Cập nhật <span id="bulkStatusCountBtn">0</span> cửa hàng
+	                </button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+    <script th:src="@{/js/admin/stores/stores.js}"></script>
+    
+</body>
+</html>

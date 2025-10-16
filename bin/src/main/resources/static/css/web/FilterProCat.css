@@ -1,0 +1,40 @@
+/* Filter Animation Styles */
+.price-range .checkbox-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.price-range.active .checkbox-container {
+    max-height: 500px;
+}
+
+.price-range .fa-chevron-up {
+    transition: transform 0.3s ease;
+}
+
+.price-range.active .fa-chevron-up {
+    transform: rotate(180deg);
+}
+
+/* Clickable filter headers */
+.box-price {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Custom checkbox styles */
+.checkbox input[type="checkbox"] {
+    accent-color: #3498db;
+}
+
+/* Star rating in filters */
+.checkbox .fa-star {
+    color: #ddd;
+    margin-right: 2px;
+    font-size: 12px;
+}
+
+.checkbox .fa-star.filled {
+    color: #ffc107;
+}

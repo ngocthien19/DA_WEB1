@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Shipper Locked Banner Fragment -->
+    <div th:fragment="shipper-locked-banner" class="shipper-locked-banner">
+        <div class="shipper-locked-content">
+            <div style="display: flex; align-items: center; flex: 1;">
+                <div class="shipper-locked-icon">
+                    <i class="fas fa-shipping-fast"></i>
+                </div>
+                <div class="shipper-locked-text">
+                    <h3 class="shipper-locked-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        TÀI KHOẢN SHIPPER ĐANG BỊ KHÓA
+                    </h3>
+                    <p class="shipper-locked-message">
+                        Tài khoản shipper của bạn hiện đang tạm ngừng hoạt động. Bạn chỉ có thể xem thông tin, 
+                        không thể nhận đơn hàng mới. Vui lòng liên hệ hỗ trợ để được giải đáp.
+                    </p>
+                </div>
+            </div>
+            <div class="shipper-locked-actions">
+                <a href="#" class="btn-contact-support-shipper" onclick="contactSupport()">
+                    <i class="fas fa-headset me-1"></i>
+                    Liên hệ hỗ trợ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function contactSupport() {
+            // Logic liên hệ hỗ trợ
+            alert("Chuyển hướng đến trang hỗ trợ shipper...");
+        }
+    </script>
+</body>
+</html>

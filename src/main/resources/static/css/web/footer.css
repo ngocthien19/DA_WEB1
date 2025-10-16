@@ -1,0 +1,155 @@
+footer {
+  background-color: #0f3460;
+  padding: 100px 0;
+  color: #fff;
+}
+
+footer .container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 30px;
+}
+
+footer .box {
+  /* margin-right: 20px; */ /* Đã bỏ */
+}
+
+footer .logo {
+    flex-shrink: 0;
+}
+
+/* Logo Text Style */
+footer .logo-text {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 32px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+footer .logo-text i {
+    font-size: 36px;
+    color: #e94560;
+    transition: all 0.3s ease;
+}
+
+footer .logo-text span {
+    color: #e94560;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+footer .logo-text:hover {
+    transform: translateY(-3px);
+}
+
+footer .logo-text:hover i {
+    transform: rotate(15deg) scale(1.1);
+    color: #d63651;
+}
+
+footer .logo-text:hover span {
+    color: #d63651;
+}
+
+footer .img {
+  background-color: #0c2a4d;	
+  padding: 15px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+footer .img i {
+  font-size: 20px;
+}
+
+footer .img span {
+  font-size: 14px;
+}
+
+footer p {
+  text-align: justify;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  opacity: 0.8;
+  margin-bottom: 20px;  
+}
+
+footer h2 {
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+footer ul {
+  padding: 0;
+  margin: 0;
+}
+
+footer li {
+  margin-bottom: 15px;
+  opacity: 0.8;
+  line-height: 1.6;
+  transition: all 0.25s linear;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+footer li:hover {
+  opacity: 1;
+  color: #e94560;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    footer .container {
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    footer {
+        padding: 60px 0;
+    }
+    
+    footer .container {
+        grid-template-columns: 1fr;
+        grid-gap: 30px;
+    }
+    
+    footer .logo-text {
+        font-size: 28px;
+    }
+    
+    footer .logo-text i {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    footer {
+        padding: 40px 0;
+    }
+    
+    footer .logo-text {
+        font-size: 24px;
+    }
+    
+    footer .logo-text i {
+        font-size: 26px;
+    }
+    
+    footer h2 {
+        font-size: 18px;
+    }
+}

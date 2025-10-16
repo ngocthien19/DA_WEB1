@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Đơn hàng - Pet Shop Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/orders/order-view.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Order Profile Header -->
+                    <div class="order-profile-header admin">
+                        <div class="row align-items-center">
+                            <div class="col-md-6 text-center text-md-start">
+                                <h2 class="order-title">Đơn hàng #<span th:text="${datHang.maDatHang}">Mã đơn hàng</span></h2>
+                                <div class="order-meta">
+                                    <span class="meta-item">
+                                        <i class="fas fa-user me-1"></i>
+                                        <span th:text="${datHang.nguoiDung.tenNguoiDung != null ? datHang.nguoiDung.tenNguoiDung : datHang.nguoiDung.email}">Tên người dùng</span>
+                                    </span>
+                                    <span class="meta-item">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        <span th:text="${#temporals.format(datHang.ngayDat, 'dd/MM/yyyy')}">Ngày đặt</span>
+                                    </span>
+                                </div>
+                                <div class="price-section">
+                                    <span class="price-value">
+                                        <span th:text="${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">Tổng tiền</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                                <div class="order-quick-stats">
+                                    <div class="stat-item">
+                                        <i class="fas fa-boxes"></i>
+                                        <div>
+                                            <strong th:text="${datHang.datHangChiTiets.size()}">0</strong>
+                                            <span>Sản phẩm</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <i class="fas fa-receipt"></i>
+                                        <div>
+                                            <strong th:text="${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</strong>
+                                            <span>Tổng tiền</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span th:switch="${datHang.trangThai}" class="status-badge-view admin">
+                                    <span th:case="'Hoàn thành'" class="status-completed-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                    <span th:case="'Đang giao'" class="status-shipping-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                    <span th:case="'Đã xác nhận'" class="status-confirmed-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                    <span th:case="'Hủy'" class="status-cancelled-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                    <span th:case="*" class="status-pending-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Customer Information -->
+                        <div class="col-lg-4">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <i class="fas fa-user-circle"></i>
+                                    <h5>Thông tin khách hàng</h5>
+                                </div>
+                                <div class="info-card-body">
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-user"></i>
+                                            Tên khách hàng
+                                        </div>
+                                        <div class="info-value" th:text="${datHang.nguoiDung.tenNguoiDung != null ? datHang.nguoiDung.tenNguoiDung : 'Chưa cập nhật'}">Tên người dùng</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-envelope"></i>
+                                            Email
+                                        </div>
+                                        <div class="info-value" th:text="${datHang.nguoiDung.email}">email@example.com</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-phone"></i>
+                                            Số điện thoại
+                                        </div>
+                                        <div class="info-value" th:text="${datHang.soDienThoaiGiaoHang ?: 'Chưa cập nhật'}">0123456789</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Information -->
+                        <div class="col-lg-4">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <i class="fas fa-info-circle"></i>
+                                    <h5>Thông tin đơn hàng</h5>
+                                </div>
+                                <div class="info-card-body">
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-hashtag"></i>
+                                            Mã đơn hàng
+                                        </div>
+                                        <div class="info-value" th:text="${datHang.maDatHang}">1</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-calendar-day"></i>
+                                            Ngày đặt hàng
+                                        </div>
+                                        <div class="info-value" th:text="${#temporals.format(datHang.ngayDat, 'dd/MM/yyyy')}">01/01/2024</div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-money-bill-wave"></i>
+                                            Tổng tiền
+                                        </div>
+                                        <div class="info-value price-highlight" th:text="${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</div>
+                                    </div>
+                                    <div class="info-row" th:if="${datHang.khuyenMai != null}">
+                                        <div class="info-label">
+                                            <i class="fas fa-tag"></i>
+                                            Khuyến mãi
+                                        </div>
+                                        <div class="info-value">
+                                            <span class="promotion-badge-view" 
+                                                  th:text="${datHang.khuyenMai.maGiamGia}">
+                                                Mã khuyến mãi
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="info-row" th:unless="${datHang.khuyenMai != null}">
+                                        <div class="info-label">
+                                            <i class="fas fa-tag"></i>
+                                            Khuyến mãi
+                                        </div>
+                                        <div class="info-value">
+                                            <span class="text-muted">Không có khuyến mãi</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping & Status Information -->
+                        <div class="col-lg-4">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <i class="fas fa-truck"></i>
+                                    <h5>Giao hàng & Trạng thái</h5>
+                                </div>
+                                <div class="info-card-body">
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            Địa chỉ giao hàng
+                                        </div>
+                                        <div class="info-value">
+                                            <small th:text="${datHang.diaChiGiaoHang ?: 'Chưa cập nhật'}">Địa chỉ giao hàng</small>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-power-off"></i>
+                                            Trạng thái
+                                        </div>
+                                        <div class="info-value">
+                                            <span th:switch="${datHang.trangThai}" class="status-badge-view admin">
+                                                <span th:case="'Hoàn thành'" class="status-completed-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                                <span th:case="'Đang giao'" class="status-shipping-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                                <span th:case="'Đã xác nhận'" class="status-confirmed-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                                <span th:case="'Hủy'" class="status-cancelled-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                                <span th:case="*" class="status-pending-view" th:text="${datHang.trangThai}">Trạng thái</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">
+                                            <i class="fas fa-boxes"></i>
+                                            Số sản phẩm
+                                        </div>
+                                        <div class="info-value">
+                                            <span class="quantity-badge-view" th:text="${datHang.datHangChiTiets.size()}">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+									    <div class="info-label">
+									        <i class="fas fa-sticky-note"></i>
+									        Ghi chú
+									    </div>
+									    <div class="info-value">
+									        <small th:if="${datHang.ghiChu != null and !#strings.isEmpty(datHang.ghiChu)}" 
+									               th:text="${datHang.ghiChu}">Ghi chú đơn hàng</small>
+									        <small th:unless="${datHang.ghiChu != null and !#strings.isEmpty(datHang.ghiChu)}" 
+									               class="text-muted">Không có</small>
+									    </div>
+									</div>
+									<div class="info-row" th:if="${datHang.lyDoHuy != null and !#strings.isEmpty(datHang.lyDoHuy)}">
+									    <div class="info-label">
+									        <i class="fas fa-exclamation-circle text-danger"></i>
+									        Lý do hủy
+									    </div>
+									    <div class="info-value">
+									        <small th:text="${datHang.lyDoHuy}" class="text-danger">Lý do hủy đơn hàng</small>
+									    </div>
+									</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="info-card">
+                                <div class="info-card-header">
+                                    <i class="fas fa-list-ul"></i>
+                                    <h5>Chi tiết sản phẩm</h5>
+                                </div>
+                                <div class="info-card-body">
+                                    <div class="table-responsive">
+                                        <table class="table order-items-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">#</th>
+                                                    <th>Sản phẩm</th>
+                                                    <th class="text-center">Cửa hàng</th>
+                                                    <th class="text-center">Đơn giá</th>
+                                                    <th class="text-center">Số lượng</th>
+                                                    <th class="text-end">Thành tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="chiTiet, iter : ${datHang.datHangChiTiets}">
+                                                    <td class="text-center" th:text="${iter.index + 1}">1</td>
+                                                    <td>
+                                                        <div class="product-info">
+                                                            <div class="product-image-small">
+                                                                <img th:src="${(chiTiet.sanPham != null && chiTiet.sanPham.hinhAnh != null) ? '/uploads/products/' + chiTiet.sanPham.hinhAnh : '/images/default-product.jpg'}" 
+                                                                     alt="Product Image">
+                                                            </div>
+                                                            <div class="product-details">
+                                                                <h6 class="product-name" th:text="${chiTiet.sanPham != null ? chiTiet.sanPham.tenSanPham : 'Sản phẩm không tồn tại'}">Tên sản phẩm</h6>
+                                                                <small class="text-muted" th:if="${chiTiet.sanPham != null && chiTiet.sanPham.loaiSanPham != null}" th:text="${chiTiet.sanPham.loaiSanPham}">Loại sản phẩm</small>
+                                                                <small class="text-danger" th:if="${chiTiet.sanPham == null}">Sản phẩm đã bị xóa</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span th:if="${chiTiet.sanPham != null && chiTiet.sanPham.cuaHang != null}" 
+                                                              class="store-badge-view" 
+                                                              th:text="${chiTiet.sanPham.cuaHang.tenCuaHang}">
+                                                            Cửa hàng
+                                                        </span>
+                                                        <span th:if="${chiTiet.sanPham == null || chiTiet.sanPham.cuaHang == null}" 
+                                                              class="text-muted">
+                                                            Không xác định
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-center price-cell">
+                                                        <span th:text="${#numbers.formatDecimal(chiTiet.giaBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                                                    </td>
+                                                    <td class="text-center quantity-cell">
+                                                        <span class="quantity-badge" th:text="${chiTiet.soLuong}">1</span>
+                                                    </td>
+                                                    <td class="text-end total-cell">
+                                                        <strong th:text="${#numbers.formatDecimal(chiTiet.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</strong>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="5" class="text-end"><strong>Tổng cộng:</strong></td>
+                                                    <td class="text-end">
+                                                        <strong class="total-amount" th:text="${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</strong>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simple Back Button -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <a th:href="@{/admin/orders}" class="btn btn-back btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách đơn hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+</body>
+</html>

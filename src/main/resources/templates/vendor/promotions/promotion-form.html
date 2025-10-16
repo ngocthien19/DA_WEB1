@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Chỉnh sửa Khuyến mãi' : 'Thêm Khuyến mãi'} + ' - Pet Shop Vendor'">Thêm Khuyến mãi - Pet Shop Vendor</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/promotions/promotion-form.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Vendor -->
+            <div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header Vendor -->
+                <div th:replace="~{vendor/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Form Container -->
+                    <div class="form-container">
+                        <!-- Store Info Header -->
+                        <div class="store-form-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h4 class="form-title">
+                                        <i class="fas" th:classappend="${isEdit} ? 'fa-edit' : 'fa-plus-circle'"></i>
+                                        <span th:text="${isEdit} ? 'Chỉnh sửa Khuyến mãi' : 'Thêm Khuyến mãi Mới'"></span>
+                                    </h4>
+                                    <p class="store-info">
+                                        <i class="fas fa-store me-1"></i>
+                                        Cửa hàng: <strong th:text="${cuaHang.tenCuaHang}"></strong>
+                                    </p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="store-status-badge" 
+                                         th:classappend="${cuaHang.trangThai} ? 'status-active' : 'status-inactive'"
+                                         th:text="${cuaHang.trangThai} ? 'Đang hoạt động' : 'Ngừng hoạt động'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Alert Messages -->
+                        <div class="alert-container">
+                            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <span th:text="${errorMessage}"></span>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        </div>
+
+                        <form id="promotionForm">
+                            <!-- Hidden field for promotion ID in edit mode -->
+                            <input th:if="${isEdit}" type="hidden" th:value="${khuyenMaiModel.maKhuyenMai}" id="maKhuyenMai">
+                            
+                            <div class="row">
+                                <!-- Mã giảm giá -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Mã giảm giá</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           th:value="${khuyenMaiModel.maGiamGia}"
+                                           id="maGiamGia"
+                                           placeholder="Nhập mã giảm giá (ví dụ: SUMMER20)">
+                                    <div class="error-message" id="maGiamGiaError"></div>
+                                </div>
+                                
+                                <!-- Discount -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Giảm giá (%)</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:value="${khuyenMaiModel.discount}"
+                                           id="discount"
+                                           placeholder="Nhập phần trăm giảm giá"
+                                           min="1"
+                                           max="100"
+                                           step="1">
+                                    <div class="error-message" id="discountError"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Ngày bắt đầu -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Ngày bắt đầu</label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           th:value="${khuyenMaiModel.ngayBatDau}"
+                                           id="ngayBatDau">
+                                    <div class="error-message" id="ngayBatDauError"></div>
+                                </div>
+                                
+                                <!-- Ngày kết thúc -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Ngày kết thúc</label>
+                                    <input type="date" 
+                                           class="form-control" 
+                                           th:value="${khuyenMaiModel.ngayKetThuc}"
+                                           id="ngayKetThuc">
+                                    <div class="error-message" id="ngayKetThucError"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <!-- Số lượng -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Số lượng mã</label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           th:value="${khuyenMaiModel.soLuongMaGiamGia}"
+                                           id="soLuongMaGiamGia"
+                                           placeholder="Số lượng mã giảm giá"
+                                           min="1">
+                                    <div class="error-message" id="soLuongMaGiamGiaError"></div>
+                                </div>
+                                
+                                <!-- Trạng thái -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">Trạng thái</label>
+                                    <select class="form-select" id="trangThai">
+                                        <option value="true" th:selected="${khuyenMaiModel.trangThai == true}">Đang áp dụng</option>
+                                        <option value="false" th:selected="${khuyenMaiModel.trangThai == false}">Ngừng áp dụng</option>
+                                    </select>
+                                    <div class="error-message" id="trangThaiError"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Button Group -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-flex gap-3 justify-content-end">
+                                        <a th:href="@{/vendor/promotions}" class="btn-cancel">
+                                            <i class="fas fa-times me-2"></i>Hủy bỏ
+                                        </a>
+                                        <button type="button" class="btn-submit" id="submitBtn">
+                                            <span id="submitText">
+                                                <i class="fas" th:classappend="${isEdit} ? 'fa-save' : 'fa-plus'"></i>
+                                                <span th:text="${isEdit} ? 'Cập nhật' : 'Thêm mới'"></span>
+                                            </span>
+                                            <span id="loadingSpinner" class="loading-spinner" style="display: none;"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    <script th:src="@{/js/vendor/promotions/promotion-form.js}"></script>
+</body>
+</html>

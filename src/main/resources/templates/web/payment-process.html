@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán - Pet Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <style>
+        .payment-section {
+            padding: 50px 0;
+            background: #f8f9fa;
+            min-height: 70vh;
+        }
+        
+        .payment-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .payment-info {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .payment-qr {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .qr-image {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 10px;
+        }
+        
+        .payment-method-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .momo-badge {
+            background: #c2185b;
+            color: white;
+        }
+        
+        .vnpay-badge {
+            background: #005baa;
+            color: white;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .qr-error {
+		    display: flex;
+		    flex-direction: column;
+		    align-items: center;
+		    justify-content: center;
+		    height: 100%;
+		    color: #dc3545;
+		    text-align: center;
+		}
+		
+		.qr-error i {
+		    font-size: 40px;
+		    margin-bottom: 10px;
+		}
+        
+        .btn-primary {
+            background: #e94560;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .btn-secondary {
+            background: #0f3460;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .instructions {
+            background: #fff5f5;
+            border-left: 4px solid #e94560;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .payment-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="payment-section">
+        <div class="container">
+            <div class="payment-container">
+                <div class="payment-info">
+                    <h2>Thông tin thanh toán</h2>
+                    
+                    <div th:if="${phuongThuc == 'MOMO'}" class="payment-method-badge momo-badge">
+                        <i class="fa-solid fa-money-bill-wave"></i> MoMo
+                    </div>
+                    
+                    <div th:if="${phuongThuc == 'VNPAY'}" class="payment-method-badge vnpay-badge">
+                        <i class="fa-solid fa-credit-card"></i> VNPay
+                    </div>
+                    
+                    <div class="info-row">
+                        <span>Mã đơn hàng:</span>
+                        <strong th:text="${datHang.maDatHang}"></strong>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span>Số tiền:</span>
+                        <strong th:text="'₫' + ${#numbers.formatDecimal(amount, 0, 'COMMA', 0, 'POINT')}"></strong>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span>Nội dung:</span>
+                        <span th:text="${description}"></span>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h4><i class="fa-solid fa-circle-info"></i> Hướng dẫn:</h4>
+                        <p th:if="${phuongThuc == 'MOMO'}">
+                            1. Mở ứng dụng MoMo<br>
+                            2. Chọn "Quét mã"<br>
+                            3. Quét mã QR bên cạnh<br>
+                            4. Xác nhận thanh toán
+                        </p>
+                        <p th:if="${phuongThuc == 'VNPAY'}">
+                            1. Mở ứng dụng ngân hàng<br>
+                            2. Chọn "Quét mã VNPay"<br>
+                            3. Quét mã QR bên cạnh<br>
+                            4. Xác nhận thanh toán
+                        </p>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <a th:href="${paymentUrl}" target="_blank" class="btn-primary">
+                            <i class="fa-solid fa-external-link-alt"></i>
+                            Thanh toán trên website
+                        </a>
+                        <a th:href="@{/orders}" class="btn-secondary">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="payment-qr">
+				    <h3>Quét mã QR để thanh toán</h3>
+				    
+				    <div class="qr-image">
+				        <!-- Thêm điều kiện kiểm tra null -->
+				        <img th:if="${qrCode != null}" 
+				             th:src="'data:image/png;base64,' + ${qrCode}" 
+				             alt="QR Code" 
+				             style="width: 100%; height: 100%;">
+				        
+				        <!-- Hiển thị thông báo nếu không có QR code -->
+				        <div th:if="${qrCode == null}" class="qr-error">
+				            <i class="fa-solid fa-exclamation-triangle"></i>
+				            <p>Không thể tạo mã QR. Vui lòng thử lại.</p>
+				        </div>
+				    </div>
+				    
+				    <p>Quét mã QR bằng ứng dụng <span th:text="${phuongThuc}"></span> trên điện thoại</p>
+				    
+				    <button th:if="${qrCode != null}" onclick="downloadQRCode()" class="btn-secondary" style="margin-top: 15px;">
+				        <i class="fa-solid fa-download"></i>
+				        Tải mã QR
+				    </button>
+				</div>
+            </div>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <script>
+        function downloadQRCode() {
+            const qrImage = document.querySelector('.qr-image img');
+            if (qrImage) {
+                const link = document.createElement('a');
+                link.download = 'payment-qrcode.png';
+                link.href = qrImage.src;
+                link.click();
+            }
+        }
+        
+        // Kiểm tra trạng thái thanh toán mỗi 10 giây
+        setInterval(() => {
+            checkPaymentStatus();
+        }, 10000);
+        
+        function checkPaymentStatus() {
+            // Có thể implement polling để check trạng thái thanh toán
+            console.log('Checking payment status...');
+        }
+    </script>
+</body>
+</html>

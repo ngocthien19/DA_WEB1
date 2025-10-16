@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Cửa Hàng từ Excel - Pet Shop Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <style>
+        /* ============= NEW IMPORT EXCEL STYLES (Glassmorphism/Gradient) ============= */
+
+/* CONTAINER BASE STYLES - Áp dụng theme đỏ/tím cho trang Sản phẩm */
+.stats-container {
+    padding: 0 40px 30px 40px;
+}
+
+.import-container {
+    /* Gradient Background: Đỏ/Tím (Phù hợp với theme Sản phẩm) */
+    background: linear-gradient(135deg, #e94560 0%, #0f3460 100%);
+    border-radius: 25px;
+    padding: 40px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    margin-bottom: 30px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Background Animated Dots Effect */
+.import-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 2px, transparent 2px);
+    background-size: 30px 30px;
+    animation: float-import 25s linear infinite;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+@keyframes float-import {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-30px, -30px) rotate(360deg); }
+}
+
+.import-container h4 {
+    color: white;
+    font-weight: 700;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.import-container h4 i {
+    color: #4ecdc4; /* Màu accent */
+}
+
+/* INSTRUCTION BOX - GIỮ NGUYÊN STYLE CHO MỤC HƯỚNG DẪN THEO YÊU CẦU */
+.instruction-box {
+    /* Style Glassmorphism */
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.instruction-box h6 {
+    color: white;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    margin-bottom: 15px;
+    display: flex; 
+    align-items: center;
+    font-size: 1.15rem;
+}
+
+.instruction-box h6 i {
+    color: #ffc107; /* Màu vàng cho icon Hướng dẫn */
+    margin-right: 8px;
+}
+
+.instruction-box ul {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0;
+}
+
+.instruction-box li {
+    padding-left: 1.5em;
+    position: relative;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+/* Dùng icon check-circle cho các mục danh sách */
+.instruction-box li::before {
+    content: "\f058"; /* fa-check-circle */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    left: 0;
+    color: #4ecdc4; /* Màu xanh ngọc cho icon check */
+    font-size: 14px;
+}
+/* END INSTRUCTION BOX STYLE */
+
+
+/* UPLOAD AREA */
+.upload-area {
+    border: 3px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    padding: 50px 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: all 0.4s ease;
+    min-height: 280px;
+    position: relative;
+    color: white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.upload-area:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 1);
+    transform: translateY(-3px);
+}
+
+.upload-area.has-files {
+    padding: 25px;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.upload-area i#uploadIcon {
+    font-size: 72px;
+    color: white;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.upload-area.has-files i#uploadIcon {
+    font-size: 48px;
+    margin-bottom: 0;
+    margin-right: 15px;
+}
+
+.upload-area.has-files .upload-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.upload-area h5 {
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+.upload-area p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* FILES LIST */
+.files-list {
+    display: none;
+    max-height: 160px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.upload-area.has-files .files-list {
+    display: block;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.file-info-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.file-info-content i {
+    color: #4ecdc4;
+    font-size: 18px;
+}
+
+.file-name {
+    font-weight: 600;
+    color: white;
+    font-size: 15px;
+}
+
+.file-size {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.clear-all-btn {
+    margin-top: 15px;
+    display: none;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.clear-all-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.upload-area.has-files .clear-all-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ACTION BUTTONS */
+.action-buttons-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-import {
+    background: linear-gradient(45deg, #4ecdc4, #55a8a1);
+    border: none;
+    color: #0f3460;
+    padding: 15px 25px;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-import:hover:not(:disabled) {
+    background: linear-gradient(45deg, #55a8a1, #4ecdc4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-import:disabled {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.files-count {
+    background: #e94560;
+    color: white;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+/* CÁC NÚT TẢI TEMPLATE VÀ QUAY LẠI */
+.btn-back,
+.btn-template-download {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-back:hover,
+.btn-template-download:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateY(-1px);
+}
+/* END CÁC NÚT TẢI TEMPLATE VÀ QUAY LẠI */
+
+/* RESULT DISPLAY */
+.result-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    margin-top: 25px;
+    color: #0f3460;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.result-card h6 {
+    font-weight: 700;
+}
+
+.result-card i.fa-check-circle {
+    color: #4ecdc4;
+}
+
+.result-card i.fa-exclamation-circle {
+    color: #e94560;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px 10px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e0e6ed;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0f3460;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.error-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: #fdf2f2;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+    border: 1px solid #f9dcdc;
+}
+
+.error-list .text-danger {
+    color: #e94560 !important;
+}
+
+/* Toast styles (adjusting to fit the new scheme) */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 300px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    margin-bottom: 10px;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    border-left: 4px solid;
+}
+
+.toast.show {
+    transform: translateX(0);
+}
+
+.toast.hide {
+    transform: translateX(400px);
+}
+
+.toast-success {
+    border-left-color: #4ecdc4;
+}
+
+.toast-error {
+    border-left-color: #e94560;
+}
+
+.toast-warning {
+    border-left-color: #ffa500;
+}
+
+.toast-info {
+    border-left-color: #667eea;
+}
+
+.toast-icon {
+    font-size: 20px;
+    margin-right: 15px;
+}
+
+.toast-success .toast-icon {
+    color: #4ecdc4;
+}
+
+.toast-error .toast-icon {
+    color: #e94560;
+}
+
+.toast-warning .toast-icon {
+    color: #ffa500;
+}
+
+.toast-info .toast-icon {
+    color: #667eea;
+}
+
+.toast-content {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #0f3460;
+}
+
+.toast-message {
+    font-size: 13px;
+    color: #666;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #999;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 10px;
+    border-radius: 50%;
+}
+
+.toast-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+
+/* Custom scrollbar */
+.files-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.files-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.files-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.files-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .import-container {
+        padding: 25px 20px;
+        margin: 10px;
+    }
+    
+    .upload-area {
+        padding: 30px 20px;
+        min-height: 200px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <div class="import-container">
+                        <div class="import-content">
+                            <h4 class="mb-4">
+                                <i class="fas fa-store me-2"></i>
+                                Import Cửa Hàng từ Excel
+                            </h4>
+                            
+                            <!-- Instruction Box -->
+                            <div class="instruction-box">
+                                <h6><i class="fas fa-info-circle me-2"></i>Hướng dẫn import cửa hàng</h6>
+                                <ul class="mb-0">
+                                    <li>File Excel phải có định dạng .xlsx</li>
+                                    <li><strong>Các trường bắt buộc:</strong> Tên cửa hàng, Mã người dùng, Địa chỉ, Số điện thoại, Email</li>
+                                    <li><strong>Mã người dùng</strong> phải tồn tại trong hệ thống và có vai trò VENDOR</li>
+                                    <li><strong>Mỗi người dùng chỉ được sở hữu 1 cửa hàng</strong></li>
+                                    <li>Có thể import tối đa 5 file Excel cùng lúc</li>
+                                    <li>Định dạng số điện thoại: 84xxxxxxxxx hoặc 0xxxxxxxxx</li>
+                                </ul>
+                                
+                                <div class="template-info">
+                                    <i class="fas fa-download me-2"></i>
+                                    <strong>Tải template mẫu: </strong>
+                                    <a th:href="@{/admin/stores/download-template}" class="btn btn-sm btn-template ms-2" id="downloadTemplateBtn">
+                                        <i class="fas fa-file-excel me-1"></i>Download Template
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Upload Area -->
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="upload-area" id="uploadArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt" id="uploadIcon"></i>
+                                            <div>
+                                                <h5 id="uploadTitle">Kéo thả file Excel vào đây hoặc click để chọn file</h5>
+                                                <p class="mb-0" id="uploadSubtitle">Chỉ hỗ trợ file .xlsx (Excel) - Tối đa 5 file</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Files list sẽ hiển thị bên trong upload-area -->
+                                        <div class="files-list" id="filesList">
+                                            <!-- File items sẽ được thêm vào đây bằng JavaScript -->
+                                        </div>
+                                        
+                                        <button type="button" class="btn btn-sm clear-all-btn" id="clearAllBtn" onclick="clearAllFiles()">
+                                            <i class="fas fa-times me-1"></i>Xóa tất cả
+                                        </button>
+                                        
+                                        <input type="file" id="excelFile" accept=".xlsx" multiple style="display: none;">
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="d-grid gap-3">
+                                        <button type="button" class="btn btn-import" id="importBtn" onclick="importExcel()" disabled>
+                                            <i class="fas fa-upload me-2"></i>Import Cửa Hàng
+                                            <span class="files-count" id="filesCount" style="display: none;">0</span>
+                                        </button>
+                                        
+                                        <a th:href="@{/admin/stores/download-template}" class="btn btn-template" id="downloadTemplateBtn2">
+                                            <i class="fas fa-download me-2"></i>Tải Template
+                                        </a>
+                                        
+                                        <a th:href="@{/admin/stores}" class="btn btn-template">
+                                            <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Result Display -->
+                            <div id="importResult" style="display: none;" class="mt-4">
+                                <div class="result-card">
+                                    <h6 id="resultTitle" class="mb-3"></h6>
+                                    <div class="stats-grid" id="resultStats">
+                                        <!-- Stats will be inserted here -->
+                                    </div>
+                                    <div id="resultDetails"></div>
+                                    <div class="error-list" id="errorList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+    <script>
+        let selectedFiles = [];
+        const MAX_FILES = 5;
+
+        // File upload handling
+        document.getElementById('uploadArea').addEventListener('click', function(e) {
+            if (!e.target.closest('.btn') && !e.target.closest('.file-item')) {
+                document.getElementById('excelFile').click();
+            }
+        });
+
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileSelect(Array.from(e.target.files));
+            }
+        });
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(255, 255, 255, 0.25)';
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.6)';
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            if (!uploadArea.classList.contains('has-files')) {
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.15)';
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+            }
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(255, 255, 255, 0.15)';
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(Array.from(files));
+            }
+        });
+
+        // Template download handling
+        document.getElementById('downloadTemplateBtn').addEventListener('click', function(e) {
+            handleTemplateDownload(e);
+        });
+
+        document.getElementById('downloadTemplateBtn2').addEventListener('click', function(e) {
+            handleTemplateDownload(e);
+        });
+
+        function handleTemplateDownload(e) {
+            e.preventDefault();
+            const downloadUrl = e.target.closest('a').href;
+            
+            showToast('info', 'Thông báo', 'Đang tải template...');
+            
+            // Tạo một thẻ a ẩn để download
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.download = 'template_cua_hang.xlsx';
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            
+            // Trigger download
+            downloadLink.click();
+            
+            // Clean up
+            document.body.removeChild(downloadLink);
+            
+            // Hiển thị thông báo thành công sau 1 giây
+            setTimeout(() => {
+                showToast('success', 'Thành công', 'Template đã được tải xuống thành công!');
+            }, 1000);
+        }
+
+        function handleFileSelect(files) {
+            const validFiles = files.filter(file => {
+                const isValidType = file.name.endsWith('.xlsx');
+                const isNotDuplicate = !selectedFiles.some(f => f.name === file.name && f.size === file.size);
+                const hasSpace = selectedFiles.length < MAX_FILES;
+                
+                if (!isValidType) {
+                    showToast('error', 'Lỗi', `File "${file.name}" không phải là file Excel (.xlsx)`);
+                    return false;
+                }
+                
+                if (!hasSpace) {
+                    showToast('error', 'Lỗi', `Chỉ được phép upload tối đa ${MAX_FILES} file`);
+                    return false;
+                }
+                
+                if (isNotDuplicate) {
+                    return true;
+                } else {
+                    showToast('warning', 'Cảnh báo', `File "${file.name}" đã được chọn`);
+                    return false;
+                }
+            });
+
+            if (validFiles.length > 0) {
+                selectedFiles = [...selectedFiles, ...validFiles];
+                updateFileList();
+                document.getElementById('importBtn').disabled = false;
+            }
+        }
+
+        function updateFileList() {
+            const filesList = document.getElementById('filesList');
+            const filesCount = document.getElementById('filesCount');
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadTitle = document.getElementById('uploadTitle');
+            const uploadSubtitle = document.getElementById('uploadSubtitle');
+            const uploadIcon = document.getElementById('uploadIcon');
+            
+            filesList.innerHTML = '';
+            
+            if (selectedFiles.length > 0) {
+                uploadArea.classList.add('has-files');
+                filesCount.textContent = selectedFiles.length;
+                filesCount.style.display = 'inline-flex';
+                uploadTitle.textContent = `${selectedFiles.length} file đã được chọn`;
+                uploadSubtitle.textContent = 'Sẵn sàng để import';
+                uploadIcon.className = 'fas fa-file-excel';
+                
+                selectedFiles.forEach((file, index) => {
+                    const fileSize = formatFileSize(file.size);
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-info-content">
+                            <i class="fas fa-file-excel"></i>
+                            <div>
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">${fileSize}</div>
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button type="button" class="btn btn-sm btn-outline-light" onclick="removeFile(${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    filesList.appendChild(fileItem);
+                });
+            } else {
+                uploadArea.classList.remove('has-files');
+                filesCount.style.display = 'none';
+                uploadTitle.textContent = 'Kéo thả file Excel vào đây hoặc click để chọn file';
+                uploadSubtitle.textContent = 'Chỉ hỗ trợ file .xlsx (Excel) - Tối đa 5 file';
+                uploadIcon.className = 'fas fa-cloud-upload-alt';
+                document.getElementById('importBtn').disabled = true;
+            }
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateFileList();
+        }
+
+        function clearAllFiles() {
+            selectedFiles = [];
+            document.getElementById('excelFile').value = '';
+            updateFileList();
+            document.getElementById('importResult').style.display = 'none';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function importExcel() {
+            if (selectedFiles.length === 0) {
+                showToast('error', 'Lỗi', 'Vui lòng chọn ít nhất 1 file Excel để import');
+                return;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                formData.append('excelFiles', file);
+            });
+
+            const importBtn = document.getElementById('importBtn');
+            const originalText = importBtn.innerHTML;
+            importBtn.innerHTML = '<span class="spinner"></span>Đang import...';
+            importBtn.disabled = true;
+
+            // Hiển thị loading state
+            document.getElementById('importResult').style.display = 'block';
+            document.getElementById('resultTitle').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            document.getElementById('resultStats').innerHTML = '';
+            document.getElementById('resultDetails').innerHTML = '';
+            document.getElementById('errorList').innerHTML = '';
+
+            fetch('/admin/stores/import', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                importBtn.innerHTML = originalText;
+                importBtn.disabled = false;
+                
+                const resultDiv = document.getElementById('importResult');
+                const resultTitle = document.getElementById('resultTitle');
+                const resultStats = document.getElementById('resultStats');
+                const resultDetails = document.getElementById('resultDetails');
+                const errorList = document.getElementById('errorList');
+                
+                resultDiv.style.display = 'block';
+                errorList.innerHTML = '';
+                resultStats.innerHTML = '';
+                
+                if (data.success) {
+                    resultTitle.innerHTML = '<i class="fas fa-check-circle me-2 text-success"></i>Import cửa hàng thành công!';
+                    
+                    // Hiển thị thống kê
+                    resultStats.innerHTML = `
+                        <div class="stat-item">
+                            <div class="stat-value">${data.totalRecords || 0}</div>
+                            <div class="stat-label">Tổng bản ghi</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #4CAF50;">${data.successCount || 0}</div>
+                            <div class="stat-label">Thành công</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #f44336;">${data.errorCount || 0}</div>
+                            <div class="stat-label">Lỗi</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">${selectedFiles.length}</div>
+                            <div class="stat-label">File</div>
+                        </div>
+                    `;
+                    
+                    resultDetails.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ${data.message || 'Import hoàn tất thành công!'}
+                        </div>
+                    `;
+                    
+                    if (data.errors && data.errors.length > 0) {
+                        resultDetails.innerHTML += '<p class="mb-2"><strong>Chi tiết lỗi:</strong></p>';
+                        data.errors.forEach(error => {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-danger mb-1';
+                            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error}`;
+                            errorList.appendChild(errorDiv);
+                        });
+                    }
+                    
+                    showToast('success', 'Thành công', data.message || 'Import cửa hàng thành công!');
+                    
+                    // Clear files after successful import
+                    clearAllFiles();
+                    
+                } else {
+                    resultTitle.innerHTML = '<i class="fas fa-exclamation-circle me-2 text-danger"></i>Import thất bại!';
+                    
+                    resultDetails.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            ${data.message || 'Đã có lỗi xảy ra khi import!'}
+                        </div>
+                    `;
+                    
+                    if (data.errors && data.errors.length > 0) {
+                        resultDetails.innerHTML += '<p class="mb-2"><strong>Chi tiết lỗi:</strong></p>';
+                        data.errors.forEach(error => {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-danger mb-1';
+                            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error}`;
+                            errorList.appendChild(errorDiv);
+                        });
+                    }
+                    
+                    showToast('error', 'Lỗi', data.message || 'Import cửa hàng thất bại!');
+                }
+            })
+            .catch(error => {
+                importBtn.innerHTML = originalText;
+                importBtn.disabled = false;
+                console.error('Error:', error);
+                
+                const resultDiv = document.getElementById('importResult');
+                const resultTitle = document.getElementById('resultTitle');
+                const resultDetails = document.getElementById('resultDetails');
+                const errorList = document.getElementById('errorList');
+                
+                resultDiv.style.display = 'block';
+                resultTitle.innerHTML = '<i class="fas fa-exclamation-circle me-2 text-danger"></i>Lỗi hệ thống!';
+                
+                resultDetails.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Đã có lỗi xảy ra khi kết nối đến server. Vui lòng thử lại sau.
+                    </div>
+                `;
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'text-danger mb-1';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>Lỗi kết nối: ${error.message}`;
+                errorList.appendChild(errorDiv);
+                
+                showToast('error', 'Lỗi', 'Đã có lỗi xảy ra khi import file');
+            });
+        }
+
+        // Toast function
+        function showToast(type, title, message) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toastId = 'toast-' + Date.now();
+            
+            const iconClass = type === 'success' ? 'fa-check-circle' : 
+                            type === 'error' ? 'fa-exclamation-circle' : 
+                            type === 'warning' ? 'fa-exclamation-triangle' : 
+                            'fa-info-circle';
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast toast-${type}">
+                    <div class="toast-icon">
+                        <i class="fas ${iconClass}"></i>
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" onclick="closeToast('${toastId}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            
+            const toast = document.getElementById(toastId);
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                closeToast(toastId);
+            }, 5000);
+        }
+
+        function closeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (toast) {
+                toast.classList.remove('show');
+                toast.classList.add('hide');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Import Excel page initialized');
+        });
+    </script>
+</body>
+</html>

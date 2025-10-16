@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân - PetStore</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/profile.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+</head>
+<body>
+    <!-- Include Header Fragment -->
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <!-- User Profile Section -->
+    <section class="user-profile-section">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1>Thông tin cá nhân</h1>
+                <p>Quản lý thông tin tài khoản và bảo mật của bạn</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Đang tải thông tin...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p id="errorMessage"></p>
+                <button onclick="loadUserProfile()" class="btn btn-primary" style="margin-top: 10px;">
+                    <i class="fas fa-redo"></i> Thử lại
+                </button>
+            </div>
+
+            <!-- Profile Content -->
+            <div id="profileContent" style="display: none;">
+                <!-- Content will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Include Footer Fragment -->
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/web/profile.js}"></script>
+    <script th:src="@{/js/web/header.js}"></script>
+</body>
+</html>

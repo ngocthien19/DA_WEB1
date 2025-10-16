@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - PetStore</title>
+    <link rel="stylesheet" th:href="@{/css/web/register.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="register-wrapper">
+        <div class="register-background">
+            <div class="pet-pattern"></div>
+        </div>
+        
+        <div class="register-container">
+            <div class="register-header">
+                <div class="logo">
+                    <i class="fas fa-paw"></i>
+                    <span>PetStore</span>
+                </div>
+                <h2>Tạo tài khoản mới</h2>
+                <p>Tham gia cộng đồng yêu thú cưng của chúng tôi</p>
+            </div>
+
+            <div id="successMessage" class="success-message"></div>
+            
+            <form id="registerForm" class="register-form">
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="tenNguoiDung" name="tenNguoiDung" placeholder="Họ và tên" autocomplete="name">
+                        <div class="error-text" id="tenNguoiDungError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Địa chỉ email" autocomplete="email">
+                        <div class="error-text" id="emailError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="matKhau" name="matKhau" placeholder="Mật khẩu" autocomplete="new-password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('matKhau')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="error-text" id="matKhauError"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="xacNhanMatKhau" name="xacNhanMatKhau" placeholder="Xác nhận mật khẩu" autocomplete="new-password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('xacNhanMatKhau')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <div class="error-text" id="xacNhanMatKhauError"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="sdt" name="sdt" placeholder="Số điện thoại" autocomplete="tel" maxlength="10">
+                            <div class="error-text" id="sdtError"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="diaChi" name="diaChi" placeholder="Địa chỉ" autocomplete="street-address">
+                            <div class="error-text" id="diaChiError"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="terms-checkbox">
+                        <input type="checkbox" id="agreeTerms">
+                        <span class="checkmark"></span>
+                        Tôi đồng ý với <a href="#" class="terms-link">Điều khoản dịch vụ</a> và <a href="#" class="terms-link">Chính sách bảo mật</a>
+                    </label>
+                    <div class="error-text" id="agreeTermsError"></div>
+                </div>
+                
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus"></i>
+                    Tạo tài khoản
+                </button>
+            </form>
+            
+            <div class="login-link">
+                <p>Đã có tài khoản? <a th:href="@{/login}">Đăng nhập ngay</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/web/registerValidate.js}"></script>
+</body>
+</html>

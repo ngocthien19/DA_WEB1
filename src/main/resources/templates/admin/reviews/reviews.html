@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Đánh giá - Pet Shop Admin</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin/reviews/reviews.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div th:replace="~{admin/fragments/navbar :: navbar}"></div>
+
+            <main class="main-content">
+                <div th:replace="~{admin/fragments/header :: header}"></div>
+
+                <div class="stats-container">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="page-title">
+                                    <i class="fas fa-comments me-2"></i>
+                                    Quản lý Đánh giá
+                                </h1>
+                                <p class="page-subtitle">Quản lý tất cả đánh giá từ các cửa hàng</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rating Statistics Cards -->
+                    <div class="rating-statistics-cards">
+                        <div class="rating-stat-card" th:each="stat : ${ratingStats}">
+                            <div class="rating-stars">
+                                <span th:each="i : ${#numbers.sequence(1, stat.key)}">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                            </div>
+                            <div class="rating-count" th:text="${stat.value}">0</div>
+                            <div class="rating-label">sao</div>
+                        </div>
+                    </div>
+
+                    <div class="search-box">
+                        <form th:action="@{/admin/reviews}" method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" 
+                                       class="form-control search-input" 
+                                       name="keyword" 
+                                       th:value="${keyword}"
+                                       placeholder="Tìm kiếm theo tên sản phẩm, người dùng, cửa hàng hoặc bình luận...">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-search w-100">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="fas fa-filter"></i>
+                            Bộ lọc & Sắp xếp
+                            <span class="filter-badge" th:text="${danhGiaPage.totalElements}">0</span>
+                        </h6>
+                        
+                        <form th:action="@{/admin/reviews}" method="get" class="row g-3 align-items-end">
+                            <input type="hidden" name="keyword" th:value="${keyword}">
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Số sao</label>
+                                <select class="form-select" name="soSao" onchange="this.form.submit()">
+                                    <option value="">Tất cả</option>
+                                    <option value="5" th:selected="${soSao == 5}">5 sao</option>
+                                    <option value="4" th:selected="${soSao == 4}">4 sao</option>
+                                    <option value="3" th:selected="${soSao == 3}">3 sao</option>
+                                    <option value="2" th:selected="${soSao == 2}">2 sao</option>
+                                    <option value="1" th:selected="${soSao == 1}">1 sao</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Cửa hàng</label>
+                                <select class="form-select" name="maCuaHang" onchange="this.form.submit()">
+                                    <option value="">Tất cả cửa hàng</option>
+                                    <option th:each="store : ${allStores}" 
+                                            th:value="${store.maCuaHang}"
+                                            th:text="${store.tenCuaHang}"
+                                            th:selected="${maCuaHang == store.maCuaHang}">
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Từ ngày</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       name="startDate"
+                                       th:value="${startDate}">
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <label class="form-label">Đến ngày</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       name="endDate"
+                                       th:value="${endDate}">
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-2"></i>Áp dụng
+                                </button>
+                            </div>
+                            
+                            <div class="col-md-2">
+                                <a th:href="@{/admin/reviews}" class="btn btn-outline-secondary w-100">
+                                    <i class="fas fa-refresh me-2"></i>Reset
+                                </a>
+                            </div>
+                        </form>
+                        
+                        <!-- HIỂN THỊ CÁC BỘ LỌC ĐANG ACTIVE -->
+                        <div th:if="${(keyword != null and keyword != '') or soSao != null or maCuaHang != null or startDate != null or endDate != null}" class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-filter me-1"></i>
+                                    Bộ lọc đang áp dụng:
+                                </h6>
+                            </div>
+                            
+                            <div class="d-flex flex-wrap gap-2">
+                                <th:block th:if="${keyword != null and keyword != ''}">
+                                    <span class="active-filter-badge">
+                                        Tìm kiếm: <span th:text="${keyword}"></span>
+                                        <a th:href="@{/admin/reviews(soSao=${soSao}, maCuaHang=${maCuaHang}, startDate=${startDate}, endDate=${endDate})}" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${soSao != null}">
+                                    <span class="active-filter-badge">
+                                        Số sao: <span th:text="${soSao}"></span> sao
+                                        <a th:href="@{/admin/reviews(keyword=${keyword}, maCuaHang=${maCuaHang}, startDate=${startDate}, endDate=${endDate})}" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${maCuaHang != null}">
+                                    <span class="active-filter-badge">
+                                        Cửa hàng: <span th:text="${#lists.contains(allStores.![maCuaHang], maCuaHang) ? allStores.?[maCuaHang == maCuaHang].get(0).tenCuaHang : ''}"></span>
+                                        <a th:href="@{/admin/reviews(keyword=${keyword}, soSao=${soSao}, startDate=${startDate}, endDate=${endDate})}" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${startDate != null}">
+                                    <span class="active-filter-badge">
+                                        Từ: <span th:text="${#temporals.format(startDate, 'dd/MM/yyyy')}"></span>
+                                        <a th:href="@{/admin/reviews(keyword=${keyword}, soSao=${soSao}, maCuaHang=${maCuaHang}, endDate=${endDate})}" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <th:block th:if="${endDate != null}">
+                                    <span class="active-filter-badge">
+                                        Đến: <span th:text="${#temporals.format(endDate, 'dd/MM/yyyy')}"></span>
+                                        <a th:href="@{/admin/reviews(keyword=${keyword}, soSao=${soSao}, maCuaHang=${maCuaHang}, startDate=${startDate})}" class="filter-remove">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                </th:block>
+                                
+                                <a th:href="@{/admin/reviews}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-times me-1"></i>Xóa tất cả bộ lọc
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <div class="table-header-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-comments me-2"></i>
+                                    Danh sách đánh giá
+                                    <span class="review-count-badge" th:text="${danhGiaPage.totalElements}">0</span>
+                                </h4>
+                            </div>
+
+                            <!-- Selection Controls -->
+                            <div id="selectionControls" class="selection-controls" style="display: none;">
+                                <span class="selected-count">
+                                    Đã chọn: <strong id="selectedCount">0</strong> đánh giá
+                                </span>
+                                <button type="button" class="btn btn-clear-selection btn-sm me-2" onclick="clearSelection()">
+                                    <i class="fas fa-times me-1"></i>Bỏ chọn
+                                </button>
+                                
+                                <button type="button" class="btn btn-bulk-delete btn-sm me-2" onclick="showBulkDeleteModal()">
+                                    <i class="fas fa-trash me-1"></i>Xóa đã chọn
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table admin-reviews-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50">
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input" type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+                                            </div>
+                                        </th>
+                                        <th width="80">ID</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Cửa hàng</th>
+                                        <th>Người đánh giá</th>
+                                        <th width="120">Số sao</th>
+                                        <th>Bình luận</th>
+                                        <th width="120">Hình ảnh/Video</th>
+                                        <th width="150">Ngày đánh giá</th>
+                                        <th width="100">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="review : ${danhGiaPage.content}">
+                                        <td>
+                                            <div class="form-check d-flex justify-content-center">
+                                                <input class="form-check-input review-checkbox" 
+                                                       type="checkbox" 
+                                                       th:value="${review.maDanhGia}"
+                                                       onchange="updateSelectionControls()">
+                                            </div>
+                                        </td>
+                                        <td th:text="${review.maDanhGia}">1</td>
+                                        <td>
+                                            <div class="product-info">
+                                                <div class="product-name" th:text="${review.sanPham.tenSanPham}"></div>
+                                                <small class="text-muted" th:text="${review.sanPham.danhMuc.tenDanhMuc}"></small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="store-info">
+                                                <div class="store-name" th:text="${review.sanPham.cuaHang.tenCuaHang}"></div>
+                                                <small class="text-muted" th:text="${review.sanPham.cuaHang.email}"></small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="user-info">
+                                                <div class="user-name" th:text="${review.nguoiDung.tenNguoiDung}"></div>
+                                                <small class="text-muted" th:text="${review.nguoiDung.email}"></small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="star-rating">
+                                                <span th:each="i : ${#numbers.sequence(1, review.soSao)}">
+                                                    <i class="fas fa-star text-warning"></i>
+                                                </span>
+                                                <span th:each="i : ${#numbers.sequence(review.soSao + 1, 5)}" 
+                                                      th:if="${review.soSao < 5}">
+                                                    <i class="far fa-star text-warning"></i>
+                                                </span>
+                                                <small class="ms-1" th:text="'(' + ${review.soSao} + ')'"></small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="comment-text" th:text="${review.binhLuan}"></div>
+                                        </td>
+                                        <td>
+                                            <th:block th:if="${review.anhVideo != null}">
+                                                <div class="media-preview">
+                                                    <th:block th:if="${#strings.endsWith(review.anhVideo, '.mp4') or #strings.endsWith(review.anhVideo, '.avi') or #strings.endsWith(review.anhVideo, '.mov')}">
+                                                        <!-- Video Preview -->
+                                                        <div class="video-preview" data-bs-toggle="modal" data-bs-target="#mediaModal" 
+                                                             th:attr="data-media-url=@{/uploads/reviews/{fileName}(fileName=${review.anhVideo})}, data-media-type='video'">
+                                                            <i class="fas fa-video"></i>
+                                                            <span>Video</span>
+                                                        </div>
+                                                    </th:block>
+                                                    <th:block th:unless="${#strings.endsWith(review.anhVideo, '.mp4') or #strings.endsWith(review.anhVideo, '.avi') or #strings.endsWith(review.anhVideo, '.mov')}">
+                                                        <!-- Image Preview -->
+                                                        <div class="image-preview" data-bs-toggle="modal" data-bs-target="#mediaModal"
+                                                             th:attr="data-media-url=@{/uploads/reviews/{fileName}(fileName=${review.anhVideo})}, data-media-type='image'">
+                                                            <img th:src="@{/uploads/reviews/{fileName}(fileName=${review.anhVideo})}" alt="Hình ảnh đánh giá" 
+                                                                 onerror="this.style.display='none'">
+                                                            <div class="image-overlay" th:if="${!review.anhVideo.startsWith('http')}">
+                                                                <i class="fas fa-eye"></i>
+                                                            </div>
+                                                        </div>
+                                                    </th:block>
+                                                </div>
+                                            </th:block>
+                                            <th:block th:unless="${review.anhVideo != null}">
+                                                <span class="text-muted">Không có</span>
+                                            </th:block>
+                                        </td>
+                                        <td>
+                                            <span class="date-display">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                <span th:text="${#dates.format(review.ngayDanhGia, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="admin-action-buttons action-group-row">
+                                                <a th:href="@{/admin/reviews/view/{id}(id=${review.maDanhGia})}" 
+                                                   class="action-btn btn-view"
+                                                   title="Xem chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="action-btn btn-delete"
+                                                        th:data-review-id="${review.maDanhGia}"
+                                                        th:data-user-name="${review.nguoiDung.tenNguoiDung}"
+                                                        onclick="showDeleteModal(this)"
+                                                        title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${danhGiaPage.content.empty}">
+                                        <td colspan="10">
+                                            <div class="empty-state">
+                                                <i class="fas fa-comments"></i>
+                                                <p>Chưa có đánh giá nào</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <nav th:if="${danhGiaPage.totalPages > 1}">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${danhGiaPage.first} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/reviews(page=${danhGiaPage.number - 1}, keyword=${keyword}, soSao=${soSao}, maCuaHang=${maCuaHang}, startDate=${startDate}, endDate=${endDate})}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <li class="page-item" 
+                                    th:each="i : ${#numbers.sequence(0, danhGiaPage.totalPages - 1)}"
+                                    th:classappend="${i == danhGiaPage.number} ? 'active'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/reviews(page=${i}, keyword=${keyword}, soSao=${soSao}, maCuaHang=${maCuaHang}, startDate=${startDate}, endDate=${endDate})}"
+                                       th:text="${i + 1}">1</a>
+                                </li>
+                                
+                                <li class="page-item" th:classappend="${danhGiaPage.last} ? 'disabled'">
+                                    <a class="page-link" 
+                                       th:href="@{/admin/reviews(page=${danhGiaPage.number + 1}, keyword=${keyword}, soSao=${soSao}, maCuaHang=${maCuaHang}, startDate=${startDate}, endDate=${endDate})}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ========== MODALS ========== -->
+	
+	<div class="modal fade" id="mediaModal" tabindex="-1" aria-labelledby="mediaModalLabel" aria-hidden="true">
+	    <div class="modal-dialog modal-lg modal-dialog-centered">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <h5 class="modal-title" id="mediaModalLabel">
+	                    <i class="fas fa-image me-2"></i>Xem media
+	                </h5>
+	                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+	            </div>
+	            <div class="modal-body text-center">
+	                <div id="mediaContent">
+	                    <!-- Media content will be inserted here by JavaScript -->
+	                </div>
+	                <div id="noMediaPlaceholder" class="text-center py-5" style="display: none;">
+	                    <i class="fas fa-image fa-3x text-muted mb-3"></i>
+	                    <h5 class="text-muted">Không có media</h5>
+	                    <p class="text-muted">Đánh giá này không có hình ảnh hoặc video</p>
+	                </div>
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+	                    <i class="fas fa-times me-1"></i>Đóng
+	                </button>
+	                <a href="#" class="btn btn-primary" id="downloadMedia" style="display: none;">
+	                    <i class="fas fa-download me-1"></i>Tải xuống
+	                </a>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Modal Xác nhận xóa đơn lẻ -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Xác nhận xóa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa đánh giá của <strong id="userNameToDelete" class="text-danger">[Tên người dùng]</strong>?</p>
+                <p class="text-danger mb-0">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác. Tất cả dữ liệu đánh giá sẽ bị xóa vĩnh viễn.
+                    </small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy bỏ
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-1"></i>Xóa
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận xóa hàng loạt -->
+<div class="modal fade" id="bulkDeleteModal" tabindex="-1" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkDeleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    Xác nhận xóa hàng loạt
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa <strong id="bulkDeleteCount" class="text-danger">0</strong> đánh giá đã chọn?</p>
+                
+                <div class="preview-section mt-3">
+                    <h6 class="mb-2">Các đánh giá sẽ bị xóa:</h6>
+                    <div id="bulkDeletePreview" class="preview-container">
+                        <!-- Preview items will be inserted here by JavaScript -->
+                    </div>
+                </div>
+                
+                <p class="text-danger mb-0 mt-3">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        Hành động này không thể hoàn tác. Tất cả dữ liệu đánh giá sẽ bị xóa vĩnh viễn.
+                    </small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Hủy bỏ
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmBulkDeleteBtn">
+                    <i class="fas fa-trash me-1"></i>Xóa <span id="bulkDeleteCountBtn">0</span> đánh giá
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/admin/dashboard.js}"></script>
+    <script th:src="@{/js/admin/reviews/reviews.js}"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Store Locked Banner Fragment -->
+    <div th:fragment="store-locked-banner" class="store-locked-banner">
+        <div class="store-locked-content">
+            <div style="display: flex; align-items: center; flex: 1;">
+                <div class="store-locked-icon">
+                    <i class="fas fa-store-slash"></i>
+                </div>
+                <div class="store-locked-text">
+                    <h3 class="store-locked-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        CỬA HÀNG ĐANG BỊ KHÓA
+                    </h3>
+                    <p class="store-locked-message">
+                        Cửa hàng của bạn hiện đang tạm ngừng hoạt động. Bạn chỉ có thể xem thông tin, 
+                        không thể thực hiện các thao tác quản lý. Vui lòng liên hệ hỗ trợ để được giải đáp.
+                    </p>
+                </div>
+            </div>
+            <div class="store-locked-actions">
+                <a href="#" class="btn-contact-support" onclick="contactSupport()">
+                    <i class="fas fa-headset me-1"></i>
+                    Liên hệ hỗ trợ
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

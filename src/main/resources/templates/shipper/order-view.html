@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Đơn hàng - Shipper</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/shipper/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/shipper/order-view.css}">
+</head>
+<body >
+    <div class="shipper-container">
+        <!-- Header -->
+        <header class="shipper-header">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Shipper Dashboard</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <span th:text="${shipper.tenNguoiDung}">Tên Shipper</span>
+                    <div class="user-actions">
+                        <a th:href="@{/logout}" class="logout-btn">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <input type="hidden" id="deliveryId" th:value="${delivery.maVanChuyen}">
+    	<input type="hidden" id="orderId" th:value="${order.maDatHang}">
+
+        <!-- Main Content -->
+        <main class="shipper-main">
+            <div class="order-detail-container">
+                <!-- Order Header -->
+                <div class="order-profile-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6 text-center text-md-start">
+                            <h2 class="order-title">Đơn hàng #<span th:text="${order.maDatHang}">Mã đơn hàng</span></h2>
+                            <div class="order-meta">
+                                <span class="meta-item">
+                                    <i class="fas fa-user me-1"></i>
+                                    <span th:text="${order.nguoiDung.tenNguoiDung != null ? order.nguoiDung.tenNguoiDung : order.nguoiDung.email}">Tên người dùng</span>
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    <span th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">Ngày đặt</span>
+                                </span>
+                            </div>
+                            <div class="price-section">
+                                <span class="price-value">
+                                    <span th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">Tổng tiền</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+                            <div class="order-quick-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-boxes"></i>
+                                    <div>
+                                        <strong th:text="${order.datHangChiTiets.size()}">0</strong>
+                                        <span>Sản phẩm</span>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-receipt"></i>
+                                    <div>
+                                        <strong th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">0</strong>
+                                        <span>Tổng tiền</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span th:switch="${delivery.trangThai}" class="status-badge-view">
+                                <span th:case="'Hoàn thành'" class="status-completed-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                <span th:case="'Đang giao'" class="status-shipping-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                <span th:case="'Đã bàn giao'" class="status-pending-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                <span th:case="'Hủy'" class="status-cancelled-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                <span th:case="*" class="status-pending-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Information -->
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <i class="fas fa-info-circle"></i>
+                                <h5>Thông tin giao hàng</h5>
+                            </div>
+                            <div class="info-card-body">
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-hashtag"></i>
+                                        Mã đơn hàng
+                                    </div>
+                                    <div class="info-value" th:text="${order.maDatHang}">1</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-user"></i>
+                                        Người nhận hàng
+                                    </div>
+                                    <div class="info-value" th:text="${order.nguoiDung.tenNguoiDung != null ? order.nguoiDung.tenNguoiDung : order.nguoiDung.email}">Tên người dùng</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        Địa chỉ giao hàng
+                                    </div>
+                                    <div class="info-value" th:text="${order.diaChiGiaoHang} ?: 'Chưa có địa chỉ'">Địa chỉ giao hàng</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-phone"></i>
+                                        Số điện thoại
+                                    </div>
+                                    <div class="info-value" th:text="${order.soDienThoaiGiaoHang} ?: 'Chưa có SĐT'">Số điện thoại</div>
+                                </div>
+
+                                <div class="info-row" th:if="${order.ghiChu}">
+                                    <div class="info-label">
+                                        <i class="fas fa-sticky-note"></i>
+                                        Ghi chú
+                                    </div>
+                                    <div class="info-value">
+                                        <span class="note-text" th:text="${order.ghiChu != null and !order.ghiChu.isEmpty()} ? ${order.ghiChu} : 'Không có'">Ghi chú</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-shop"></i>
+                                        Cửa hàng
+                                    </div>
+                                    <div class="info-value">
+                                        <span class="note-text" th:text="${delivery.datHang.datHangChiTiets[0].sanPham.cuaHang.tenCuaHang}">Ghi chú</span>
+                                    </div>
+                                </div>
+							</div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <i class="fas fa-tasks"></i>
+                                <h5>Trạng thái & Thông tin</h5>
+                            </div>
+                            <div class="info-card-body">
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-power-off"></i>
+                                        Trạng thái đơn hàng
+                                    </div>
+                                    <div class="info-value">
+                                        <span th:switch="${order.trangThai}" class="status-badge-view">
+                                            <span th:case="'Hoàn thành'" class="status-completed-view" th:text="${order.trangThai}">Trạng thái</span>
+                                            <span th:case="'Đang giao'" class="status-shipping-view" th:text="${order.trangThai}">Trạng thái</span>
+                                            <span th:case="'Đã xác nhận'" class="status-confirmed-view" th:text="${order.trangThai}">Trạng thái</span>
+                                            <span th:case="'Hủy'" class="status-cancelled-view" th:text="${order.trangThai}">Trạng thái</span>
+                                            <span th:case="*" class="status-pending-view" th:text="${order.trangThai}">Trạng thái</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-shipping-fast"></i>
+                                        Trạng thái vận chuyển
+                                    </div>
+                                    <div class="info-value">
+                                        <span th:switch="${delivery.trangThai}" class="status-badge-view">
+                                            <span th:case="'Hoàn thành'" class="status-completed-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                            <span th:case="'Đang giao'" class="status-shipping-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                            <span th:case="'Đã bàn giao'" class="status-pending-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                            <span th:case="'Hủy'" class="status-cancelled-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                            <span th:case="*" class="status-pending-view" th:text="${delivery.trangThai}">Trạng thái</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-boxes"></i>
+                                        Tổng sản phẩm
+                                    </div>
+                                    <div class="info-value">
+                                        <span class="quantity-badge-view" th:text="${order.datHangChiTiets.size()}">0</span>
+                                    </div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        Tổng tiền
+                                    </div>
+                                    <div class="info-value price-highlight" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</div>
+                                </div>
+
+                                <div class="info-row">
+                                    <div class="info-label">
+                                        <i class="fas fa-calendar-day"></i>
+                                        Ngày đặt hàng
+                                    </div>
+                                    <div class="info-value" th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">01/01/2024</div>
+                                </div>
+                                
+                                <div class="info-row"
+									th:if="${delivery.trangThai == 'Hủy' and delivery.lyDoHuy != null}">
+									<div class="info-label">
+										<i class="fas fa-comment-alt"></i> Lý do hủy
+									</div>
+									<div class="info-value">
+										<span class="text-danger" th:text="${delivery.lyDoHuy}">Lý
+											do hủy</span>
+									</div>
+								</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="info-card">
+                            <div class="info-card-header">
+                                <i class="fas fa-list-ul"></i>
+                                <h5>Chi tiết sản phẩm</h5>
+                            </div>
+                            <div class="info-card-body">
+                                <div class="order-items-container">
+                                    <div class="table-responsive">
+                                        <table class="table order-items-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center">#</th>
+                                                    <th>Sản phẩm</th>
+                                                    <th class="text-center">Đơn giá</th>
+                                                    <th class="text-center">Số lượng</th>
+                                                    <th class="text-end">Thành tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr th:each="chiTiet, iter : ${order.datHangChiTiets}">
+                                                    <td class="text-center" th:text="${iter.index + 1}">1</td>
+                                                    <td>
+                                                        <div class="product-info">
+                                                            <div class="product-image-small">
+                                                                <img th:src="${chiTiet.sanPham.hinhAnh != null ? '/uploads/products/' + chiTiet.sanPham.hinhAnh : '/images/default-product.jpg'}" 
+                                                                     alt="Product Image">
+                                                            </div>
+                                                            <div class="product-details">
+                                                                <h6 class="product-name" th:text="${chiTiet.sanPham.tenSanPham}">Tên sản phẩm</h6>
+                                                                <small class="text-muted" th:text="${chiTiet.sanPham.loaiSanPham}">Loại sản phẩm</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center price-cell">
+                                                        <span th:text="${#numbers.formatDecimal(chiTiet.giaBan, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</span>
+                                                    </td>
+                                                    <td class="text-center quantity-cell">
+                                                        <span class="quantity-badge" th:text="${chiTiet.soLuong}">1</span>
+                                                    </td>
+                                                    <td class="text-end total-cell">
+                                                        <strong th:text="${#numbers.formatDecimal(chiTiet.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</strong>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                                                    <td class="text-end">
+                                                        <strong class="total-amount" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT')} + ' đ'">100,000 đ</strong>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="row" th:if="${delivery.trangThai == 'Đã bàn giao' or delivery.trangThai == 'Đang giao'}">
+                    <div class="col-12">
+                        <div class="action-buttons-container">
+                            <a th:href="@{/shipper/dashboard}" class="btn-action btn-back">
+                                <i class="fas fa-arrow-left"></i>
+                                Quay lại danh sách
+                            </a>
+                            
+                            <div class="delivery-actions">
+                                <!-- Actions for Pending Delivery (Đã bàn giao) -->
+                                <div th:if="${delivery.trangThai == 'Đã bàn giao'}">
+                                    <button class="btn-action btn-confirm" onclick="showConfirmModal()">
+                                        <i class="fas fa-check"></i>
+                                        Xác nhận nhận đơn
+                                    </button>
+                                    <button class="btn-action btn-cancel" onclick="showCancelModal()">
+                                        <i class="fas fa-times"></i>
+                                        Hủy nhận đơn
+                                    </button>
+                                </div>
+                                
+                                <!-- Actions for Active Delivery (Đang giao) -->
+                                <div th:if="${delivery.trangThai == 'Đang giao'}">
+                                    <button class="btn-action btn-complete" onclick="showCompleteModal()">
+                                        <i class="fas fa-check-double"></i>
+                                        Hoàn thành giao hàng
+                                    </button>
+                                    <button class="btn-action btn-cancel" onclick="showCancelModal()">
+                                        <i class="fas fa-times"></i>
+                                        Hủy đơn hàng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed/Cancelled Orders -->
+                <div class="row" th:if="${delivery.trangThai == 'Hoàn thành' or delivery.trangThai == 'Hủy'}">
+                    <div class="col-12">
+                        <div class="action-buttons-container">
+                            <a th:href="@{/shipper/dashboard}" class="btn-action btn-back">
+                                <i class="fas fa-arrow-left"></i>
+                                Quay lại danh sách
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Xác nhận nhận đơn -->
+	<div class="modal" id="confirmModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-check-circle"></i> Xác nhận nhận đơn</h3>
+	            <span class="close" onclick="closeModal('confirmModal')">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <p>Bạn có chắc chắn muốn xác nhận nhận đơn hàng <strong id="confirmOrderId">#<span th:text="${order.maDatHang}"></span></strong>?</p>
+	            <div class="delivery-info">
+	                <h4>Thông tin giao hàng:</h4>
+	                <p><strong>Địa chỉ:</strong> <span id="confirmOrderAddress" th:text="${order.diaChiGiaoHang} ?: 'Chưa có địa chỉ'">Địa chỉ</span></p>
+	                <p><strong>SĐT:</strong> <span id="confirmOrderPhone" th:text="${order.soDienThoaiGiaoHang} ?: 'Chưa có SĐT'">SĐT</span></p>
+	                <p th:if="${order.ghiChu}"><strong>Ghi chú:</strong> <span id="confirmOrderNote" th:text="${order.ghiChu}">Ghi chú</span></p>
+	            </div>
+	            <p class="modal-note">Đơn hàng sẽ chuyển sang trạng thái "Đang giao" và bạn bắt đầu thực hiện giao hàng.</p>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Hủy bỏ</button>
+	            <button class="btn btn-confirm" onclick="processConfirmDelivery()">Xác nhận nhận đơn</button>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Modal Hoàn thành đơn hàng -->
+	<div class="modal" id="completeModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-check-double"></i> Hoàn thành đơn hàng</h3>
+	            <span class="close" onclick="closeModal('completeModal')">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <p>Bạn có chắc chắn đã giao hàng thành công cho đơn hàng <strong id="completeOrderId">#<span th:text="${order.maDatHang}"></span></strong>?</p>
+	            <div class="delivery-info">
+	                <h4>Thông tin giao hàng:</h4>
+	                <p><strong>Địa chỉ:</strong> <span id="completeOrderAddress" th:text="${order.diaChiGiaoHang} ?: 'Chưa có địa chỉ'">Địa chỉ</span></p>
+	                <p><strong>SĐT:</strong> <span id="completeOrderPhone" th:text="${order.soDienThoaiGiaoHang} ?: 'Chưa có SĐT'">SĐT</span></p>
+	            </div>
+	            <p class="modal-note">Đơn hàng sẽ được đánh dấu là "Hoàn thành" và kết thúc quá trình giao hàng.</p>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-secondary" onclick="closeModal('completeModal')">Hủy bỏ</button>
+	            <button class="btn btn-complete" onclick="processCompleteDelivery()">Xác nhận hoàn thành</button>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Modal Hủy đơn hàng -->
+	<div class="modal" id="cancelModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-times-circle"></i> Hủy nhận đơn</h3>
+	            <span class="close" onclick="closeModal('cancelModal')">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <p>Bạn có chắc chắn muốn hủy nhận đơn hàng <strong id="cancelOrderId">#<span th:text="${order.maDatHang}"></span></strong>?</p>
+	            <div class="delivery-info">
+	                <h4>Thông tin giao hàng:</h4>
+	                <p><strong>Địa chỉ:</strong> <span id="cancelOrderAddress" th:text="${order.diaChiGiaoHang} ?: 'Chưa có địa chỉ'">Địa chỉ</span></p>
+	                <p><strong>SĐT:</strong> <span id="cancelOrderPhone" th:text="${order.soDienThoaiGiaoHang} ?: 'Chưa có SĐT'">SĐT</span></p>
+	            </div>
+	            <div class="modal-warning">
+	                <i class="fas fa-exclamation-triangle"></i>
+	                <span>Đơn hàng sẽ được chuyển về trạng thái "Đã xác nhận" để Vendor chọn shipper khác.</span>
+	            </div>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Hủy bỏ</button>
+	            <button class="btn btn-cancel" onclick="processCancelDelivery()">Xác nhận hủy</button>
+	        </div>
+	    </div>
+	</div>
+
+    <script th:src="@{/js/shipper/dashboard.js}"></script>
+    <script th:src="@{/js/shipper/order-view.js}"></script>
+</body>
+</html>

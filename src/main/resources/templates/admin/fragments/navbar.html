@@ -1,0 +1,73 @@
+<nav class="sidebar" th:fragment="navbar">
+	<div class="sidebar-header text-center">
+		<h4>
+			<i class="fas fa-paw me-2"></i> Pet Shop Admin
+		</h4>
+		<small class="text-light">Quản trị hệ thống</small>
+	</div>
+
+	<!-- User Info -->
+	<div class="sidebar-user">
+		<img th:src="${(user != null and user.hinhAnh != null) ? '/uploads/users/' + user.hinhAnh : '/images/default-avatar.jpg'}" 
+			class="rounded-circle mb-2" width="70" height="70" alt="Avatar">
+		<h6 class="text-white mb-1" th:text="${user.tenNguoiDung}">Admin
+			User</h6>
+		<small class="text-light" th:text="${user.email}">admin@email.com</small>
+		<div class="mt-2">
+			<span class="badge bg-success">ADMIN</span>
+		</div>
+	</div>
+
+	<ul class="nav flex-column" id="sidebarNav">
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="dashboard" th:href="@{/admin/dashboard}">
+				<i class="fas fa-tachometer-alt"></i> Dashboard
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="users" th:href="@{/admin/users}">
+				<i class="fas fa-users-cog"></i> Quản lý Người dùng
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="customers" th:href="@{/admin/customers}">
+				<i class="fas fa-users"></i> Quản lý Khách hàng
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="stores" th:href="@{/admin/stores}">
+				<i class="fas fa-store"></i> Quản lý Cửa hàng
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="products" th:href="@{/admin/products}">
+				<i class="fas fa-box"></i> Quản lý Sản phẩm
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="categories" th:href="@{/admin/categories}">
+				<i class="fas fa-tags"></i> Quản lý Danh mục
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="orders" th:href="@{/admin/orders}">
+				<i class="fas fa-shopping-cart"></i> Quản lý Đơn hàng
+			</a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="sales-history" th:href="@{/admin/sales-history}">	
+				<i class="fas fa-chart-line"></i> Lịch sử bán hàng
+			</a>
+		</li>
+		<li class="nav-item">
+		    <a class="nav-link sidebar-link" data-page="reviews" th:href="@{/admin/reviews}">
+		        <i class="fas fa-star"></i> Quản lý Đánh giá
+		    </a>
+		</li>
+		<li class="nav-item">
+			<a class="nav-link sidebar-link" data-page="logout" href="/login?logout=true" onclick="clearAuthData()">
+				<i class="fas fa-sign-out-alt"></i> Đăng xuất
+			</a>
+		</li>
+	</ul>
+</nav>

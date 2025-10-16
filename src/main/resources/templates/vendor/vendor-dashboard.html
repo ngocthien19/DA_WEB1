@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Dashboard - Pet Shop</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+<link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+
+<style>
+    /* CSS cho thông báo khóa ở giữa màn hình và Backdrop */
+    .alert-lock {
+        /* Base styles */
+        border-left: 5px solid #dc3545;
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+
+        /* VỊ TRÍ VÀ HIỂN THỊ TRUNG TÂM MÀN HÌNH */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 90%;
+        max-width: 600px;
+        z-index: 1055; 
+        
+        /* Animation */
+        animation: fadeInScale 0.5s ease-out;
+    }
+    .alert-lock .alert-heading {
+        color: #dc3545;
+        font-weight: 700;
+    }
+    .alert-lock .btn-close {
+        opacity: 1;
+        filter: brightness(0.5); 
+    }
+    
+    /* Hiệu ứng mờ nền (Backdrop) */
+    .alert-lock-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.3); /* Lớp phủ đen mờ */
+        backdrop-filter: blur(4px); /* Hiệu ứng mờ nhạt */
+        z-index: 1050;
+        animation: fadeInBackdrop 0.3s ease-in;
+    }
+
+    @keyframes fadeInScale {
+        from { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    @keyframes fadeInBackdrop {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+</style>
+
+</head>
+<body>
+	
+	<div class="container-fluid">
+		<div class="row">
+			<div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+			
+			<main class="main-content">
+				<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+				<div th:replace="~{vendor/fragments/header :: header}"></div>
+
+				<div class="stats-container">
+					<div class="row">
+						<div class="col-xl-3 col-md-6">
+							<div class="stat-card fade-in">
+								<div class="d-flex justify-content-between align-items-center">
+									<div>
+										<div class="stat-number" th:text="${totalActiveProducts != null} ? ${totalActiveProducts} : 0">0</div>
+										<div class="stat-label">Sản phẩm đang bán</div>
+									</div>
+									<i class="fas fa-boxes stat-icon"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-xl-3 col-md-6">
+							<div class="stat-card fade-in">
+								<div class="d-flex justify-content-between align-items-center">
+									<div>
+										<div class="stat-number" th:text="${totalInactiveProducts != null} ? ${totalInactiveProducts} : 0">0</div>
+										<div class="stat-label">Sản phẩm ngừng bán</div>
+									</div>
+									<i class="fas fa-box-open stat-icon"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-xl-3 col-md-6">
+							<div class="stat-card fade-in">
+								<div class="d-flex justify-content-between align-items-center">
+									<div>
+										<div class="stat-number" th:text="${newOrdersCount != null} ? ${newOrdersCount} : 0">0</div>
+										<div class="stat-label">Đơn hàng chờ xác nhận</div>
+									</div>
+									<i class="fas fa-cart-arrow-down stat-icon"></i>
+								</div>
+							</div>
+						</div>
+						<div class="col-xl-3 col-md-6">
+							<div class="stat-card fade-in">
+								<div class="d-flex justify-content-between align-items-center">
+									<div>
+										<div class="stat-number" th:text="${completedOrdersCount != null} ? ${completedOrdersCount} : 0">0</div>
+										<div class="stat-label">Đơn hàng đã hoàn thành</div>
+									</div>
+									<i class="fas fa-check-circle stat-icon"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="data-sections">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="section-card slide-in-left">
+								<h5>
+									<i class="fas fa-shopping-basket"></i> Đơn hàng mới (Chờ xác nhận)
+								</h5>
+								<div class="list-group">
+									<div th:if="${recentNewOrders != null and !#lists.isEmpty(recentNewOrders)}">
+										<div th:each="order : ${recentNewOrders}"
+											class="list-group-item border-0">
+											<div class="d-flex w-100 justify-content-between align-items-center">
+												<div style="flex: 1; min-width: 0; margin-right: 10px;">
+													<h6 class="mb-1" th:text="'Đơn #' + ${order.maDatHang}">Mã đơn</h6>
+													<small class="text-muted"
+														th:text="${order.nguoiDung?.tenNguoiDung} ?: 'Khách hàng'">Khách hàng</small>
+												</div>
+												<span class="badge bg-primary" th:text="${order.trangThai}">New</span>
+											</div>
+										</div>
+									</div>
+                                    <div th:if="${recentNewOrders == null or #lists.isEmpty(recentNewOrders)}" 
+                                         class="list-group-item border-0 text-center text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        Không có đơn hàng mới nào.
+                                    </div>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-md-6">
+							<div class="section-card slide-in-left">
+								<h5>
+									<i class="fas fa-box"></i> Sản phẩm mới nhất
+								</h5>
+								<div class="list-group">
+									<div th:if="${recentProducts != null and !#lists.isEmpty(recentProducts)}">
+										<div th:each="product : ${recentProducts}"
+											class="list-group-item border-0">
+											<div class="d-flex w-100 justify-content-between align-items-center">
+												<div style="flex: 1; min-width: 0; margin-right: 10px;">
+													<h6 class="mb-1" th:text="${product.tenSanPham}">Tên sản phẩm</h6>
+													<small class="text-muted"
+														th:text="'Giá: ₫' + ${#numbers.formatDecimal(product.giaBan, 0, 'COMMA', 0, 'POINT')}">Giá</small>
+												</div>
+												<span class="badge"
+													th:classappend="${product.trangThai == true} ? 'bg-success' : 'bg-danger'"
+													th:text="${product.trangThai == true} ? 'Đang bán' : 'Ngừng bán'"></span>
+											</div>
+										</div>
+									</div>
+                                    <div th:if="${recentProducts == null or #lists.isEmpty(recentProducts)}" 
+                                         class="list-group-item border-0 text-center text-muted">
+                                        <i class="fas fa-box-open fa-2x mb-2"></i><br>
+                                        Không có sản phẩm nào.
+                                    </div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row mt-4">
+						<div class="col-md-6">
+						    <div class="section-card fade-in">
+						        <h5>
+						            <i class="fas fa-chart-line"></i> Doanh thu Cửa hàng
+						        </h5>
+						        <div class="chart-container" style="position: relative; height: 250px;">
+						            <canvas id="revenueChart"></canvas>
+						        </div>
+						        <!-- Container cho thông tin tổng quan -->
+						        <div id="revenueSummary"></div>
+						        <div class="mt-2 text-center">
+						            <small class="text-muted">
+						                <i class="fas fa-info-circle me-1"></i>
+						                Doanh thu 7 ngày gần nhất từ các đơn hàng đã hoàn thành
+						            </small>
+						        </div>
+						    </div>
+						</div>
+
+						<div class="col-md-6">
+							<div class="section-card fade-in">
+								<h5>
+									<i class="fas fa-bolt"></i> Thao tác Nhanh
+								</h5>
+								<div class="list-group">
+								    <a th:href="@{/vendor/products/add}" 
+								       class="list-group-item border-0 list-group-item-action"
+								       data-target-page="products">
+								        <div class="d-flex align-items-center">
+								            <i class="fas fa-plus-circle text-success me-3"></i>
+								            <div>
+								                <h6 class="mb-1">Thêm sản phẩm mới</h6>
+								                <small class="text-muted">Tạo sản phẩm mới cho cửa hàng</small>
+								            </div>
+								        </div>
+								    </a>
+								    <a th:href="@{/vendor/promotions/add}" 
+								       class="list-group-item border-0 list-group-item-action"
+								       data-target-page="promotions">
+								        <div class="d-flex align-items-center">
+								            <i class="fas fa-tags text-warning me-3"></i>
+								            <div>
+								                <h6 class="mb-1">Tạo khuyến mãi</h6>
+								                <small class="text-muted">Thiết lập chương trình giảm giá</small>
+								            </div>
+								        </div>
+								    </a>
+								    <a th:href="@{/vendor/sales-history}" 
+								       class="list-group-item border-0 list-group-item-action"
+								       data-target-page="sales-history">
+								        <div class="d-flex align-items-center">
+								            <i class="fas fa-chart-bar text-primary me-3"></i>
+								            <div>
+								                <h6 class="mb-1">Xem báo cáo</h6>
+								                <small class="text-muted">Phân tích hiệu suất bán hàng</small>
+								            </div>
+								        </div>
+								    </a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+    
+    <div th:if="${errorMessage}" 
+	     class="alert alert-danger alert-lock alert-dismissible fade show" 
+	     id="storeLockAlert" 
+	     role="alert"
+	     th:attr="data-is-locked=${cuaHang?.trangThai == false}">
+	    
+	    <h4 class="alert-heading"><i class="fas fa-lock me-2"></i>Cửa hàng đang bị khóa!</h4>
+	    <div th:utext="${#strings.replace(errorMessage, '
+	', '&lt;br&gt;')}"></div>
+	    <hr>
+	    <p class="mb-0">
+	        Vui lòng liên hệ Admin để được hỗ trợ mở lại cửa hàng.
+	    </p>
+	    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	</div>
+
+	<div id="toastContainer"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+</body>
+</html>

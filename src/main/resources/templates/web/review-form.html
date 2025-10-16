@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đánh giá đơn hàng - Pet Shop</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <style>
+        .review-section {
+            padding: 60px 0;
+            background: #f8f9fa;
+            min-height: calc(100vh - 200px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            color: #0f3460;;
+            margin-bottom: 10px;
+        }
+
+        .page-title h1 i {
+            color: #ffc107;
+            margin-right: 10px;
+        }
+
+        .page-title p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .review-form-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .order-info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .order-info-box h3 {
+            color: #e94560;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .order-info-box p {
+            margin: 8px 0;
+            color: #666;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #e94560;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ffc107;
+        }
+
+        .product-review-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .rating-input {
+            margin-bottom: 20px;
+        }
+
+        .rating-input label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 10px;
+            font-size: 2rem;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #ffc107;
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .comment-input {
+            margin-bottom: 20px;
+        }
+
+        .comment-input label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .comment-input textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        .comment-input textarea:focus {
+            outline: none;
+            border-color: #ffc107;
+        }
+
+        .file-upload {
+            margin-bottom: 20px;
+        }
+
+        .file-upload label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .file-upload input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .file-upload input[type="file"]:hover {
+            border-color: #ffc107;
+        }
+
+        .file-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .store-review-box {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px solid #ffc107;
+        }
+
+        .store-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .store-icon {
+            width: 60px;
+            height: 60px;
+            background: #ffc107;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .store-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-submit {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-submit:hover {
+            background: #ffb300;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .page-title h1 {
+                font-size: 2rem;
+            }
+
+            .review-form-container {
+                padding: 20px;
+            }
+
+            .product-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <section class="review-section">
+        <div class="container">
+            <div class="page-title">
+                <h1>
+                    <i class="fa-solid fa-star"></i>
+                    Đánh giá đơn hàng
+                </h1>
+                <p>Chia sẻ trải nghiệm của bạn về sản phẩm và dịch vụ</p>
+            </div>
+            
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span th:text="${error}"></span>
+            </div>
+            
+            <form th:action="@{/review/submit}" method="post" enctype="multipart/form-data" id="reviewForm">
+                <input type="hidden" name="maDatHang" th:value="${datHang.maDatHang}">
+                <input type="hidden" name="maCuaHang" th:value="${cuaHang.maCuaHang}">
+                
+                <div class="review-form-container">
+                    <div class="order-info-box">
+                        <h3><i class="fa-solid fa-receipt"></i> Thông tin đơn hàng</h3>
+                        <p><strong>Mã đơn hàng:</strong> #<span th:text="${datHang.maDatHang}"></span></p>
+                        <p><strong>Ngày đặt:</strong> <span th:text="${#temporals.format(datHang.ngayDat, 'dd/MM/yyyy')}"></span></p>
+                        <p><strong>Tổng tiền:</strong> <span th:text="'₫' + ${#numbers.formatDecimal(datHang.tongTien, 0, 'COMMA', 0, 'POINT')}"></span></p>
+                    </div>
+                    
+                    <!-- Đánh giá sản phẩm -->
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-box"></i> Đánh giá sản phẩm
+                    </h2>
+                    
+                    <div th:each="chiTiet : ${chiTiets}" class="product-review-item">
+                        <div class="product-info">
+                            <img th:src="@{'/uploads/products' + ${chiTiet.sanPham.hinhAnh}}" 
+                                 th:alt="${chiTiet.sanPham.tenSanPham}"
+                                 class="product-image">
+                            <div>
+                                <div class="product-name" th:text="${chiTiet.sanPham.tenSanPham}"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="rating-input">
+                            <label>Đánh giá của bạn <span style="color: red;">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" th:name="'soSao_' + ${chiTiet.sanPham.maSanPham}" 
+                                       th:id="'star5_' + ${chiTiet.sanPham.maSanPham}" value="5" required>
+                                <label th:for="'star5_' + ${chiTiet.sanPham.maSanPham}">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                                
+                                <input type="radio" th:name="'soSao_' + ${chiTiet.sanPham.maSanPham}" 
+                                       th:id="'star4_' + ${chiTiet.sanPham.maSanPham}" value="4">
+                                <label th:for="'star4_' + ${chiTiet.sanPham.maSanPham}">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                                
+                                <input type="radio" th:name="'soSao_' + ${chiTiet.sanPham.maSanPham}" 
+                                       th:id="'star3_' + ${chiTiet.sanPham.maSanPham}" value="3">
+                                <label th:for="'star3_' + ${chiTiet.sanPham.maSanPham}">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                                
+                                <input type="radio" th:name="'soSao_' + ${chiTiet.sanPham.maSanPham}" 
+                                       th:id="'star2_' + ${chiTiet.sanPham.maSanPham}" value="2">
+                                <label th:for="'star2_' + ${chiTiet.sanPham.maSanPham}">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                                
+                                <input type="radio" th:name="'soSao_' + ${chiTiet.sanPham.maSanPham}" 
+                                       th:id="'star1_' + ${chiTiet.sanPham.maSanPham}" value="1">
+                                <label th:for="'star1_' + ${chiTiet.sanPham.maSanPham}">
+                                    <i class="fa-solid fa-star"></i>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-input">
+                            <label>Nhận xét của bạn <span style="color: red;">*</span></label>
+                            <textarea th:name="'binhLuan_' + ${chiTiet.sanPham.maSanPham}" 
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này..."
+                                      minlength="10"
+                                      maxlength="1000"
+                                      required
+                                      th:attr="data-product-id=${chiTiet.sanPham.maSanPham}"
+                                      class="comment-textarea"></textarea>
+                            <div class="char-counter" th:id="'counter_' + ${chiTiet.sanPham.maSanPham}">0/1000 ký tự</div>
+                        </div>
+                        
+                        <div class="file-upload">
+                            <label>
+                                <i class="fa-solid fa-image"></i> Thêm ảnh/video (tùy chọn)
+                            </label>
+                            <input type="file" 
+                                   th:name="'anhVideo_' + ${chiTiet.sanPham.maSanPham}" 
+                                   accept="image/*,video/*">
+                            <p class="file-info">
+                                <i class="fa-solid fa-info-circle"></i> 
+                                Hỗ trợ: JPG, PNG, GIF, MP4. Tối đa 10MB
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Đánh giá cửa hàng -->
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-store"></i> Đánh giá cửa hàng
+                    </h2>
+                    
+                    <div class="store-review-box">
+                        <div class="store-info">
+                            <div class="store-icon">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+                            <div class="store-name" th:text="${cuaHang.tenCuaHang}"></div>
+                        </div>
+                        
+                        <div class="rating-input">
+                            <label>Đánh giá của bạn về cửa hàng <span style="color: red;">*</span></label>
+                            <div class="star-rating">
+                                <input type="radio" name="soSaoCuaHang" id="storeStar5" value="5" required>
+                                <label for="storeStar5"><i class="fa-solid fa-star"></i></label>
+                                
+                                <input type="radio" name="soSaoCuaHang" id="storeStar4" value="4">
+                                <label for="storeStar4"><i class="fa-solid fa-star"></i></label>
+                                
+                                <input type="radio" name="soSaoCuaHang" id="storeStar3" value="3">
+                                <label for="storeStar3"><i class="fa-solid fa-star"></i></label>
+                                
+                                <input type="radio" name="soSaoCuaHang" id="storeStar2" value="2">
+                                <label for="storeStar2"><i class="fa-solid fa-star"></i></label>
+                                
+                                <input type="radio" name="soSaoCuaHang" id="storeStar1" value="1">
+                                <label for="storeStar1"><i class="fa-solid fa-star"></i></label>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-input">
+                            <label>Nhận xét về dịch vụ cửa hàng <span style="color: red;">*</span></label>
+                            <textarea name="binhLuanCuaHang" 
+                                      id="storeComment"
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn về chất lượng dịch vụ, thái độ phục vụ..."
+                                      minlength="10"
+                                      maxlength="1000"
+                                      required
+                                      class="comment-textarea"></textarea>
+                            <div class="char-counter" id="storeCounter">0/1000 ký tự</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <a th:href="@{/track-order}" class="btn btn-cancel">
+                            <i class="fa-solid fa-arrow-left"></i> Hủy
+                        </a>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fa-solid fa-paper-plane"></i> Gửi đánh giá
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+    
+    <script th:src="@{/js/web/header.js}"></script>
+    <script>
+        // Character counter for textareas
+        document.querySelectorAll('.comment-textarea').forEach(textarea => {
+            const productId = textarea.getAttribute('data-product-id');
+            const counterId = productId ? `counter_${productId}` : 'storeCounter';
+            const counter = document.getElementById(counterId);
+            
+            textarea.addEventListener('input', function() {
+                const length = this.value.length;
+                counter.textContent = `${length}/1000 ký tự`;
+                
+                if (length < 10) {
+                    counter.style.color = '#dc3545';
+                } else if (length > 950) {
+                    counter.style.color = '#ffc107';
+                } else {
+                    counter.style.color = '#666';
+                }
+            });
+        });
+        
+        // Form validation
+        document.getElementById('reviewForm').addEventListener('submit', function(e) {
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Check product ratings
+            const productReviews = document.querySelectorAll('.product-review-item');
+            productReviews.forEach((review, index) => {
+                const rating = review.querySelector('input[type="radio"]:checked');
+                const comment = review.querySelector('textarea');
+                
+                if (!rating) {
+                    isValid = false;
+                    errorMessage = 'Vui lòng đánh giá tất cả sản phẩm';
+                }
+                
+                if (comment && comment.value.trim().length < 10) {
+                    isValid = false;
+                    errorMessage = 'Nhận xét phải có ít nhất 10 ký tự';
+                }
+            });
+            
+            // Check store rating
+            const storeRating = document.querySelector('input[name="soSaoCuaHang"]:checked');
+            const storeComment = document.querySelector('textarea[name="binhLuanCuaHang"]');
+            
+            if (!storeRating) {
+                isValid = false;
+                errorMessage = 'Vui lòng đánh giá cửa hàng';
+            }
+            
+            if (storeComment && storeComment.value.trim().length < 10) {
+                isValid = false;
+                errorMessage = 'Nhận xét về cửa hàng phải có ít nhất 10 ký tự';
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                alert(errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>

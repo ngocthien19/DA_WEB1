@@ -1,0 +1,32 @@
+<div class="dashboard-header" th:fragment="header">
+	<div class="container-fluid">
+		<div class="d-flex justify-content-between align-items-center">
+			<div>
+				<h2>Dashboard Quản trị</h2>
+				<p class="mb-0">Tổng quan hệ thống Pet Shop</p>
+			</div>
+			<div class="d-flex align-items-center header-actions">
+				<div class="role-badge rounded-pill px-3 py-1 me-3">
+					<small class="text-white">Vai trò: </small> <strong
+						class="text-white">ADMIN</strong>
+				</div>
+				<div class="dropdown">
+					<button class="btn btn-light dropdown-toggle" type="button"
+						data-bs-toggle="dropdown">
+						<i class="fas fa-user-circle me-2"></i> <span
+							th:text="${user.tenNguoiDung}">Admin</span>
+					</button>
+					<ul class="dropdown-menu">
+						<li><a class="dropdown-item" th:href="@{/profile}"> <i
+								class="fas fa-user me-2"></i>Hồ sơ
+						</a></li>
+						<li><a class="dropdown-item" href="/login?logout=true"
+							onclick="clearAuthData()"> <i
+								class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+						</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

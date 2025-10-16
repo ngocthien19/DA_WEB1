@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shipper Dashboard - PetShop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/shipper/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/shipper/shipper-locked-banner.css}">
+</head>
+<body>
+    <div class="shipper-container">
+		<div th:if="${shipper?.trangThai == 'Khóa' or shipper?.trangThai == 'INACTIVE' or shipper?.trangThai == 'BANNED'}">
+		    <div th:replace="~{shipper/shipper-locked-banner :: shipper-locked-banner}"></div>
+		</div>
+		<!-- Header -->
+        <header class="shipper-header">
+		    <div class="header-left">
+		        <div class="logo">
+		            <i class="fas fa-shipping-fast"></i>
+		            <span>Shipper Dashboard</span>
+		        </div>
+		    </div>
+		    <div class="header-right">
+		        <div class="user-info">
+		            <span th:text="${shipper.tenNguoiDung}">Tên Shipper</span>
+		            <div class="user-actions">
+		                <a href="#" class="logout-btn">
+		                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+		                </a>
+		            </div>
+		        </div>
+		    </div>
+		</header>
+
+        <!-- Main Content -->
+        <main class="shipper-main">
+            <!-- Statistics -->
+            <div class="stats-container">
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 th:text="${pendingCount != null ? pendingCount : 0}">0</h3>
+                        <p>Đơn chờ xác nhận</p>
+                    </div>
+                </div>
+                <div class="stat-card active">
+                    <div class="stat-icon">
+                        <i class="fas fa-truck-loading"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 th:text="${activeCount != null ? activeCount : 0}">0</h3>
+                        <p>Đơn đang giao</p>
+                    </div>
+                </div>
+                <div class="stat-card completed">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 th:text="${completedCount != null ? completedCount : 0}">0</h3>
+                        <p>Đơn hoàn thành</p>
+                    </div>
+                </div>
+                <div class="stat-card cancelled">
+                    <div class="stat-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 th:text="${cancelledCount != null ? cancelledCount : 0}">0</h3>
+                        <p>Đơn giao thất bại</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons-container" th:if="${currentTab == 'pending' && deliveries != null && !deliveries.empty}">
+                <button class="btn btn-confirm-all" onclick="showConfirmAllModal()">
+                    <i class="fas fa-check-double"></i> Xác nhận tất cả đơn hàng
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab-button" th:classappend="${currentTab == 'pending'} ? 'active'" 
+                            onclick="changeTab('pending')">
+                        <i class="fas fa-clock"></i>
+                        Chờ xác nhận (<span th:text="${pendingCount != null ? pendingCount : 0}">0</span>)
+                    </button>
+                    <button class="tab-button" th:classappend="${currentTab == 'active'} ? 'active'" 
+                            onclick="changeTab('active')">
+                        <i class="fas fa-truck-loading"></i>
+                        Đang giao (<span th:text="${activeCount != null ? activeCount : 0}">0</span>)
+                    </button>
+                    <button class="tab-button" th:classappend="${currentTab == 'completed'} ? 'active'" 
+                            onclick="changeTab('completed')">
+                        <i class="fas fa-check-circle"></i>
+                        Hoàn thành (<span th:text="${completedCount != null ? completedCount : 0}">0</span>)
+                    </button>
+                    <button class="tab-button" th:classappend="${currentTab == 'cancelled'} ? 'active'" 
+                            onclick="changeTab('cancelled')">
+                        <i class="fas fa-times-circle"></i>
+                        Giao thất bại (<span th:text="${cancelledCount != null ? cancelledCount : 0}">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Orders List -->
+            <div class="orders-container">
+                <div class="orders-header">
+                    <h2>Danh sách đơn hàng</h2>
+                    <div class="orders-summary">
+                        <span class="total-orders">Tổng: <strong th:text="${deliveriesPage != null ? deliveriesPage.totalElements : 0}">0</strong> đơn hàng</span>
+                    </div>
+                </div>
+
+                <div class="orders-list">
+                    <div th:each="delivery : ${deliveries}" class="order-card" th:data-delivery-id="${delivery.maVanChuyen}">
+                        <div class="order-header">
+                            <h3>Đơn hàng #<span th:text="${delivery.datHang.maDatHang}">123</span></h3>
+                            <span class="status-badge" th:classappend="${delivery.trangThai}">
+                                <span th:text="${delivery.trangThai}">Trạng thái</span>
+                            </span>
+                        </div>
+                        
+                        <div class="order-info">
+                            <div class="info-row">
+                                <label>Khách hàng:</label>
+                                <span th:text="${delivery.datHang.nguoiDung.tenNguoiDung}">Tên khách hàng</span>
+                            </div>
+                            <!-- THÊM: Hiển thị cửa hàng -->
+						    <div class="info-row" th:if="${delivery.datHang.datHangChiTiets != null and !delivery.datHang.datHangChiTiets.empty}">
+							    <label>Cửa hàng:</label>
+							    <span class="store-info">
+							        <span th:text="${delivery.datHang.datHangChiTiets[0].sanPham.cuaHang.tenCuaHang}">Tên cửa hàng</span>
+							    </span>
+							</div>
+                            <!-- SỬA: Hiển thị địa chỉ giao hàng từ đơn hàng -->
+                            <div class="info-row">
+                                <label>Địa chỉ giao hàng:</label>
+                                <span th:text="${delivery.datHang.diaChiGiaoHang} ?: 'Chưa có địa chỉ'">Địa chỉ giao hàng</span>
+                            </div>
+                            <!-- SỬA: Hiển thị số điện thoại giao hàng từ đơn hàng -->
+                            <div class="info-row">
+                                <label>SĐT giao hàng:</label>
+                                <span th:text="${delivery.datHang.soDienThoaiGiaoHang} ?: 'Chưa có SĐT'">SĐT giao hàng</span>
+                            </div>
+                            <!-- THÊM: Hiển thị ghi chú từ đơn hàng -->
+                            <div class="info-row">
+							    <label>Ghi chú:</label>
+							    <span class="order-note" th:text="${delivery.datHang.ghiChu != null and !delivery.datHang.ghiChu.isEmpty()} ? ${delivery.datHang.ghiChu} : 'Không có'">Ghi chú</span>
+							</div>
+                            <div class="info-row">
+                                <label>Tổng tiền:</label>
+                                <span class="price" th:text="${#numbers.formatCurrency(delivery.datHang.tongTien)}">0 VND</span>
+                            </div>
+                            <div class="info-row">
+                                <label>Ngày đặt:</label>
+                                <span th:text="${#temporals.format(delivery.datHang.ngayDat, 'dd/MM/yyyy')}">01/01/2024</span>
+                            </div>
+                            <div class="info-row" th:if="${delivery.lyDoHuy != null and !delivery.lyDoHuy.isEmpty()}">
+						        <label><i class="fas fa-comment-alt"></i> Lý do hủy:</label>
+						        <span class="cancel-reason" th:text="${delivery.lyDoHuy}">Lý do hủy</span>
+						    </div>
+                        </div>
+
+                        <!-- Actions for Pending Deliveries (Đã bàn giao) -->
+                        <div class="order-actions" th:if="${delivery.trangThai == 'Đã bàn giao'}">
+                            <button class="btn btn-confirm" 
+                                    th:onclick="'showConfirmModal(' + ${delivery.maVanChuyen} + ', ' + ${delivery.datHang.maDatHang} + ')'">
+                                <i class="fas fa-check"></i> Xác nhận nhận đơn
+                            </button>
+                            <button class="btn btn-cancel" 
+                                    th:onclick="'showCancelReasonModal(' + ${delivery.maVanChuyen} + ', ' + ${delivery.datHang.maDatHang} + ')'">
+                                <i class="fas fa-times"></i> Hủy nhận đơn
+                            </button>
+                            <a th:href="@{/shipper/order/{id}(id=${delivery.datHang.maDatHang})}" 
+                               class="btn btn-detail">
+                                <i class="fas fa-eye"></i> Chi tiết
+                            </a>
+                        </div>
+
+                        <!-- Actions for Active Deliveries (Đang giao) -->
+                        <div class="order-actions" th:if="${delivery.trangThai == 'Đang giao'}">
+                            <button class="btn btn-complete" 
+                                    th:onclick="'showCompleteModal(' + ${delivery.maVanChuyen} + ', ' + ${delivery.datHang.maDatHang} + ')'">
+                                <i class="fas fa-check"></i> Hoàn thành
+                            </button>
+                            <button class="btn btn-cancel" 
+                                    th:onclick="'showCancelModal(' + ${delivery.maVanChuyen} + ', ' + ${delivery.datHang.maDatHang} + ')'">
+                                <i class="fas fa-times"></i> Hủy đơn
+                            </button>
+                            <a th:href="@{/shipper/order/{id}(id=${delivery.datHang.maDatHang})}" 
+                               class="btn btn-detail">
+                                <i class="fas fa-eye"></i> Chi tiết
+                            </a>
+                        </div>
+
+                        <!-- Actions for Completed/Cancelled Deliveries -->
+                        <div class="order-actions" th:if="${delivery.trangThai == 'Hoàn thành' || delivery.trangThai == 'Hủy'}">
+                            <a th:href="@{/shipper/order/{id}(id=${delivery.datHang.maDatHang})}" 
+                               class="btn btn-detail">
+                                <i class="fas fa-eye"></i> Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+
+                    <div th:if="${deliveries == null || deliveries.empty}" class="no-orders">
+                        <i class="fas fa-box-open"></i>
+                        <p>Không có đơn hàng nào</p>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${deliveriesPage != null && deliveriesPage.totalPages > 1}" class="pagination-container">
+                    <div class="pagination-info">
+                        Hiển thị <strong th:text="${deliveriesPage.number * deliveriesPage.size + 1}">1</strong> - 
+                        <strong th:text="${(deliveriesPage.number * deliveriesPage.size) + deliveriesPage.numberOfElements}">10</strong> 
+                        của <strong th:text="${deliveriesPage.totalElements}">100</strong> đơn hàng
+                    </div>
+                    <div class="pagination">
+                        <!-- First Page -->
+                        <button th:if="${deliveriesPage.totalPages > 1}" 
+                                th:disabled="${deliveriesPage.first}" 
+                                th:onclick="'changePage(0)'"
+                                class="pagination-btn" title="Trang đầu">
+                            <i class="fas fa-angle-double-left"></i>
+                        </button>
+
+                        <!-- Previous Page -->
+                        <button th:disabled="${deliveriesPage.first}" 
+                                th:onclick="'changePage(' + (${deliveriesPage.number} - 1) + ')'"
+                                class="pagination-btn" title="Trang trước">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        <!-- Page Numbers -->
+                        <div class="page-numbers">
+                            <span th:each="i : ${#numbers.sequence(0, deliveriesPage.totalPages - 1)}"
+                                  th:if="${(i >= deliveriesPage.number - 2) and (i <= deliveriesPage.number + 2)}">
+                                <button th:onclick="'changePage(' + ${i} + ')'"
+                                        th:classappend="${i == deliveriesPage.number} ? 'active' : ''"
+                                        class="page-number"
+                                        th:text="${i + 1}">1</button>
+                            </span>
+                        </div>
+
+                        <!-- Next Page -->
+                        <button th:disabled="${deliveriesPage.last}" 
+                                th:onclick="'changePage(' + (${deliveriesPage.number} + 1) + ')'"
+                                class="pagination-btn" title="Trang sau">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+
+                        <!-- Last Page -->
+                        <button th:if="${deliveriesPage.totalPages > 1}" 
+                                th:disabled="${deliveriesPage.last}" 
+                                th:onclick="'changePage(' + (${deliveriesPage.totalPages} - 1) + ')'"
+                                class="pagination-btn" title="Trang cuối">
+                            <i class="fas fa-angle-double-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Xác nhận đơn hàng -->
+	<div class="modal" id="confirmModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-check-circle"></i> Xác nhận nhận đơn</h3>
+	            <span class="close" onclick="closeModal('confirmModal')">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <p>Bạn có chắc chắn muốn xác nhận nhận đơn hàng <strong id="confirmOrderId">#</strong>?</p>
+	            <!-- THÊM: Hiển thị thông tin địa chỉ giao hàng trong modal -->
+	            <div class="delivery-info">
+	                <h4>Thông tin giao hàng:</h4>
+	                <p><strong>Địa chỉ:</strong> <span id="confirmOrderAddress">Đang tải...</span></p>
+	                <p><strong>SĐT:</strong> <span id="confirmOrderPhone">Đang tải...</span></p>
+	                <p><strong>Ghi chú:</strong> <span id="confirmOrderNote">Đang tải...</span></p>
+	            </div>
+	            <p class="modal-note">Đơn hàng sẽ chuyển sang trạng thái "Đang giao" và bạn bắt đầu thực hiện giao hàng.</p>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Hủy bỏ</button>
+	            <button class="btn btn-confirm" onclick="processConfirmDelivery()">Xác nhận nhận đơn</button>
+	        </div>
+	    </div>
+	</div>
+
+    <!-- Modal Hoàn thành đơn hàng -->
+    <div class="modal" id="completeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-double"></i> Hoàn thành đơn hàng</h3>
+                <span class="close" onclick="closeModal('completeModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn đã giao hàng thành công cho đơn hàng <strong id="completeOrderId">#</strong>?</p>
+                <!-- THÊM: Hiển thị thông tin giao hàng trong modal -->
+                <div class="delivery-info">
+                    <h4>Thông tin giao hàng:</h4>
+                    <p><strong>Địa chỉ:</strong> <span id="completeOrderAddress">Đang tải...</span></p>
+                    <p><strong>SĐT:</strong> <span id="completeOrderPhone">Đang tải...</span></p>
+                </div>
+                <p class="modal-note">Đơn hàng sẽ được đánh dấu là "Hoàn thành" và kết thúc quá trình giao hàng.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('completeModal')">Hủy bỏ</button>
+                <button class="btn btn-complete" onclick="processCompleteDelivery()">Xác nhận hoàn thành</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hủy đơn hàng -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-times-circle"></i> Hủy nhận đơn</h3>
+                <span class="close" onclick="closeModal('cancelModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy nhận đơn hàng <strong id="cancelOrderId">#</strong>?</p>
+                <!-- THÊM: Hiển thị thông tin giao hàng trong modal -->
+                <div class="delivery-info">
+                    <h4>Thông tin giao hàng:</h4>
+                    <p><strong>Địa chỉ:</strong> <span id="cancelOrderAddress">Đang tải...</span></p>
+                    <p><strong>SĐT:</strong> <span id="cancelOrderPhone">Đang tải...</span></p>
+                </div>
+                <div class="modal-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Đơn hàng sẽ được chuyển về trạng thái "Đã xác nhận" để cửa hàng chọn shipper khác.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('cancelModal')">Hủy bỏ</button>
+                <button class="btn btn-cancel" onclick="processCancelDelivery()">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Xác nhận tất cả -->
+    <div class="modal" id="confirmAllModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-check-double"></i> Xác nhận tất cả đơn hàng</h3>
+                <span class="close" onclick="closeModal('confirmAllModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xác nhận nhận <strong id="confirmAllCount">0</strong> đơn hàng đang chờ?</p>
+                <div class="modal-info">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Tất cả đơn hàng sẽ chuyển sang trạng thái "Đang giao" và bạn bắt đầu thực hiện giao hàng.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('confirmAllModal')">Hủy bỏ</button>
+                <button class="btn btn-confirm" onclick="processConfirmAllDeliveries()">Xác nhận tất cả</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Nhập Lý Do Hủy Đơn -->
+	<div class="modal" id="cancelReasonModal">
+	    <div class="modal-content">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-exclamation-triangle"></i> Lý do hủy đơn hàng</h3>
+	            <span class="close" onclick="closeModal('cancelReasonModal')">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <p>Vui lòng chọn hoặc nhập lý do hủy đơn hàng <strong id="cancelReasonOrderId">#</strong>:</p>
+	            
+	            <!-- Các lý do phổ biến -->
+	            <div class="reason-options">
+	                <h4>Lý do phổ biến:</h4>
+	                
+	                <!-- Lý do thuộc về Shipper - Chuyển về "Đã xác nhận" -->
+	                <div class="reason-category shipper-category">
+	                    <h5 class="category-title">
+	                        <i class="fas fa-user-clock"></i>
+	                        Lý do cá nhân (Đơn sẽ được chuyển cho shipper khác)
+	                    </h5>
+	                    <div class="reason-option-group">
+	                        <button type="button" class="reason-option shipper-reason" onclick="selectReason('Tôi không thể giao hàng vào thời gian này')">
+	                            <i class="fas fa-calendar-times"></i>
+	                            <span>Không thể giao thời gian này</span>
+	                        </button>
+	                        <button type="button" class="reason-option shipper-reason" onclick="selectReason('Xe hỏng/Phương tiện có vấn đề')">
+	                            <i class="fas fa-car-crash"></i>
+	                            <span>Phương tiện có vấn đề</span>
+	                        </button>
+	                        <button type="button" class="reason-option shipper-reason" onclick="selectReason('Sức khỏe không tốt')">
+	                            <i class="fas fa-heartbeat"></i>
+	                            <span>Sức khỏe không tốt</span>
+	                        </button>
+	                        <button type="button" class="reason-option shipper-reason" onclick="selectReason('Lý do cá nhân khác')">
+	                            <i class="fas fa-user"></i>
+	                            <span>Lý do cá nhân khác</span>
+	                        </button>
+	                    </div>
+	                </div>
+	
+	                <!-- Lý do thuộc về hệ thống - Hủy thật sự -->
+	                <div class="reason-category system-category">
+	                    <h5 class="category-title">
+	                        <i class="fas fa-exclamation-triangle"></i>
+	                        Lý do khách quan (Đơn sẽ bị hủy hoàn toàn)
+	                    </h5>
+	                    <div class="reason-option-group">
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Khách hàng không nghe máy')">
+	                            <i class="fas fa-phone-slash"></i>
+	                            <span>Khách hàng không nghe máy</span>
+	                        </button>
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Khách hàng từ chối nhận hàng')">
+	                            <i class="fas fa-user-times"></i>
+	                            <span>Khách hàng từ chối nhận hàng</span>
+	                        </button>
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Địa chỉ giao hàng không chính xác')">
+	                            <i class="fas fa-map-marker-alt"></i>
+	                            <span>Địa chỉ không chính xác</span>
+	                        </button>
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Khách hàng yêu cầu hủy')">
+	                            <i class="fas fa-ban"></i>
+	                            <span>Khách hàng yêu cầu hủy</span>
+	                        </button>
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Hàng hóa bị hư hỏng')">
+	                            <i class="fas fa-box-open"></i>
+	                            <span>Hàng hóa bị hư hỏng</span>
+	                        </button>
+	                        <button type="button" class="reason-option system-reason" onclick="selectReason('Thời tiết xấu không thể giao')">
+	                            <i class="fas fa-cloud-rain"></i>
+	                            <span>Thời tiết xấu không thể giao</span>
+	                        </button>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <!-- Ô nhập lý do tùy chỉnh -->
+	            <div class="custom-reason">
+	                <h4>Lý do khác:</h4>
+	                <div class="form-group">
+	                    <textarea 
+	                        id="customReason" 
+	                        class="form-control" 
+	                        placeholder="Nhập lý do hủy đơn hàng của bạn..."
+	                        rows="4"
+	                        maxlength="500"
+	                        oninput="updateCharCounter(this.value.length, document.getElementById('reasonCharCounter'))"
+	                    ></textarea>
+	                    <div class="form-footer">
+	                        <span id="reasonCharCounter" class="char-counter text-muted">0/500</span>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <!-- Hiển thị lý do đã chọn -->
+	            <div class="selected-reason" id="selectedReasonContainer" style="display: none;">
+	                <h4>Lý do đã chọn:</h4>
+	                <div class="selected-reason-text">
+	                    <span id="selectedReasonText"></span>
+	                    <button type="button" class="btn-remove-reason" onclick="removeSelectedReason()">
+	                        <i class="fas fa-times"></i>
+	                    </button>
+	                </div>
+	            </div>
+	
+	            <!-- Hiển thị thông tin phân loại -->
+	            <div class="reason-category-info" id="reasonCategoryInfo" style="display: none;">
+	                <div class="category-info shipper-info">
+	                    <i class="fas fa-info-circle"></i>
+	                    <span>Đơn hàng sẽ được chuyển về trạng thái "Đã xác nhận" để cửa hàng chọn shipper khác.</span>
+	                </div>
+	                <div class="category-info system-info">
+	                    <i class="fas fa-info-circle"></i>
+	                    <span>Đơn hàng sẽ bị hủy hoàn toàn và thông báo đến khách hàng.</span>
+	                </div>
+	            </div>
+	
+	            <div class="modal-warning">
+	                <i class="fas fa-info-circle"></i>
+	                <span>Lý do hủy sẽ được gửi đến khách hàng và cửa hàng.</span>
+	            </div>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-secondary" onclick="closeModal('cancelReasonModal')">Hủy bỏ</button>
+	            <button class="btn btn-cancel" onclick="processCancelWithReason()" id="confirmCancelBtn" disabled>
+	                <i class="fas fa-check"></i> Xác nhận hủy đơn
+	            </button>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Account Locked Modal -->
+	<div class="modal" id="accountLockedModal" style="display: none;">
+	    <div class="modal-content account-locked-modal">
+	        <div class="modal-header">
+	            <h3><i class="fas fa-exclamation-triangle"></i> Tài khoản đã bị khóa</h3>
+	            <span class="close" onclick="closeAccountLockedModal()">&times;</span>
+	        </div>
+	        <div class="modal-body">
+	            <div class="locked-warning">
+	                <i class="fas fa-lock"></i>
+	                <h4>Tài khoản của bạn đã bị khóa</h4>
+	            </div>
+	            <div class="locked-reason">
+	                <p><strong>Lý do khóa:</strong></p>
+	                <div class="reason-text" id="lockedReasonText">
+	                    <!-- Lý do sẽ được điền từ JavaScript -->
+	                </div>
+	            </div>
+	            <div class="locked-instruction">
+	                <p><i class="fas fa-info-circle"></i> Vui lòng liên hệ quản trị viên để được hỗ trợ.</p>
+	            </div>
+	        </div>
+	        <div class="modal-footer">
+	            <button class="btn btn-warning" onclick="closeAccountLockedModal()">
+	                <i class="fas fa-times"></i> Đóng
+	            </button>
+	        </div>
+	    </div>
+	</div>
+
+    <script th:src="@{/js/shipper/dashboard.js}"></script>
+	<script th:if="${isLocked}" th:src="@{/js/shipper/shipper-locked.js}"></script>
+</body>
+</html>

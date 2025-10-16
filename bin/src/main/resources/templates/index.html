@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Shop - Trang chủ thú cưng</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/content.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+</head>
+<body>
+    <!-- Include Header Fragment -->
+    <div th:replace="~{web/layout/header :: header}"></div>
+    
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+        <div class="container">
+            <div class="hero-content" data-aos="fade-up">
+                <div class="hero-text">
+                    <h1>Chào mừng đến với<br>Pet Shop</h1>
+                    <p>Nơi cung cấp thú cưng và phụ kiện chất lượng cao nhất.<br>Chăm sóc thú cưng của bạn như chính gia đình chúng tôi.</p>
+                    <a href="#products" class="hero-btn">Khám phá ngay</a>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=800" alt="Pet Banner">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Danh mục sản phẩm</h2>
+                <p>Khám phá các loại thú cưng và phụ kiện đa dạng</p>
+            </div>
+            <div class="category-grid">
+                <a th:href="@{/category/cho-canh}" style="text-decoration: none;">
+                    <div class="category-card" data-aos="fade-up" data-aos-delay="100">
+                        <i class="fa-solid fa-dog"></i>
+                        <h3>Chó cảnh</h3>
+                        <p>Các giống chó cảnh đáng yêu và thân thiện</p>
+                    </div>
+                </a>
+                <a th:href="@{/category/meo-canh}" style="text-decoration: none;">
+                    <div class="category-card" data-aos="fade-up" data-aos-delay="200">
+                        <i class="fa-solid fa-cat"></i>
+                        <h3>Mèo cảnh</h3>
+                        <p>Mèo cảnh đủ màu sắc và giống loài</p>
+                    </div>
+                </a>
+                <a th:href="@{/category/phu-kien}" style="text-decoration: none;">
+                    <div class="category-card" data-aos="fade-up" data-aos-delay="300">
+                        <i class="fa-solid fa-bone"></i>
+                        <h3>Phụ kiện</h3>
+                        <p>Đồ chơi, thức ăn và các phụ kiện cần thiết</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section" id="products">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Sản phẩm nổi bật</h2>
+                <p>Những sản phẩm được yêu thích nhất</p>
+            </div>
+            <div class="product-grid">
+                <!-- Chó Cảnh Products -->
+				<div th:if="${not #lists.isEmpty(sanPhams_1)}" th:each="product : ${sanPhams_1}" class="product-card" data-aos="fade-up" data-aos-delay="100">
+				    <div class="product-image-container">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+				        </a>
+				        <!-- Thêm phần lượt thích với icon trái tim -->
+				        <div class="product-like">
+				            <i class="fa-solid fa-heart like-icon"></i>
+				            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+				        </div>
+				    </div>
+				    <div class="product-info">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <h4 th:text="${product.TenSanPham}"></h4>
+				        </a>
+				        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+				        <div class="product-stats">
+				            <div class="rating">
+				                <span th:each="i : ${#numbers.sequence(1, 5)}"
+				                      class="fa fa-star"
+				                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+				            </div>
+				            <div class="product-sold">
+				                <span class="sold-label">Đã bán:</span>
+				                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+				            </div>
+				        </div>
+				        <button class="add-to-cart-btn">
+				            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+				        </button>
+				    </div>
+				</div>
+                <div th:if="${#lists.isEmpty(sanPhams_1)}" class="no-data-message">
+                    Không có dữ liệu cho danh mục Chó Cảnh.
+                </div>
+
+                <!-- Mèo Cảnh Products -->
+                <div th:if="${not #lists.isEmpty(sanPhams_2)}" th:each="product : ${sanPhams_2}" class="product-card" data-aos="fade-up" data-aos-delay="200">
+                    <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                        <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+                    </a>
+                    <div class="product-info">
+                        <div class="product-image-container">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+				        </a>
+					        <div class="product-like">
+					            <i class="fa-solid fa-heart like-icon"></i>
+					            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+					        </div>
+					    </div>
+                        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+                        <div class="product-stats">
+                            <div class="rating">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                            </div>
+                            <div class="product-sold">
+                                <span class="sold-label">Đã bán:</span>
+                                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+                            </div>
+                        </div>
+                        <button class="add-to-cart-btn">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(sanPhams_2)}" class="no-data-message">
+                    Không có dữ liệu cho danh mục Mèo Cảnh.
+                </div>
+
+                <!-- Phụ Kiện Products -->
+                <div th:if="${not #lists.isEmpty(sanPhams_3)}" th:each="product : ${sanPhams_3}" class="product-card" data-aos="fade-up" data-aos-delay="300">
+                    <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                        <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+                    </a>
+                    <div class="product-info">
+                        <div class="product-image-container">
+					        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+					            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+					        </a>
+					        <div class="product-like">
+					            <i class="fa-solid fa-heart like-icon"></i>
+					            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+					        </div>
+					    </div>
+                        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+                        <div class="product-stats">
+                            <div class="rating">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                            </div>
+                            <div class="product-sold">
+                                <span class="sold-label">Đã bán:</span>
+                                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+                            </div>
+                        </div>
+                        <button class="add-to-cart-btn">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(sanPhams_3)}" class="no-data-message">
+                    Không có dữ liệu cho danh mục Phụ Kiện.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dog Section -->
+    <section class="category-products-section dog-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-header-left">
+                    <i class="fa-solid fa-dog"></i>
+                    <h2>Chó Cảnh</h2>
+                </div>
+                <a th:href="@{/category/cho-canh}" class="view-all-btn">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="product-grid">
+                <div th:if="${not #lists.isEmpty(sanPhams_1)}" th:each="product : ${sanPhams_1}" class="product-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="product-image-container">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+				        </a>
+				        <div class="product-like">
+				            <i class="fa-solid fa-heart like-icon"></i>
+				            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+				        </div>
+				    </div>
+                    <div class="product-info">
+                        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                            <h4 th:text="${product.TenSanPham}"></h4>
+                        </a>
+                        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+                        <div class="product-stats">
+                            <div class="rating">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                            </div>
+                            <div class="product-sold">
+                                <span class="sold-label">Đã bán:</span>
+                                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+                            </div>
+                        </div>
+                        <button class="add-to-cart-btn">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cat Section -->
+    <section class="category-products-section cat-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-header-left">
+                    <i class="fa-solid fa-cat"></i>
+                    <h2>Mèo Cảnh</h2>
+                </div>
+                <a th:href="@{/category/meo-canh}" class="view-all-btn">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="product-grid">
+                <div th:if="${not #lists.isEmpty(sanPhams_2)}" th:each="product : ${sanPhams_2}" class="product-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="product-image-container">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+				        </a>
+				        <div class="product-like">
+				            <i class="fa-solid fa-heart like-icon"></i>
+				            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+				        </div>
+				    </div>
+                    <div class="product-info">
+                        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                            <h4 th:text="${product.TenSanPham}"></h4>
+                        </a>
+                        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+                        <div class="product-stats">
+                            <div class="rating">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                            </div>
+                            <div class="product-sold">
+                                <span class="sold-label">Đã bán:</span>
+                                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+                            </div>
+                        </div>
+                        <button class="add-to-cart-btn">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(sanPhams_2)}" class="no-data-message">
+                    Không có dữ liệu cho danh mục Mèo Cảnh.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Accessories Section -->
+    <section class="category-products-section accessories-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <div class="section-header-left">
+                    <i class="fa-solid fa-bone"></i>
+                    <h2>Phụ Kiện</h2>
+                </div>
+                <a th:href="@{/category/phu-kien}" class="view-all-btn">
+                    Xem tất cả <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+            <div class="product-grid">
+                <div th:if="${not #lists.isEmpty(sanPhams_3)}" th:each="product : ${sanPhams_3}" class="product-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="product-image-container">
+				        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+				            <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+				        </a>
+				        <div class="product-like">
+				            <i class="fa-solid fa-heart like-icon"></i>
+				            <span class="like-count" th:text="${product.LuotThich} ?: 0">0</span>
+				        </div>
+				    </div>
+                    <div class="product-info">
+                        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                            <h4 th:text="${product.TenSanPham}"></h4>
+                        </a>
+                        <div class="product-price" th:text="'₫' + ${product.GiaBan} + ' VND'"></div>
+                        <div class="product-stats">
+                            <div class="rating">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                            </div>
+                            <div class="product-sold">
+                                <span class="sold-label">Đã bán:</span>
+                                <span class="sold-count" th:text="${product.SoLuongDaBan}"></span>
+                            </div>
+                        </div>
+                        <button class="add-to-cart-btn">
+                            <i class="fa fa-shopping-cart"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+                <div th:if="${#lists.isEmpty(sanPhams_3)}" class="no-data-message">
+                    Không có dữ liệu cho danh mục Phụ Kiện.
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Section: Cửa Hàng -->
+    <section class="store-section">
+        <div class="container">
+            <div class="section-title" data-aos="fade-up">
+                <h2>Các cửa hàng của chúng tôi</h2>
+                <p>Khám phá các cửa hàng thú cưng tại các thành phố khác nhau</p>
+            </div>
+            <div class="store-grid">
+                <div th:each="cuaHang : ${cuaHangs}" 
+                     class="store-card" 
+                     data-aos="fade-up" 
+                     th:attr="data-aos-delay=${cuaHangStat.count * 100}">
+                    <a th:href="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang})}">
+                        <img th:src="${cuaHang.hinhAnh != null ? cuaHang.hinhAnh : '/images/store-default.jpg'}" 
+                             th:alt="${cuaHang.tenCuaHang}" 
+                             class="store-image">
+                    </a>
+                    <div class="store-info">
+                        <a th:href="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang})}">
+                            <h4 th:text="${cuaHang.TenCuaHang}">Cửa hàng Thú Cưng Hà Nội</h4>
+                        </a>
+                        <p th:text="${cuaHang.MoTa}">Chuyên cung cấp các loại thú cưng và phụ kiện chất lượng tại Hà Nội</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="features-grid">
+                <div class="feature-item" data-aos="fade-up" data-aos-delay="100">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    <h4>Giao hàng nhanh</h4>
+                    <p>Miễn phí vận chuyển cho đơn hàng trên 500k</p>
+                </div>
+                <div class="feature-item" data-aos="fade-up" data-aos-delay="200">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h4>Bảo hành chất lượng</h4>
+                    <p>Cam kết sức khỏe thú cưng 100%</p>
+                </div>
+                <div class="feature-item" data-aos="fade-up" data-aos-delay="300">
+                    <i class="fa-solid fa-headset"></i>
+                    <h4>Hỗ trợ 24/7</h4>
+                    <p>Tư vấn chăm sóc thú cưng mọi lúc</p>
+                </div>
+                <div class="feature-item" data-aos="fade-up" data-aos-delay="400">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <h4>Đổi trả dễ dàng</h4>
+                    <p>Đổi trả trong vòng 7 ngày</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <!-- Products Data for Search -->
+    <script id="products-data" type="application/json" th:inline="javascript">
+        /*[[${productsJson}]]*/
+    </script>
+    
+    <!-- AOS Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/web/header.js}"></script>
+</body>
+</html>

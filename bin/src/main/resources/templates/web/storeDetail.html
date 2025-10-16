@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${cuaHang.tenCuaHang} + ' - PetShop'">Store Details - PetShop</title>
+
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" th:href="@{/css/web/header.css}">
+    <link rel="stylesheet" th:href="@{/css/web/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/web/Product.css}">
+    <link rel="stylesheet" th:href="@{/css/web/FilterProCat.css}">
+    <link rel="stylesheet" th:href="@{/css/web/pagination.css}">
+    <link rel="stylesheet" th:href="@{/css/web/storeDetail.css}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+</head>
+<body>
+    <!-- Include Header Fragment -->
+    <div th:replace="~{web/layout/header :: header}"></div>
+
+    <!-- Store Detail Section -->
+    <section class="store-detail-section">
+        <div class="container">
+            <!-- Store Header -->
+            <div class="store-header" data-aos="fade-up">
+                <div class="store-info-main">
+                    <div class="store-avatar">
+                        <img th:src="${cuaHang.HinhAnh != null ? cuaHang.HinhAnh : '/images/store-avatar-default.jpg'}" 
+                             th:alt="${cuaHang.TenCuaHang}" 
+                             class="avatar-image">
+                    </div>
+                    <div class="store-details">
+                        <h1 th:text="${cuaHang.TenCuaHang}" class="store-name"></h1>
+                        <div class="store-meta">
+                            <div class="meta-item">
+                                <i class="fa-solid fa-location-dot"></i>
+                                <span th:text="${cuaHang.DiaChi != null ? cuaHang.DiaChi : 'Đang cập nhật'}"></span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fa-solid fa-phone"></i>
+                                <span th:text="${cuaHang.SoDienThoai != null ? cuaHang.SoDienThoai : 'Đang cập nhật'}"></span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fa-solid fa-envelope"></i>
+                                <span th:text="${cuaHang.Email != null ? cuaHang.Email : 'Đang cập nhật'}"></span>
+                            </div>
+                        </div>
+                        <div class="store-rating">
+                            <div class="rating-stars">
+                                <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                      class="fa fa-star"
+                                      th:classappend="${cuaHang.DanhGiaTrungBinh != null && i <= cuaHang.DanhGiaTrungBinh} ? ' filled' : ''"></span>
+                            </div>
+                            <span class="rating-text" th:if="${cuaHang.DanhGiaTrungBinh != null}">
+                                <span th:text="${#numbers.formatDecimal(cuaHang.DanhGiaTrungBinh, 1, 1)}"></span>/5 (
+                                <span th:text="${cuaHang.SoLuongDanhGia != null ? cuaHang.SoLuongDanhGia : '0'}"></span> đánh giá)
+                            </span>
+                            <span class="rating-text" th:unless="${cuaHang.DanhGiaTrungBinh != null}">
+                                Chưa có đánh giá
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Store Description -->
+            <div class="store-description" data-aos="fade-up" data-aos-delay="100">
+                <h3>Giới thiệu về cửa hàng</h3>
+                <p th:text="${cuaHang.MoTa != null ? cuaHang.MoTa : 'Cửa hàng chưa có mô tả.'}"></p>
+            </div>
+
+            <!-- Store Statistics -->
+            <div class="store-statistics" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${tongSanPham}">0</div>
+                    <div class="stat-label">Sản phẩm</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${cuaHang.SoLuongDanhGia != null ? cuaHang.SoLuongDanhGia : '0'}">0</div>
+                    <div class="stat-label">Đánh giá</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${cuaHang.NamThanhLap != null ? cuaHang.NamThanhLap : '2020'}">2020</div>
+                    <div class="stat-label">Năm thành lập</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${cuaHang.TrangThai ? 'Đang mở' : 'Đã đóng'}">Đang mở</div>
+                    <div class="stat-label">Trạng thái</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Store Products Section -->
+    <section class="store-products-section">
+        <div class="container">
+            <div class="section-header" data-aos="fade-up">
+                <h2>Sản phẩm của cửa hàng</h2>
+                <p th:text="'Khám phá ' + ${tongSanPham} + ' sản phẩm từ ' + ${cuaHang.TenCuaHang}"></p>
+            </div>
+
+            <!-- Store Status Alert -->
+            <div th:if="${!cuaHang.TrangThai}" class="store-closed-alert" data-aos="fade-up">
+                <div class="alert alert-warning">
+                    <i class="fa-solid fa-store-slash"></i>
+                    <span>Cửa hàng hiện đang tạm đóng cửa. Các sản phẩm không thể mua hàng cho đến khi cửa hàng mở lại.</span>
+                </div>
+            </div>
+
+            <!-- Sort and Filter Bar -->
+            <div class="products-controls" data-aos="fade-up" data-aos-delay="100">
+                <div class="products-found">
+                    <span class="desc" th:text="${tongSanPham} + ' sản phẩm'"></span>
+                </div>
+                <div class="sort-by">
+                    <span>Sắp xếp:</span>
+                    <form th:action="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang})}" method="get" style="display: inline;">
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="default" th:selected="${selectedSort == 'default'}">Mặc định</option>
+                            <option value="asc-name" th:selected="${selectedSort == 'asc-name'}">Tên (A-Z)</option>
+                            <option value="dsc-name" th:selected="${selectedSort == 'dsc-name'}">Tên (Z-A)</option>
+                            <option value="asc-price" th:selected="${selectedSort == 'asc-price'}">Giá thấp đến cao</option>
+                            <option value="dsc-price" th:selected="${selectedSort == 'dsc-price'}">Giá cao đến thấp</option>
+                            <option value="asc-like" th:selected="${selectedSort == 'asc-like'}">Ít yêu thích</option>
+                            <option value="dsc-like" th:selected="${selectedSort == 'dsc-like'}">Nhiều yêu thích</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="container-product" th:if="${tongSanPham > 0}">
+                <div th:each="product : ${sanPhams}" class="product-card" data-aos="fade-up">
+                    <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.maSanPham})}">
+                        <img th:src="${product.HinhAnh}" th:alt="${product.TenSanPham}" class="product-image">
+                    </a>
+                    <div class="product-info">
+                        <a th:href="@{/view/{MaSanPham}(MaSanPham=${product.MaSanPham})}">
+                            <h4 th:text="${product.tenSanPham}"></h4>
+                        </a>
+                        <div class="product-price" th:text="'₫' + ${#numbers.formatDecimal(product.GiaBan, 0, 'COMMA', 0, 'POINT')}"></div>
+                        <div class="rating">
+                            <span th:each="i : ${#numbers.sequence(1, 5)}"
+                                  class="fa fa-star"
+                                  th:classappend="${product.SaoDanhGia != null && i <= product.SaoDanhGia} ? ' filled' : ''"></span>
+                        </div>
+                        <button class="add-to-cart-btn" 
+                                th:onclick="|addToCart('${product.MaSanPham}')|"
+                                th:disabled="${!cuaHang.TrangThai}"
+                                th:classappend="${!cuaHang.TrangThai} ? 'disabled' : ''">
+                            <i class="fa fa-shopping-cart"></i> 
+                            <span th:text="${cuaHang.TrangThai ? 'Thêm vào giỏ hàng' : 'Tạm ngừng bán'}"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- No Products Message -->
+            <div class="no-products" th:if="${tongSanPham == 0}">
+                <div class="message">
+                    <p>Cửa hàng hiện chưa có sản phẩm nào.</p>
+                    <i class="fa fa-store"></i>
+                </div>
+            </div>
+
+            <!-- Pagination Section -->
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <div class="pagination">
+                    <!-- Previous Button -->
+                    <a th:if="${currentPage > 1}" 
+                       th:href="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang}, page=${currentPage - 1}, sort=${selectedSort})}"
+                       class="pagination-btn prev-btn">
+                        <i class="fa fa-chevron-left"></i> Trước
+                    </a>
+                    <span th:unless="${currentPage > 1}" 
+                          class="pagination-btn prev-btn disabled">
+                        <i class="fa fa-chevron-left"></i> Trước
+                    </span>
+                    
+                    <!-- Page Numbers -->
+                    <div class="pagination-numbers">
+                        <th:block th:with="startPage=${currentPage > 2 ? currentPage - 2 : 1}, 
+                                           endPage=${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}">
+                            <a th:each="i : ${#numbers.sequence(startPage, endPage)}"
+                               th:href="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang}, page=${i}, sort=${selectedSort})}"
+                               th:classappend="${i == currentPage} ? 'active' : ''"
+                               class="pagination-btn page-number">
+                                <span th:text="${i}"></span>
+                            </a>
+                        </th:block>
+                    </div>
+                    
+                    <!-- Next Button -->
+                    <a th:if="${currentPage < totalPages}" 
+                       th:href="@{/store/{MaCuaHang}(MaCuaHang=${cuaHang.MaCuaHang}, page=${currentPage + 1}, sort=${selectedSort})}"
+                       class="pagination-btn next-btn">
+                        Sau <i class="fa fa-chevron-right"></i>
+                    </a>
+                    <span th:unless="${currentPage < totalPages}" 
+                          class="pagination-btn next-btn disabled">
+                        Sau <i class="fa fa-chevron-right"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Include Footer Fragment -->
+    <div th:replace="~{web/layout/footer :: footer}"></div>
+
+    <!-- AOS Animation Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true
+            });
+        });
+
+        // Add to cart function
+        function addToCart(productId) {
+            console.log('Add to cart:', productId);
+            alert('Đã thêm sản phẩm vào giỏ hàng!');
+        }
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/web/header.js}"></script>
+</body>
+</html>

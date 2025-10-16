@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin tài khoản - Kênh Người bán</title>
+    
+    <!-- Bootstrap & Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" th:href="@{/css/vendor/vendor-dashboard.css}">
+    <link th:if="${cuaHang?.trangThai == false}" rel="stylesheet" th:href="@{/css/vendor/store-locked-banner.css}">
+    <link rel="stylesheet" th:href="@{/css/vendor/account.css}">
+</head>
+<body>
+
+	<div class="container-fluid">
+		<div class="row">
+			<!-- Sidebar - GIỮ NGUYÊN NHƯ PROMOTIONS -->
+			<div th:replace="~{vendor/fragments/navbar :: navbar}"></div>
+
+			<!-- Main Content -->
+			<main class="main-content">
+				<!-- Header -->
+				<div th:if="${cuaHang?.trangThai == false}">
+				    <div th:replace="~{vendor/fragments/store-locked-banner :: store-locked-banner}"></div>
+				</div>
+				<div th:replace="~{vendor/fragments/header :: header}"></div>
+
+				<!-- Stats Container (giống promotions.html) -->
+				<div class="stats-container">
+					<div class="account-content-wrapper">
+						<div class="account-header mb-4">
+							<h1>Thông tin tài khoản</h1>
+							<p class="text-muted">Quản lý thông tin cá nhân và cửa hàng của bạn</p>
+						</div>
+
+						<!-- Loading State -->
+						<div id="loadingState" class="loading text-center py-5">
+							<div class="loading-spinner mb-3"></div>
+							<p class="text-muted">Đang tải thông tin...</p>
+						</div>
+
+						<!-- Error State -->
+						<div id="errorState" class="alert alert-danger text-center" style="display: none;">
+							<i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+							<p id="errorMessage" class="mb-3"></p>
+							<button onclick="loadVendorProfile()" class="btn btn-primary">
+								<i class="fas fa-redo me-2"></i>Thử lại
+							</button>
+						</div>
+
+						<!-- Account Content -->
+						<div id="accountContent" style="display: none;">
+							<!-- Content will be dynamically loaded here -->
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+
+	<!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/vendor/vendor-dashboard.js}"></script>
+    <script th:src="@{/js/vendor/account.js}"></script>
+    <script th:if="${cuaHang?.trangThai == false}" th:src="@{/js/vendor/account-locked.js}"></script>
+</body>
+</html>
