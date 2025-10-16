@@ -29,7 +29,7 @@
 
         .page-title h1 {
             font-size: 2.5rem;
-            color: #0f3460;;
+            color: #0f3460;
             margin-bottom: 10px;
         }
 
@@ -201,6 +201,113 @@
             color: #666;
             margin-top: 5px;
         }
+        
+        /* NEW STYLES FOR PREVIEW INSIDE UPLOAD AREA */
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            position: relative;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .file-upload-area:hover {
+            border-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .file-upload-area.has-preview {
+            padding: 10px;
+            justify-content: flex-start;
+            min-height: auto;
+        }
+
+        .file-upload-area i {
+            font-size: 2rem;
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area.has-preview i,
+        .file-upload-area.has-preview p {
+            display: none;
+        }
+
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .preview-item {
+            position: relative;
+            display: inline-block;
+        }
+
+        .preview-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .preview-video {
+            width: 150px;
+            height: 100px;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .upload-instructions {
+            display: block;
+        }
+
+        .file-upload-area.has-preview .upload-instructions {
+            display: none;
+        }
+
+        .add-more-text {
+            display: none;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .file-upload-area.has-preview .add-more-text {
+            display: block;
+        }
 
         .store-review-box {
             background: #fff3cd;
@@ -297,6 +404,145 @@
             margin-top: 5px;
         }
 
+        /* NEW STYLES FOR PREVIEW */
+        .preview-container {
+            margin-top: 10px;
+            display: none;
+        }
+
+        .preview-item {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .preview-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .preview-video {
+            width: 150px;
+            height: 100px;
+            border-radius: 8px;
+            border: 2px solid #ffc107;
+        }
+
+        .remove-preview {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .file-upload-area:hover {
+            border-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .file-upload-area i {
+            font-size: 2rem;
+            color: #ffc107;
+            margin-bottom: 10px;
+        }
+
+        .file-input-hidden {
+            display: none;
+        }
+
+        .rating-required {
+            color: #e94560;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        
+        /* NEW STYLES FOR LIKE FEATURE */
+        .like-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .like-label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .like-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .like-toggle:hover {
+            border-color: #ffc107;
+            background: #fff9e6;
+        }
+
+        .like-toggle.liked {
+            border-color: #e94560;
+            background: #ffe6e6;
+        }
+
+        .like-icon {
+            font-size: 1.5rem;
+            color: #ddd;
+            transition: all 0.3s;
+        }
+
+        .like-toggle:hover .like-icon {
+            color: #ffc107;
+        }
+
+        .like-toggle.liked .like-icon {
+            color: #e94560;
+        }
+
+        .like-text {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .like-toggle.liked .like-text {
+            color: #e94560;
+            font-weight: 600;
+        }
+
+        .like-input {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .page-title h1 {
                 font-size: 2rem;
@@ -358,12 +604,27 @@
                     
                     <div th:each="chiTiet : ${chiTiets}" class="product-review-item">
                         <div class="product-info">
-                            <img th:src="@{'/uploads/products' + ${chiTiet.sanPham.hinhAnh}}" 
+                            <img th:src="@{'/uploads/products/' + ${chiTiet.sanPham.hinhAnh}}" 
                                  th:alt="${chiTiet.sanPham.tenSanPham}"
                                  class="product-image">
                             <div>
                                 <div class="product-name" th:text="${chiTiet.sanPham.tenSanPham}"></div>
+                                <div class="rating-required">* Bắt buộc chọn số sao</div>
                             </div>
+                        </div>
+                        
+                        <!-- THÊM PHẦN THÍCH SẢN PHẨM -->
+                        <div class="like-section">
+                            <label class="like-label">Bạn có thích sản phẩm này không?</label>
+                            <div class="like-toggle" th:id="'likeToggle_' + ${chiTiet.sanPham.maSanPham}">
+                                <i class="fa-solid fa-heart like-icon"></i>
+                                <span class="like-text">Nhấn để thích sản phẩm này</span>
+                            </div>
+                            <input type="checkbox" 
+                                   th:name="'thich_' + ${chiTiet.sanPham.maSanPham}"
+                                   th:id="'thich_' + ${chiTiet.sanPham.maSanPham}"
+                                   value="true"
+                                   class="like-input">
                         </div>
                         
                         <div class="rating-input">
@@ -402,14 +663,12 @@
                         </div>
                         
                         <div class="comment-input">
-                            <label>Nhận xét của bạn <span style="color: red;">*</span></label>
+                            <label>Nhận xét của bạn <span style="color: #666;">(Tùy chọn)</span></label>
                             <textarea th:name="'binhLuan_' + ${chiTiet.sanPham.maSanPham}" 
-                                      placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này..."
-                                      minlength="10"
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn về sản phẩm này... (Không bắt buộc)"
                                       maxlength="1000"
-                                      required
-                                      th:attr="data-product-id=${chiTiet.sanPham.maSanPham}"
-                                      class="comment-textarea"></textarea>
+                                      class="comment-textarea product-comment"
+                                      th:attr="data-product-id=${chiTiet.sanPham.maSanPham}"></textarea>
                             <div class="char-counter" th:id="'counter_' + ${chiTiet.sanPham.maSanPham}">0/1000 ký tự</div>
                         </div>
                         
@@ -417,13 +676,21 @@
                             <label>
                                 <i class="fa-solid fa-image"></i> Thêm ảnh/video (tùy chọn)
                             </label>
+                            <div class="file-upload-area" 
+                                 th:id="'uploadArea_' + ${chiTiet.sanPham.maSanPham}">
+                                <i class="fa-solid fa-cloud-upload-alt"></i>
+                                <p>Nhấn để chọn ảnh hoặc video</p>
+                                <p class="file-info">Hỗ trợ: JPG, PNG, GIF, MP4. Tối đa 10MB</p>
+                            </div>
                             <input type="file" 
+                                   th:id="'fileInput_' + ${chiTiet.sanPham.maSanPham}"
                                    th:name="'anhVideo_' + ${chiTiet.sanPham.maSanPham}" 
-                                   accept="image/*,video/*">
-                            <p class="file-info">
-                                <i class="fa-solid fa-info-circle"></i> 
-                                Hỗ trợ: JPG, PNG, GIF, MP4. Tối đa 10MB
-                            </p>
+                                   accept="image/*,video/*"
+                                   class="file-input-hidden">
+                            
+                            <div class="preview-container" th:id="'previewContainer_' + ${chiTiet.sanPham.maSanPham}">
+                                <!-- Preview sẽ được thêm vào đây -->
+                            </div>
                         </div>
                     </div>
                     
@@ -437,7 +704,10 @@
                             <div class="store-icon">
                                 <i class="fa-solid fa-store"></i>
                             </div>
-                            <div class="store-name" th:text="${cuaHang.tenCuaHang}"></div>
+                            <div>
+                                <div class="store-name" th:text="${cuaHang.tenCuaHang}"></div>
+                                <div class="rating-required">* Bắt buộc chọn số sao</div>
+                            </div>
                         </div>
                         
                         <div class="rating-input">
@@ -461,13 +731,11 @@
                         </div>
                         
                         <div class="comment-input">
-                            <label>Nhận xét về dịch vụ cửa hàng <span style="color: red;">*</span></label>
+                            <label>Nhận xét về dịch vụ cửa hàng <span style="color: #666;">(Tùy chọn)</span></label>
                             <textarea name="binhLuanCuaHang" 
                                       id="storeComment"
-                                      placeholder="Hãy chia sẻ cảm nhận của bạn về chất lượng dịch vụ, thái độ phục vụ..."
-                                      minlength="10"
+                                      placeholder="Hãy chia sẻ cảm nhận của bạn về chất lượng dịch vụ, thái độ phục vụ... (Không bắt buộc)"
                                       maxlength="1000"
-                                      required
                                       class="comment-textarea"></textarea>
                             <div class="char-counter" id="storeCounter">0/1000 ký tự</div>
                         </div>
@@ -490,67 +758,174 @@
     
     <script th:src="@{/js/web/header.js}"></script>
     <script>
+ // Khởi tạo sự kiện sau khi DOM loaded
+    document.addEventListener('DOMContentLoaded', function() {
         // Character counter for textareas
         document.querySelectorAll('.comment-textarea').forEach(textarea => {
             const productId = textarea.getAttribute('data-product-id');
             const counterId = productId ? `counter_${productId}` : 'storeCounter';
             const counter = document.getElementById(counterId);
             
-            textarea.addEventListener('input', function() {
-                const length = this.value.length;
-                counter.textContent = `${length}/1000 ký tự`;
+            if (counter) {
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    counter.textContent = `${length}/1000 ký tự`;
+                    
+                    if (length > 950) {
+                        counter.style.color = '#ffc107';
+                    } else {
+                        counter.style.color = '#666';
+                    }
+                });
+            }
+        });
+
+        // File upload area click handlers
+        document.querySelectorAll('.file-upload-area').forEach(uploadArea => {
+            const id = uploadArea.id;
+            const productId = id.replace('uploadArea_', '');
+            const fileInput = document.getElementById('fileInput_' + productId);
+            
+            if (fileInput) {
+                uploadArea.addEventListener('click', function() {
+                    fileInput.click();
+                });
+            }
+        });
+
+        // File input change handlers
+        document.querySelectorAll('.file-input-hidden').forEach(fileInput => {
+            fileInput.addEventListener('change', function() {
+                const id = this.id;
+                const productId = id.replace('fileInput_', '');
+                handleFileSelect(this, 'previewContainer_' + productId);
+            });
+        });
+
+        // Like toggle handlers
+        document.querySelectorAll('.like-toggle').forEach(likeToggle => {
+            likeToggle.addEventListener('click', function() {
+                const id = this.id;
+                const productId = id.replace('likeToggle_', '');
+                const likeInput = document.getElementById('thich_' + productId);
                 
-                if (length < 10) {
-                    counter.style.color = '#dc3545';
-                } else if (length > 950) {
-                    counter.style.color = '#ffc107';
-                } else {
-                    counter.style.color = '#666';
+                if (likeInput) {
+                    likeInput.checked = !likeInput.checked;
+                    
+                    if (likeInput.checked) {
+                        this.classList.add('liked');
+                        this.querySelector('.like-text').textContent = 'Đã thích sản phẩm này';
+                    } else {
+                        this.classList.remove('liked');
+                        this.querySelector('.like-text').textContent = 'Nhấn để thích sản phẩm này';
+                    }
                 }
             });
+        });
+
+        // Auto resize textareas
+        document.querySelectorAll('textarea').forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        });
+    });
+
+    // File preview function
+    function handleFileSelect(input, previewContainerId) {
+        const previewContainer = document.getElementById(previewContainerId);
+        if (!previewContainer) return;
+        
+        previewContainer.innerHTML = '';
+        previewContainer.style.display = 'none';
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+
+                if (file.type.startsWith('image/')) {
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" class="preview-image" alt="Preview">
+                        <button type="button" class="remove-preview" onclick="removePreview(this, '${input.id}')">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    `;
+                } else if (file.type.startsWith('video/')) {
+                    previewItem.innerHTML = `
+                        <video controls class="preview-video">
+                            <source src="${e.target.result}" type="${file.type}">
+                            Trình duyệt không hỗ trợ video.
+                        </video>
+                        <button type="button" class="remove-preview" onclick="removePreview(this, '${input.id}')">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    `;
+                }
+
+                previewContainer.appendChild(previewItem);
+                previewContainer.style.display = 'block';
+            }
+
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Remove preview function
+    function removePreview(button, fileInputId) {
+        const previewItem = button.parentElement;
+        const previewContainer = previewItem.parentElement;
+        const fileInput = document.getElementById(fileInputId);
+        
+        if (previewItem) previewItem.remove();
+        if (fileInput) fileInput.value = '';
+        
+        if (previewContainer && previewContainer.children.length === 0) {
+            previewContainer.style.display = 'none';
+        }
+    }
+
+    // Form validation - CHỈ kiểm tra rating là bắt buộc
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        let errorMessage = '';
+        
+        // Check product ratings
+        const productReviews = document.querySelectorAll('.product-review-item');
+        productReviews.forEach((review, index) => {
+            const rating = review.querySelector('input[type="radio"]:checked');
+            
+            if (!rating) {
+                isValid = false;
+                errorMessage = 'Vui lòng đánh giá số sao cho tất cả sản phẩm';
+                return;
+            }
         });
         
-        // Form validation
-        document.getElementById('reviewForm').addEventListener('submit', function(e) {
-            let isValid = true;
-            let errorMessage = '';
-            
-            // Check product ratings
-            const productReviews = document.querySelectorAll('.product-review-item');
-            productReviews.forEach((review, index) => {
-                const rating = review.querySelector('input[type="radio"]:checked');
-                const comment = review.querySelector('textarea');
-                
-                if (!rating) {
-                    isValid = false;
-                    errorMessage = 'Vui lòng đánh giá tất cả sản phẩm';
-                }
-                
-                if (comment && comment.value.trim().length < 10) {
-                    isValid = false;
-                    errorMessage = 'Nhận xét phải có ít nhất 10 ký tự';
-                }
-            });
-            
-            // Check store rating
-            const storeRating = document.querySelector('input[name="soSaoCuaHang"]:checked');
-            const storeComment = document.querySelector('textarea[name="binhLuanCuaHang"]');
-            
-            if (!storeRating) {
-                isValid = false;
-                errorMessage = 'Vui lòng đánh giá cửa hàng';
+        // Check store rating
+        const storeRating = document.querySelector('input[name="soSaoCuaHang"]:checked');
+        
+        if (!storeRating) {
+            isValid = false;
+            errorMessage = 'Vui lòng đánh giá số sao cho cửa hàng';
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Lỗi: ' + errorMessage);
+        } else {
+            // Hiển thị loading khi submit
+            const submitBtn = this.querySelector('.btn-submit');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang gửi...';
+                submitBtn.disabled = true;
             }
-            
-            if (storeComment && storeComment.value.trim().length < 10) {
-                isValid = false;
-                errorMessage = 'Nhận xét về cửa hàng phải có ít nhất 10 ký tự';
-            }
-            
-            if (!isValid) {
-                e.preventDefault();
-                alert(errorMessage);
-            }
-        });
+        }
+    });
     </script>
 </body>
 </html>

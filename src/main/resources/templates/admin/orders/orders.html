@@ -286,11 +286,11 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="date-display" 
-                                                  th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">
-                                                  01/01/2024
-                                            </span>
-                                        </td>
+										    <span class="date-display" 
+										          th:text="${#temporals.format(order.ngayDat, 'dd/MM/yyyy')}">
+										          01/01/2024 
+										    </span>
+										</td>
                                         <td>
                                             <span class="amount-display" th:text="${#numbers.formatDecimal(order.tongTien, 0, 'COMMA', 0, 'POINT') + ' ₫'}">
                                                 1,000,000 ₫

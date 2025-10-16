@@ -1,3 +1,9 @@
+// Biến toàn cục
+let wrongAttempts = 0;
+const MAX_WRONG_ATTEMPTS = 5;
+let countdownTimer = null; // Khai báo và khởi tạo là null
+let countdownTime = 60; // Đổi tên để tránh trùng
+
 // Lấy email từ sessionStorage
 const userEmail = sessionStorage.getItem('registerEmail');
 if (!userEmail) {
@@ -5,6 +11,13 @@ if (!userEmail) {
 }
 
 document.getElementById('emailDisplay').textContent = userEmail;
+
+// Khôi phục số lần nhập sai từ sessionStorage
+const savedAttempts = sessionStorage.getItem(`wrongAttempts_${userEmail}`);
+if (savedAttempts) {
+    wrongAttempts = parseInt(savedAttempts);
+    updateAttemptsWarning();
+}
 
 // OTP Input handling
 const otpInputs = document.querySelectorAll('.otp-input');
@@ -56,26 +69,46 @@ otpInputs.forEach((input, index) => {
 // Focus vào ô đầu tiên khi load trang
 otpInputs[0].focus();
 
-// Countdown timer
-let countdown = 60;
+// Countdown timer elements
 const countdownElement = document.getElementById('countdown');
 const resendBtn = document.getElementById('resendBtn');
 const resendText = document.getElementById('resendText');
 
+// Hàm dừng countdown
+function stopCountdown() {
+    if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+    }
+}
+
+// Hàm bắt đầu countdown
 function startCountdown() {
-    countdown = 60;
+    console.log('Starting countdown...'); // Debug log
+    
+    // Dừng countdown cũ nếu có
+    stopCountdown();
+    
+    // Reset thời gian
+    countdownTime = 60;
+    
+    // Cập nhật UI ngay lập tức
+    countdownElement.textContent = countdownTime;
     resendBtn.disabled = true;
     resendText.textContent = 'Gửi lại sau ';
     
-    const timer = setInterval(() => {
-        countdown--;
-        countdownElement.textContent = countdown;
+    // Bắt đầu countdown mới
+    countdownTimer = setInterval(() => {
+        countdownTime--;
+        console.log('Countdown:', countdownTime); // Debug log
+        countdownElement.textContent = countdownTime;
         
-        if (countdown <= 0) {
-            clearInterval(timer);
+        if (countdownTime <= 0) {
+            stopCountdown();
             resendBtn.disabled = false;
             resendText.textContent = 'Gửi lại mã';
             countdownElement.textContent = '';
+            console.log('Countdown finished'); // Debug log
         }
     }, 1000);
 }
@@ -83,8 +116,46 @@ function startCountdown() {
 // Bắt đầu countdown khi load trang
 startCountdown();
 
+// Cập nhật cảnh báo số lần nhập sai
+function updateAttemptsWarning() {
+    const attemptsWarning = document.getElementById('attemptsWarning');
+    const attemptsText = document.getElementById('attemptsText');
+    const verifyBtn = document.getElementById('verifyBtn');
+    
+    if (wrongAttempts > 0) {
+        const remainingAttempts = MAX_WRONG_ATTEMPTS - wrongAttempts;
+        attemptsText.textContent = `Bạn đã nhập sai ${wrongAttempts} lần. Còn ${remainingAttempts} lần thử.`;
+        attemptsWarning.style.display = 'flex';
+        
+        if (wrongAttempts >= MAX_WRONG_ATTEMPTS) {
+            attemptsText.textContent = 'Bạn đã nhập sai quá 5 lần. Vui lòng yêu cầu mã OTP mới.';
+            verifyBtn.disabled = true;
+            // Hiển thị nút gửi lại mã ngay lập tức
+            resendBtn.disabled = false;
+            resendText.textContent = 'Gửi lại mã';
+            countdownElement.textContent = '';
+            
+            // Dừng countdown
+            stopCountdown();
+        }
+    } else {
+        attemptsWarning.style.display = 'none';
+    }
+}
+
+// Xóa tất cả OTP input
+function clearOtpInputs() {
+    otpInputs.forEach(input => {
+        input.value = '';
+        input.classList.remove('error');
+    });
+    otpInputs[0].focus();
+}
+
 // Resend OTP
 resendBtn.addEventListener('click', function() {
+    console.log('Resend button clicked'); // Debug log
+    
     if (this.disabled) return;
     
     const registrationData = sessionStorage.getItem('registrationData');
@@ -109,12 +180,26 @@ resendBtn.addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Resend response:', data); // Debug log
+        
         if (data.success) {
             showSuccess('Mã OTP mới đã được gửi đến email của bạn!');
+            
+            // Reset số lần nhập sai
+            wrongAttempts = 0;
+            sessionStorage.removeItem(`wrongAttempts_${userEmail}`);
+            updateAttemptsWarning();
+            
             // Clear OTP inputs
-            otpInputs.forEach(input => input.value = '');
-            otpInputs[0].focus();
+            clearOtpInputs();
+            
+            // Kích hoạt lại nút xác minh
+            document.getElementById('verifyBtn').disabled = false;
+            
+            // QUAN TRỌNG: Bắt đầu lại countdown
+            console.log('Calling startCountdown from resend...'); // Debug log
             startCountdown();
+            
         } else {
             showError(data.message);
             this.disabled = false;
@@ -133,6 +218,12 @@ resendBtn.addEventListener('click', function() {
 document.getElementById('verifyForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
+    // Kiểm tra nếu đã vượt quá số lần nhập sai
+    if (wrongAttempts >= MAX_WRONG_ATTEMPTS) {
+        showError('Bạn đã nhập sai quá 5 lần. Vui lòng yêu cầu mã OTP mới.');
+        return;
+    }
+    
     // Lấy mã OTP
     let otpCode = '';
     otpInputs.forEach(input => {
@@ -150,7 +241,7 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
         return;
     }
     
-    const submitBtn = document.querySelector('.btn-verify');
+    const submitBtn = document.getElementById('verifyBtn');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xác thực...';
     submitBtn.disabled = true;
@@ -176,19 +267,28 @@ document.getElementById('verifyForm').addEventListener('submit', function(e) {
             // Xóa dữ liệu tạm
             sessionStorage.removeItem('registerEmail');
             sessionStorage.removeItem('registrationData');
+            sessionStorage.removeItem(`wrongAttempts_${userEmail}`);
+            
+            // Dừng countdown
+            stopCountdown();
             
             setTimeout(() => {
                 window.location.href = '/login';
             }, 2000);
         } else {
+            // Tăng số lần nhập sai
+            wrongAttempts++;
+            sessionStorage.setItem(`wrongAttempts_${userEmail}`, wrongAttempts.toString());
+            
+            // Xóa tất cả OTP input
+            clearOtpInputs();
+            
+            // Cập nhật cảnh báo
+            updateAttemptsWarning();
+            
             showError(data.message);
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
-            otpInputs.forEach(input => {
-                input.classList.add('error');
-                input.value = '';
-            });
-            otpInputs[0].focus();
         }
     })
     .catch(error => {
@@ -224,3 +324,6 @@ function clearMessages() {
 if (localStorage.getItem('jwtToken')) {
     window.location.href = '/';
 }
+
+// Debug: Kiểm tra xem hàm có được gọi không
+console.log('Script loaded successfully');

@@ -24,6 +24,7 @@ import vn.iotstar.service.impl.UserDetailsServiceImpl;
 import vn.iotstar.service.impl.ExcelExportService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -150,7 +151,7 @@ public class VendorSalesHistoryController {
             byte[] excelData = excelExportService.exportSalesHistoryToExcel(salesHistory, cuaHang, salesStats);
             
             String filename = "LichSuBanHang_" + cuaHang.getTenCuaHang().replaceAll("\\s+", "_") + 
-                            "_" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + ".xlsx";
+                    "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyy_HHmmss")) + ".xlsx";
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -183,11 +184,11 @@ public class VendorSalesHistoryController {
                     .map(Integer::parseInt)
                     .collect(Collectors.toList());
             
-            // Lấy các chi tiết đơn hàng đã chọn
+            // Lấy các chi tiết đơn hàng đã chọn - SỬA: LẤY CẢ ĐƠN HỦY
             List<DatHangChiTiet> salesHistory = new ArrayList<>();
             for (Integer orderId : orderIds) {
                 DatHang order = datHangService.findByMaDatHang(orderId);
-                if (order != null && "Hoàn thành".equals(order.getTrangThai())) {
+                if (order != null) {
                     // Ép load các quan hệ cần thiết
                     order.getDatHangChiTiets().size(); // Force load
                     if (order.getVanChuyens() != null) {
@@ -197,46 +198,27 @@ public class VendorSalesHistoryController {
                         order.getThanhToans().size(); // Force load
                     }
                     
-                    // Lấy chi tiết đơn hàng thuộc cửa hàng
+                    // Lấy chi tiết đơn hàng thuộc cửa hàng - BỎ FILTER TRẠNG THÁI
                     order.getDatHangChiTiets().stream()
                         .filter(ct -> ct.getSanPham().getCuaHang().getMaCuaHang().equals(cuaHang.getMaCuaHang()))
                         .forEach(salesHistory::add);
+                        
+                    System.out.println("Added order " + orderId + " with status: " + order.getTrangThai() + 
+                                     ", items: " + order.getDatHangChiTiets().stream()
+                                         .filter(ct -> ct.getSanPham().getCuaHang().getMaCuaHang().equals(cuaHang.getMaCuaHang()))
+                                         .count());
                 }
             }
             
+            System.out.println("Total items to export: " + salesHistory.size());
+            
             // Tính toán thống kê cho đơn hàng đã chọn
-            Map<String, Object> salesStats = new HashMap<>();
-            
-            // 1. Tính Tổng Doanh thu (Double)
-            salesStats.put("totalRevenue", salesHistory.stream()
-                .mapToDouble(ct -> ct.getThanhTien().doubleValue())
-                .sum());
-                
-            // 2. Tổng số đơn hàng đã hoàn thành (Cần phải là Long)
-            // Lấy số lượng mã đơn hàng duy nhất từ danh sách chi tiết (vì mỗi chi tiết có thể thuộc cùng một đơn hàng)
-            long distinctCompletedOrders = salesHistory.stream()
-                .map(ct -> ct.getDatHang().getMaDatHang())
-                .distinct()
-                .count();
-                
-            salesStats.put("totalCompletedOrders", distinctCompletedOrders); // Đảm bảo là Long (sử dụng long)
-            
-            // 3. Tổng số sản phẩm đã bán (Cần phải là Long)
-            Long totalProductsSold = salesHistory.stream()
-                .mapToLong(DatHangChiTiet::getSoLuong) // Dùng mapToLong để đảm bảo kết quả là long
-                .sum();
-            salesStats.put("totalProductsSold", totalProductsSold); // Đảm bảo là Long
-            
-            // 4. Doanh thu trung bình mỗi đơn
-            Double totalRevenue = (Double) salesStats.get("totalRevenue");
-            Double averageOrderValue = distinctCompletedOrders > 0 ? totalRevenue / distinctCompletedOrders : 0.0;
-            salesStats.put("averageOrderValue", averageOrderValue);
-
+            Map<String, Object> salesStats = calculateStatsForSelectedOrders(salesHistory);
             
             byte[] excelData = excelExportService.exportSalesHistoryToExcel(salesHistory, cuaHang, salesStats);
             
             String filename = "LichSuBanHang_DaChon_" + 
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + ".xlsx";
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyy_HHmmss")) + ".xlsx";
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -250,5 +232,66 @@ public class VendorSalesHistoryController {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    // Thêm phương thức tính toán thống kê cho đơn hàng đã chọn
+    private Map<String, Object> calculateStatsForSelectedOrders(List<DatHangChiTiet> salesHistory) {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // 1. Tính Tổng Doanh thu (chỉ tính đơn Hoàn thành)
+        Double totalRevenue = salesHistory.stream()
+            .filter(ct -> "Hoàn thành".equals(ct.getDatHang().getTrangThai()))
+            .mapToDouble(ct -> ct.getThanhTien().doubleValue())
+            .sum();
+        stats.put("totalRevenue", totalRevenue);
+        
+        // 2. Tổng số đơn hàng đã hoàn thành
+        long distinctCompletedOrders = salesHistory.stream()
+            .map(ct -> ct.getDatHang().getMaDatHang())
+            .distinct()
+            .filter(orderId -> {
+                // Tìm trạng thái của đơn hàng
+                return salesHistory.stream()
+                    .filter(ct -> ct.getDatHang().getMaDatHang().equals(orderId))
+                    .findFirst()
+                    .map(ct -> "Hoàn thành".equals(ct.getDatHang().getTrangThai()))
+                    .orElse(false);
+            })
+            .count();
+        stats.put("totalCompletedOrders", distinctCompletedOrders);
+        
+        // 3. Tổng số đơn hàng đã hủy
+        long distinctCancelledOrders = salesHistory.stream()
+            .map(ct -> ct.getDatHang().getMaDatHang())
+            .distinct()
+            .filter(orderId -> {
+                return salesHistory.stream()
+                    .filter(ct -> ct.getDatHang().getMaDatHang().equals(orderId))
+                    .findFirst()
+                    .map(ct -> "Hủy".equals(ct.getDatHang().getTrangThai()))
+                    .orElse(false);
+            })
+            .count();
+        stats.put("totalCancelledOrders", distinctCancelledOrders);
+        
+        // 4. Tổng số sản phẩm đã bán (chỉ tính đơn Hoàn thành)
+        Long totalProductsSold = salesHistory.stream()
+            .filter(ct -> "Hoàn thành".equals(ct.getDatHang().getTrangThai()))
+            .mapToLong(DatHangChiTiet::getSoLuong)
+            .sum();
+        stats.put("totalProductsSold", totalProductsSold);
+        
+        // 5. Doanh thu trung bình mỗi đơn (chỉ tính đơn Hoàn thành)
+        Double averageOrderValue = distinctCompletedOrders > 0 ? totalRevenue / distinctCompletedOrders : 0.0;
+        stats.put("averageOrderValue", averageOrderValue);
+        
+        // 6. Tổng số đơn hàng (cả hoàn thành và hủy)
+        long totalOrders = salesHistory.stream()
+            .map(ct -> ct.getDatHang().getMaDatHang())
+            .distinct()
+            .count();
+        stats.put("totalOrders", totalOrders);
+        
+        return stats;
     }
 }

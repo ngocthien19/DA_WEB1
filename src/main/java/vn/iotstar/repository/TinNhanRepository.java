@@ -56,4 +56,24 @@ public interface TinNhanRepository extends JpaRepository<TinNhan, Integer> {
     void markAllAsRead(@Param("nguoiNhan") NguoiDung nguoiNhan,
                        @Param("nguoiGui") NguoiDung nguoiGui,
                        @Param("cuaHang") CuaHang cuaHang);
+    @Query("SELECT DISTINCT t.cuaHang FROM TinNhan t WHERE t.nguoiGui = :nguoiDung OR t.nguoiNhan = :nguoiDung ORDER BY t.thoiGian DESC")
+    List<CuaHang> findDistinctStoresByNguoiDung(@Param("nguoiDung") NguoiDung nguoiDung);
+    
+    // Lấy tin nhắn cuối cùng với cửa hàng
+    TinNhan findTopByNguoiNhanAndCuaHangOrNguoiGuiAndCuaHangOrderByThoiGianDesc(
+        NguoiDung nguoiNhan, CuaHang cuaHang1, 
+        NguoiDung nguoiGui, CuaHang cuaHang2);
+    
+    Long countByNguoiNhanAndDaDocFalse(NguoiDung nguoiNhan);
+    
+    Long countByNguoiNhanAndNguoiGuiAndDaDocFalse(NguoiDung nguoiNhan, NguoiDung nguoiGui);
+    
+    Long countByNguoiNhanAndCuaHangAndDaDocFalse(NguoiDung nguoiNhan, CuaHang cuaHang);
+    
+    @Modifying
+    @Query("UPDATE TinNhan t SET t.daDoc = true WHERE t.nguoiNhan = :nguoiNhan AND t.cuaHang = :cuaHang AND t.daDoc = false")
+    void markAllAsReadByStore(@Param("nguoiNhan") NguoiDung nguoiNhan, @Param("cuaHang") CuaHang cuaHang);
+    
+    List<TinNhan> findByCuaHangAndNguoiNhanOrNguoiGuiOrderByThoiGianAsc(
+        CuaHang cuaHang, NguoiDung nguoiNhan, NguoiDung nguoiGui);
 }

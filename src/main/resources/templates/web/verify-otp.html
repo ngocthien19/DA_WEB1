@@ -27,6 +27,12 @@
                 <p class="sub-text">Vui lòng nhập mã OTP đã được gửi đến email của bạn</p>
             </div>
 
+            <!-- Hiển thị cảnh báo số lần nhập sai -->
+            <div id="attemptsWarning" class="warning-message" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="attemptsText"></span>
+            </div>
+
             <div id="successMessage" class="success-message"></div>
             <div id="errorMessage" class="error-message"></div>
             
@@ -40,7 +46,7 @@
                     <input type="text" maxlength="1" class="otp-input" id="otp6" autocomplete="off">
                 </div>
 
-                <button type="submit" class="btn-verify">
+                <button type="submit" class="btn-verify" id="verifyBtn">
                     <i class="fas fa-check-circle"></i>
                     Xác thực
                 </button>

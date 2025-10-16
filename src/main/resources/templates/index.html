@@ -14,6 +14,7 @@
     <!-- CSS Files -->
     <link rel="stylesheet" th:href="@{/css/web/header.css}">
     <link rel="stylesheet" th:href="@{/css/web/content.css}">
+    <link rel="stylesheet" th:href="@{/css/web/chat-modal.css}">
     <link rel="stylesheet" th:href="@{/css/web/footer.css}">
 </head>
 <body>
@@ -394,6 +395,142 @@
         <i class="fa-solid fa-angles-up"></i>
     </button>
     <div th:replace="~{web/layout/footer :: footer}"></div>
+	
+	<!-- Chat Modal -->
+	<div id="chatModal" class="chat-modal">
+	    <div class="chat-modal-content">
+	        <!-- Chat Header -->
+	        <div class="chat-modal-header">
+	            <div class="chat-header-left">
+	                <i class="fa-solid fa-comments"></i>
+	                <h3>Tin nhắn</h3>
+	            </div>
+	            <div class="chat-header-actions">
+	                <button class="chat-btn-minimize" title="Thu nhỏ">
+	                    <i class="fa-solid fa-window-minimize"></i>
+	                </button>
+	                <button class="chat-btn-close" title="Đóng">
+	                    <i class="fa-solid fa-times"></i>
+	                </button>
+	            </div>
+	        </div>
+	
+	        <!-- Chat Body -->
+	        <div class="chat-modal-body">
+	            <!-- Left Sidebar - Danh sách cửa hàng -->
+	            <div class="chat-sidebar">
+	                <div class="chat-search">
+	                    <i class="fa-solid fa-search"></i>
+	                    <input type="text" id="chatStoreSearch" placeholder="Tìm kiếm cửa hàng...">
+	                </div>
+	                
+	                <div class="store-list" id="storeList">
+	                    <!-- Danh sách cửa hàng sẽ được load bằng JavaScript -->
+	                    <div class="loading-stores">
+	                        <i class="fa-solid fa-spinner fa-spin"></i>
+	                        <p>Đang tải cửa hàng...</p>
+	                    </div>
+	                </div>
+	            </div>
+	
+	            <!-- Right Content - Chat Area -->
+	            <div class="chat-main">
+	                <!-- No Store Selected -->
+	                <div class="no-store-selected" id="noStoreSelected">
+	                    <i class="fa-solid fa-store"></i>
+	                    <h4>Chọn một cửa hàng</h4>
+	                    <p>Chọn cửa hàng từ danh sách bên trái để bắt đầu chat</p>
+	                </div>
+	
+	                <!-- Chat Active Area -->
+	                <div class="chat-active-area" id="chatActiveArea" style="display: none;">
+	                    <!-- Store Info Header -->
+	                    <div class="store-chat-header">
+	                        <div class="store-chat-info">
+	                            <img id="currentStoreAvatar" src="/images/default-store.png" alt="Store" class="store-chat-avatar">
+	                            <div class="store-chat-details">
+	                                <h4 id="currentStoreName">Cửa hàng</h4>
+	                                <span class="online-status">
+	                                    <i class="fa-solid fa-circle"></i> Đang hoạt động
+	                                </span>
+	                            </div>
+	                        </div>
+	                        <div class="store-chat-actions">
+	                            <button class="btn-store-info" title="Thông tin cửa hàng">
+	                                <i class="fa-solid fa-info-circle"></i>
+	                            </button>
+	                        </div>
+	                    </div>
+	
+	                    <!-- Chat Messages -->
+	                    <div class="chat-messages-container">
+	                        <div class="chat-messages" id="chatMessages">
+	                            <div class="welcome-message">
+	                                <i class="fa-solid fa-comments"></i>
+	                                <h4>Bắt đầu cuộc trò chuyện</h4>
+	                                <p>Chào bạn! Chúng tôi có thể giúp gì cho bạn?</p>
+	                            </div>
+	                        </div>
+	                    </div>
+	
+	                    <!-- Typing Indicator -->
+	                    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+	                        <span id="typingStoreName"></span> đang gõ
+	                        <span class="typing-dots">
+	                            <span>.</span><span>.</span><span>.</span>
+	                        </span>
+	                    </div>
+	
+	                    <!-- Chat Input -->
+	                    <div class="chat-input-container">
+	                        <button class="btn-attachment" title="Đính kèm file">
+	                            <i class="fa-solid fa-paperclip"></i>
+	                            <input type="file" id="chatFileInput" accept="image/*,video/*,application/pdf" style="display: none;">
+	                        </button>
+	                        
+	                        <div class="input-wrapper">
+	                            <textarea id="chatMessageInput" 
+	                                      placeholder="Nhập tin nhắn của bạn..."
+	                                      rows="1"></textarea>
+	                        </div>
+	                        
+	                        <button class="btn-send" id="chatSendButton">
+	                            <i class="fa-solid fa-paper-plane"></i>
+	                        </button>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+	
+	<!-- Chat Toggle Button -->
+	<button id="chatToggleBtn" class="chat-toggle-btn">
+	    <i class="fa-solid fa-comments"></i>
+	    <span class="unread-badge" id="chatUnreadBadge" style="display: none;">0</span>
+	</button>
+	
+	<!-- Minimized Chat -->
+	<div id="minimizedChat" class="minimized-chat" style="display: none;">
+	    <div class="minimized-chat-header">
+	        <span id="minimizedStoreName">Tin nhắn</span>
+	        <div class="minimized-actions">
+	            <button class="btn-restore-chat" title="Mở rộng">
+	                <i class="fa-solid fa-window-maximize"></i>
+	            </button>
+	            <button class="btn-close-minimized" title="Đóng">
+	                <i class="fa-solid fa-times"></i>
+	            </button>
+	        </div>
+	    </div>
+	    <div class="minimized-unread" id="minimizedUnread" style="display: none;">
+	        <span id="minimizedUnreadCount">0</span>
+	    </div>
+	</div>
+	
+	<!-- Hidden data for JavaScript -->
+    <input type="hidden" id="currentUserId" th:value="${nguoiDung.maNguoiDung}">
+    <input type="hidden" id="currentUserName" th:value="${nguoiDung.tenNguoiDung}">
 
     <!-- Products Data for Search -->
     <script id="products-data" type="application/json" th:inline="javascript">
@@ -411,6 +548,7 @@
     
     <!-- Main JavaScript -->
     <script th:src="@{/js/web/header.js}"></script>
+    <script th:src="@{/js/web/chat-modal.js}"></script>
     <!-- Cart Functionality Script -->
 	<script>
 		document.addEventListener('DOMContentLoaded', function() {

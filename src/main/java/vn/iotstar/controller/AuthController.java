@@ -173,6 +173,17 @@ public class AuthController {
         }
     }
     
+    @PostMapping("/verify-forgot-password-otp-redirect")
+    public ResponseEntity<ApiResponse<String>> verifyForgotPasswordOtpAndRedirect(@Valid @RequestBody ForgotPasswordOtpVerifyRequest request) {
+        ApiResponse<String> result = otpService.verifyForgotPasswordOtpAndRedirect(request.getEmail(), request.getOtpCode());
+        
+        if (result.isSuccess()) {
+            return ResponseEntity.ok(result);
+        } else {
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+    
     // === CHỨC NĂNG PHÂN QUYỀN SAU LOGIN ===
     
     // Xử lý sau khi login thành công và phân quyền

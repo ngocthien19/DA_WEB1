@@ -5,7 +5,7 @@ let vendorId = null;
 let storeId = null;
 let isTyping = false;
 let typingTimeout = null;
-let sentMessageIds = new Set(); // Track tin nhắn đã gửi để tránh duplicate
+let sentMessageIds = new Set();
 
 // Khởi tạo khi trang load
 document.addEventListener('DOMContentLoaded', function() {
@@ -63,14 +63,13 @@ function connect() {
     stompClient.connect({}, function(frame) {
         console.log('✅ WebSocket Connected:', frame);
         
-        // Subscribe để nhận tin nhắn
+        // Subscribe để nhận tin nhắn - FIXED LOGIC
         stompClient.subscribe('/user/' + currentUserId + '/queue/messages', function(message) {
             const chatMessage = JSON.parse(message.body);
             console.log('📩 Received message:', chatMessage);
-            console.log('   Message from:', chatMessage.maNguoiGui, 'to:', chatMessage.maNguoiNhan);
             
             // Tạo unique ID cho tin nhắn để tránh duplicate
-            const msgId = chatMessage.maTinNhan || `${chatMessage.maNguoiGui}-${chatMessage.thoiGian}`;
+            const msgId = chatMessage.maTinNhan || `${chatMessage.maNguoiGui}-${Date.now()}`;
             
             // Kiểm tra đã hiển thị chưa
             if (sentMessageIds.has(msgId)) {
@@ -81,16 +80,18 @@ function connect() {
             // So sánh với String để tránh lỗi type mismatch
             const currentUserIdStr = String(currentUserId);
             const nguoiGuiStr = String(chatMessage.maNguoiGui);
-            const nguoiNhanStr = String(chatMessage.maNguoiNhan);
             const vendorIdStr = String(vendorId);
             
-            // Kiểm tra xem tin nhắn có liên quan đến cuộc trò chuyện này không
-            const isRelatedToChat = 
-                (nguoiGuiStr === currentUserIdStr && nguoiNhanStr === vendorIdStr) ||
-                (nguoiGuiStr === vendorIdStr && nguoiNhanStr === currentUserIdStr);
+            console.log('   Current User:', currentUserIdStr, 'Sender:', nguoiGuiStr, 'Vendor:', vendorIdStr);
             
-            if (isRelatedToChat) {
-                console.log('   ✅ Displaying message in chat window');
+            // HIỂN THỊ TẤT CẢ TIN NHẮN LIÊN QUAN ĐẾN CUỘC HỘI THOẠI NÀY
+            // Tin nhắn từ vendor gửi cho user hoặc từ user gửi cho vendor
+            const isRelevantMessage = 
+                (nguoiGuiStr === vendorIdStr && chatMessage.maNguoiNhan == currentUserId) ||
+                (nguoiGuiStr === currentUserIdStr && chatMessage.maNguoiNhan == vendorId);
+            
+            if (isRelevantMessage) {
+                console.log('   ✅ Displaying relevant message');
                 displayMessage(chatMessage, true);
                 scrollToBottom();
                 sentMessageIds.add(msgId);
@@ -101,13 +102,14 @@ function connect() {
                     playNotificationSound();
                 }
             } else {
-                console.log('   ℹ️ Message not related to this chat');
+                console.log('   ❌ Message not relevant to this conversation');
             }
         });
         
         // Subscribe để nhận thông báo đang gõ
         stompClient.subscribe('/user/' + currentUserId + '/queue/typing', function(message) {
             const typingInfo = JSON.parse(message.body);
+            console.log('⌨️ Received typing event:', typingInfo);
             showTypingIndicator(typingInfo.isTyping);
         });
         

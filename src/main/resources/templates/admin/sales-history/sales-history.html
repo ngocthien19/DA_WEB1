@@ -341,11 +341,13 @@
                                             <strong th:text="${#numbers.formatDecimal(orderDetail.thanhTien, 0, 'COMMA', 0, 'POINT')} + ' ₫'">100,000 ₫</strong>
                                         </td>
                                         <td class="text-center">
-                                            <span class="date-display" 
-                                                  th:text="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty() and orderDetail.datHang.thanhToans[0].ngayThanhToan != null ? #dates.format(orderDetail.datHang.thanhToans[0].ngayThanhToan, 'dd/MM/yyyy') : 'Chưa thanh toán'}">
-                                                  Chưa thanh toán
-                                            </span>
-                                        </td>
+    <span class="date-display" 
+          th:text="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty() and orderDetail.datHang.thanhToans[0].ngayThanhToan != null ? 
+          #dates.format(orderDetail.datHang.thanhToans[0].ngayThanhToan, 'dd/MM/yyyy HH:mm:ss') : 
+          'Chưa thanh toán'}">
+          Chưa thanh toán
+    </span>
+</td>
                                         <td class="text-center">
                                             <span class="payment-method-badge" 
                                                   th:text="${orderDetail.datHang.thanhToans != null and !orderDetail.datHang.thanhToans.isEmpty() ? orderDetail.datHang.thanhToans[0].phuongThuc : 'N/A'}">

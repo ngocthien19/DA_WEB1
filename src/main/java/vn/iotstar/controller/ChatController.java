@@ -184,4 +184,55 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    
+    @GetMapping("/api/stores/chat-list")
+    @ResponseBody
+    public ResponseEntity<?> getStoresForChat() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated() || 
+                authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("error", "Chưa đăng nhập"));
+            }
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            String email = userDetails.getUsername();
+
+            NguoiDung nguoiDung = nguoiDungService.getUserByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+            
+            // Lấy danh sách cửa hàng đã từng chat
+            List<CuaHang> stores = chatService.getStoresWithChatHistory(nguoiDung);
+            
+            List<Map<String, Object>> storeList = stores.stream().map(store -> {
+                Map<String, Object> info = new HashMap<>();
+                info.put("maCuaHang", store.getMaCuaHang());
+                info.put("tenCuaHang", store.getTenCuaHang());
+                info.put("hinhAnh", store.getHinhAnh());
+                info.put("vendorId", store.getNguoiDung().getMaNguoiDung()); // Thêm vendorId
+                
+                // Lấy tin nhắn cuối cùng
+                TinNhan latestMessage = chatService.getLatestMessageWithStore(nguoiDung, store);
+                if (latestMessage != null) {
+                    info.put("lastMessage", latestMessage.getNoiDung());
+                    info.put("lastMessageTime", latestMessage.getThoiGian());
+                } else {
+                    info.put("lastMessage", "Chưa có tin nhắn");
+                    info.put("lastMessageTime", null);
+                }
+                
+                // Đếm tin nhắn chưa đọc
+                Long unreadCount = chatService.countUnreadMessagesByStore(nguoiDung, store);
+                info.put("unreadCount", unreadCount);
+                
+                return info;
+            }).collect(Collectors.toList());
+
+            return ResponseEntity.ok(storeList);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

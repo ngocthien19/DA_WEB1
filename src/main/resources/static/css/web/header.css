@@ -248,6 +248,13 @@ li,
 body.has-fixed-header {
     padding-top: 80px; /* Điều chỉnh theo chiều cao của section search */
 }
+
+.register-store:hover {
+    text-decoration: underline;
+    color: #e94560;
+    transition: color 0.3s ease;
+}
+	
 .search {
     padding: 20px 0;
     background-color: #fff;

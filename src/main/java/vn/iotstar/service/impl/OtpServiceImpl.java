@@ -16,6 +16,8 @@ import vn.iotstar.repository.VaiTroRepository;
 import vn.iotstar.service.EmailService;
 import vn.iotstar.service.OtpService;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -348,5 +350,24 @@ public class OtpServiceImpl implements OtpService {
         }
         
         return otp.toString();
+    }
+    
+    @Override
+    public ApiResponse<String> verifyForgotPasswordOtpAndRedirect(String email, String otpCode) {
+        try {
+            // Xác minh OTP
+            ApiResponse<String> verifyResult = verifyForgotPasswordOtp(email, otpCode);
+            
+            if (verifyResult.isSuccess()) {
+                // Nếu OTP hợp lệ, trả về success với thông tin để redirect
+                String redirectUrl = "/reset-password?email=" + URLEncoder.encode(email, StandardCharsets.UTF_8) 
+                        + "&otp=" + otpCode;
+                return ApiResponse.success(redirectUrl);
+            } else {
+                return verifyResult;
+            }
+        } catch (Exception e) {
+            return ApiResponse.error("Có lỗi xảy ra khi xác minh OTP");
+        }
     }
 }

@@ -12,6 +12,7 @@ import vn.iotstar.entity.DatHangChiTiet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -417,11 +418,11 @@ public class ExcelExportService {
                 statsRow2.createCell(2).setCellValue("Số cửa hàng: " + salesStats.get("storeCount"));
             }
             
-            // Tiêu đề bảng
+            // Tiêu đề bảng - THÊM CỘT "TRẠNG THÁI ĐH"
             Row headerRow = sheet.createRow(5);
             String[] headers = isSingleStore ? 
-                new String[]{"Mã ĐH", "Khách hàng", "Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Ngày thanh toán", "PTTT", "Trạng thái TT", "Người giao"} :
-                new String[]{"Mã ĐH", "Cửa hàng", "Khách hàng", "Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Ngày thanh toán", "PTTT", "Trạng thái TT", "Người giao"};
+                new String[]{"Mã ĐH", "Khách hàng", "Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Ngày thanh toán", "PTTT", "Trạng thái TT", "Người giao", "Trạng thái ĐH"} :
+                new String[]{"Mã ĐH", "Cửa hàng", "Khách hàng", "Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền", "Ngày thanh toán", "PTTT", "Trạng thái TT", "Người giao", "Trạng thái ĐH"};
             
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -472,7 +473,11 @@ public class ExcelExportService {
                 if (detail.getDatHang().getVanChuyens() != null && !detail.getDatHang().getVanChuyens().isEmpty()) {
                     shipper = detail.getDatHang().getVanChuyens().get(0).getNguoiDung().getTenNguoiDung();
                 }
-                row.createCell(cellNum).setCellValue(shipper);
+                row.createCell(cellNum++).setCellValue(shipper);
+                
+                // THÊM CỘT TRẠNG THÁI ĐƠN HÀNG
+                String orderStatus = detail.getDatHang().getTrangThai();
+                row.createCell(cellNum).setCellValue(orderStatus);
             }
             
             // Tự động điều chỉnh độ rộng cột
@@ -492,6 +497,7 @@ public class ExcelExportService {
     /**
      * Export lịch sử bán hàng cho vendor
      */
+ // Trong phương thức exportSalesHistoryToExcel (cho vendor)
     public byte[] exportSalesHistoryToExcel(List<DatHangChiTiet> salesHistory, 
                                             CuaHang currentStore, 
                                             Map<String, Object> salesStats) throws IOException {
@@ -512,29 +518,31 @@ public class ExcelExportService {
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("LỊCH SỬ BÁN HÀNG & DOANH THU");
             titleCell.setCellStyle(titleStyle);
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 8));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 10)); // Tăng số cột merged
             
             // Thông tin cửa hàng
             Row storeRow = sheet.createRow(rowNum++);
             Cell storeCell = storeRow.createCell(0);
             storeCell.setCellValue("Cửa hàng: " + currentStore.getTenCuaHang());
             storeCell.setCellStyle(dataStyle);
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(1, 1, 0, 8));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(1, 1, 0, 10)); // Tăng số cột merged
             
             // Ngày xuất
             Row dateRow = sheet.createRow(rowNum++);
             Cell dateCell = dateRow.createCell(0);
-            dateCell.setCellValue("Ngày xuất: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            // SỬA: Dùng LocalDateTime thay vì LocalDate
+            dateCell.setCellValue("Ngày xuất: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
             dateCell.setCellStyle(dataStyle);
-            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(2, 2, 0, 8));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(2, 2, 0, 10));
             
             rowNum++; // Dòng trống
 
-            // Tạo header row
+            // Tạo header row - THÊM CỘT "TRẠNG THÁI TT" và "TRẠNG THÁI ĐH"
             Row headerRow = sheet.createRow(rowNum++);
             String[] headers = {
                 "Mã ĐH", "Khách hàng", "Email", "Sản phẩm", "Số lượng", 
-                "Đơn giá", "Thành tiền", "Ngày thanh toán", "Phương thức TT", "Người giao hàng"
+                "Đơn giá", "Thành tiền", "Ngày thanh toán", "Phương thức TT", 
+                "Trạng thái TT", "Người giao hàng", "Trạng thái ĐH" // THÊM 2 CỘT MỚI
             };
             
             for (int i = 0; i < headers.length; i++) {
@@ -597,6 +605,15 @@ public class ExcelExportService {
                 }
                 createSafeCell(row, 8, paymentMethod, dataStyle);
                 
+                // TRẠNG THÁI THANH TOÁN - CỘT MỚI
+                String paymentStatus = "Chưa thanh toán";
+                if (order.getThanhToans() != null && !order.getThanhToans().isEmpty()) {
+                    paymentStatus = order.getThanhToans().get(0).getTrangThai();
+                    // Chuyển đổi sang tiếng Việt thân thiện
+                    paymentStatus = getPaymentStatusText(paymentStatus);
+                }
+                createSafeCell(row, 9, paymentStatus, dataStyle);
+                
                 // Người giao hàng
                 String shipperName = "N/A";
                 if (order.getVanChuyens() != null && !order.getVanChuyens().isEmpty()) {
@@ -605,7 +622,11 @@ public class ExcelExportService {
                         shipperName = shipping.getNguoiDung().getTenNguoiDung();
                     }
                 }
-                createSafeCell(row, 9, shipperName, dataStyle);
+                createSafeCell(row, 10, shipperName, dataStyle);
+                
+                // TRẠNG THÁI ĐƠN HÀNG - CỘT MỚI
+                String orderStatus = order.getTrangThai();
+                createSafeCell(row, 11, orderStatus, dataStyle);
             }
 
             // Auto-size columns
@@ -620,6 +641,29 @@ public class ExcelExportService {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             workbook.write(outputStream);
             return outputStream.toByteArray();
+        }
+    }
+
+    // Thêm phương thức chuyển đổi trạng thái thanh toán
+    private String getPaymentStatusText(String status) {
+        if (status == null) return "Không xác định";
+        
+        switch (status.toLowerCase()) {
+            case "completed":
+            case "hoàn thành":
+            case "đã thanh toán":
+                return "Hoàn thành";
+            case "pending":
+            case "đang xử lý":
+                return "Đang xử lý";
+            case "failed":
+            case "thất bại":
+            case "cancelled":
+                return "Thất bại";
+            case "refunded":
+                return "Đã hoàn tiền";
+            default:
+                return status;
         }
     }
     

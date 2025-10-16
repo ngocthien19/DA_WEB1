@@ -12,4 +12,5 @@ public interface OtpService {
     ApiResponse<String> sendForgotPasswordOtp(String email);
     ApiResponse<String> verifyForgotPasswordOtp(String email, String otpCode);
     ApiResponse<String> resetPassword(String email, String otpCode, String newPassword);
+    ApiResponse<String> verifyForgotPasswordOtpAndRedirect(String email, String otpCode);
 }

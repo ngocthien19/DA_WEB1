@@ -57,6 +57,39 @@ public class ChatService {
         return tinNhanRepository.findLatestMessage(cuaHang, nguoi1, nguoi2);
     }
     
+    // THÊM CÁC METHOD MỚI Ở ĐÂY
+    
+    public List<CuaHang> getStoresWithChatHistory(NguoiDung nguoiDung) {
+        return tinNhanRepository.findDistinctStoresByNguoiDung(nguoiDung);
+    }
+    
+    public TinNhan getLatestMessageWithStore(NguoiDung nguoiDung, CuaHang cuaHang) {
+        return tinNhanRepository.findTopByNguoiNhanAndCuaHangOrNguoiGuiAndCuaHangOrderByThoiGianDesc(
+            nguoiDung, cuaHang, nguoiDung, cuaHang);
+    }
+    
+    public Long countTotalUnreadMessages(NguoiDung nguoiNhan) {
+        return tinNhanRepository.countByNguoiNhanAndDaDocFalse(nguoiNhan);
+    }
+    
+    public Long countUnreadMessagesFromSender(NguoiDung nguoiNhan, NguoiDung nguoiGui) {
+        return tinNhanRepository.countByNguoiNhanAndNguoiGuiAndDaDocFalse(nguoiNhan, nguoiGui);
+    }
+    
+    public Long countUnreadMessagesByStore(NguoiDung nguoiNhan, CuaHang cuaHang) {
+        return tinNhanRepository.countByNguoiNhanAndCuaHangAndDaDocFalse(nguoiNhan, cuaHang);
+    }
+    
+    @Transactional
+    public void markAllAsReadByStore(NguoiDung nguoiNhan, CuaHang cuaHang) {
+        tinNhanRepository.markAllAsReadByStore(nguoiNhan, cuaHang);
+    }
+    
+    public List<TinNhan> getChatHistoryWithStore(NguoiDung nguoiDung, CuaHang cuaHang) {
+        return tinNhanRepository.findByCuaHangAndNguoiNhanOrNguoiGuiOrderByThoiGianAsc(
+            cuaHang, nguoiDung, nguoiDung);
+    }
+    
     // Convert Entity to DTO
     public ChatMessageDTO convertToDTO(TinNhan tinNhan) {
         return ChatMessageDTO.builder()

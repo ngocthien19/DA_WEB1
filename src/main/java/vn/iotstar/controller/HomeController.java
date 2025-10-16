@@ -13,6 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+// THÊM IMPORT NÀY - QUAN TRỌNG
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +28,16 @@ import jakarta.servlet.http.HttpSession;
 import vn.iotstar.entity.CuaHang;
 import vn.iotstar.entity.DanhGia;
 import vn.iotstar.entity.DanhMuc;
+import vn.iotstar.entity.NguoiDung;
 import vn.iotstar.entity.SanPham;
 import vn.iotstar.repository.DanhGiaRepository;
 import vn.iotstar.repository.DanhMucRepository;
 import vn.iotstar.service.CuaHangService;
 import vn.iotstar.service.DanhGiaService;
 import vn.iotstar.service.DanhMucService;
+import vn.iotstar.service.NguoiDungService;
 import vn.iotstar.service.SanPhamService;
+import vn.iotstar.service.UserDetailsImpl;
 import vn.iotstar.specification.SanPhamSpecification;
 
 @Controller
@@ -55,12 +61,36 @@ public class HomeController {
     
     @Autowired
     private DanhGiaRepository danhGiaRepository;
+    
+    @Autowired
+    private NguoiDungService nguoiDungService;
 
     @GetMapping("/")
     public String home(Model model) {
+    	
+    	// Lấy thông tin người dùng đang đăng nhập - GIỐNG NHƯ TRONG CART CONTROLLER
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
         // Thay vì dùng @danhMucService trong template, truyền dữ liệu qua model
         List<DanhMuc> danhMucs = danhMucService.findAllActiveCategories();
         model.addAttribute("danhMucs", danhMucs);
+        
+        // Kiểm tra đăng nhập - GIỐNG NHƯ TRONG CART CONTROLLER
+        if (authentication != null && authentication.isAuthenticated() && 
+            !authentication.getPrincipal().equals("anonymousUser")) {
+            
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            String email = userDetails.getUsername();
+
+            // Tìm người dùng - GIỐNG NHƯ TRONG CART CONTROLLER
+            NguoiDung nguoiDung = nguoiDungService.getUserByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+            model.addAttribute("nguoiDung", nguoiDung);
+        } else {
+            // Nếu chưa đăng nhập, đặt null
+            model.addAttribute("nguoiDung", null);
+        }
         
         // CHỈ lấy cửa hàng đang hoạt động
         List<CuaHang> cuaHangs = cuaHangService.findTop3ActiveNewestStores().stream()
@@ -78,7 +108,7 @@ public class HomeController {
                     .collect(Collectors.toList());
             
             // Xử lý ảnh sản phẩm
-			processProductImages(sanPhams);
+            processProductImages(sanPhams);
             
             model.addAttribute("sanPhams_" + danhMuc.getMaDanhMuc(), sanPhams);
         }

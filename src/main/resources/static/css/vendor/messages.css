@@ -11,6 +11,147 @@
     height: 100%;
     overflow: hidden;
 }
+/* Message File Styles - FIX FOR IMAGE LAYOUT */
+.message-file {
+    margin-top: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.message-file img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-file img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.message-file a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    text-decoration: none;
+    color: #3b82f6;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.message-file a:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
+}
+
+.message-file a i {
+    font-size: 16px;
+}
+
+/* Adjust message bubble for files */
+.message.sent .message-bubble,
+.message.received .message-bubble {
+    max-width: 100%;
+    word-break: break-word;
+}
+
+/* Ensure text and files are properly spaced */
+.message-bubble {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Fix for long unbroken text */
+.message-bubble {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Responsive adjustments for images */
+@media (max-width: 768px) {
+    .message-file img {
+        max-height: 200px;
+    }
+    
+    .message-content {
+        max-width: 90% !important;
+    }
+}
+
+/* Image modal styles */
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    cursor: pointer;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.image-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* Fix message layout for different content types */
+.message.sent .message-content,
+.message.received .message-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.message.sent .message-bubble {
+    align-self: flex-end;
+}
+
+.message.received .message-bubble {
+    align-self: flex-start;
+}
+
+/* Ensure proper spacing in message bubbles with files */
+.message-bubble:has(.message-file) {
+    padding-bottom: 12px;
+}
 
 /* Chat List Panel - Match Dashboard Style */
 .chat-list-panel {

@@ -16,6 +16,7 @@ import vn.iotstar.service.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -124,7 +125,7 @@ public class ReviewController {
             @RequestParam Integer maDatHang,
             @RequestParam Integer maCuaHang,
             @RequestParam Integer soSaoCuaHang,
-            @RequestParam String binhLuanCuaHang,
+            @RequestParam(required = false) String binhLuanCuaHang, // Không bắt buộc
             @RequestParam Map<String, String> allParams,
             @RequestParam(required = false) Map<String, MultipartFile> files,
             RedirectAttributes redirectAttributes) {
@@ -174,13 +175,13 @@ public class ReviewController {
                     .nguoiDung(nguoiDung)
                     .datHang(datHang)
                     .soSao(soSaoCuaHang)
-                    .binhLuan(binhLuanCuaHang)
+                    .binhLuan(binhLuanCuaHang != null ? binhLuanCuaHang : "Không có bình luận")
                     .ngayDanhGia(new Date())
                     .build();
 
             danhGiaCuaHangService.save(danhGiaCuaHang);
 
-            // Lưu đánh giá sản phẩm
+            // Lưu đánh giá sản phẩm và xử lý lượt thích
             List<DatHangChiTiet> chiTiets = datHang.getDatHangChiTiets();
             for (DatHangChiTiet chiTiet : chiTiets) {
                 Integer maSanPham = chiTiet.getSanPham().getMaSanPham();
@@ -188,10 +189,14 @@ public class ReviewController {
                 // Lấy số sao và bình luận từ params
                 String soSaoKey = "soSao_" + maSanPham;
                 String binhLuanKey = "binhLuan_" + maSanPham;
+                String thichKey = "thich_" + maSanPham;
                 
-                if (allParams.containsKey(soSaoKey) && allParams.containsKey(binhLuanKey)) {
+                if (allParams.containsKey(soSaoKey)) {
                     Integer soSao = Integer.parseInt(allParams.get(soSaoKey));
                     String binhLuan = allParams.get(binhLuanKey);
+                    
+                    // Xử lý lượt thích
+                    boolean isLiked = allParams.containsKey(thichKey) && "true".equals(allParams.get(thichKey));
                     
                     // Xử lý upload file cho sản phẩm này
                     String fileName = null;
@@ -210,16 +215,37 @@ public class ReviewController {
                         throw new RuntimeException("Không tìm thấy sản phẩm");
                     }
                     
+                    // Cập nhật lượt thích nếu người dùng thích sản phẩm
+                    if (isLiked) {
+                        // Tăng lượt thích lên 1
+                        BigDecimal currentLikes = sanPham.getLuotThich();
+                        if (currentLikes == null) {
+                            currentLikes = BigDecimal.ZERO;
+                        }
+                        sanPham.setLuotThich(currentLikes.add(BigDecimal.ONE));
+                        
+                        // Lưu sản phẩm với lượt thích đã cập nhật
+                        // Cần đảm bảo có phương thức save trong SanPhamService
+                        sanPhamService.save(sanPham);
+                        
+                        System.out.println("Đã tăng lượt thích cho sản phẩm " + sanPham.getTenSanPham() + 
+                                         ". Lượt thích hiện tại: " + sanPham.getLuotThich());
+                    }
+                    
                     DanhGia danhGia = DanhGia.builder()
                             .sanPham(sanPham)
                             .nguoiDung(nguoiDung)
                             .soSao(soSao)
-                            .binhLuan(binhLuan)
+                            .binhLuan(binhLuan != null ? binhLuan : "Không có bình luận")
                             .anhVideo(fileName)
                             .ngayDanhGia(new Date())
                             .build();
                     
                     danhGiaRepository.save(danhGia);
+                    
+                    System.out.println("Đã lưu đánh giá cho sản phẩm: " + sanPham.getTenSanPham() + 
+                                     " - Số sao: " + soSao + 
+                                     " - Đã thích: " + isLiked);
                 }
             }
 

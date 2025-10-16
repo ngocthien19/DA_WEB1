@@ -1,3 +1,4 @@
+// ChatWebSocketController.java - FIXED VERSION
 package vn.iotstar.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +38,16 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageDTO chatMessage) {
         try {
+            System.out.println("📨 Received message via WebSocket: " + chatMessage);
+            
             // Lấy thông tin người gửi và người nhận
             NguoiDung nguoiGui = nguoiDungService.findByMaNguoiDung(chatMessage.getMaNguoiGui());
             NguoiDung nguoiNhan = nguoiDungService.findByMaNguoiDung(chatMessage.getMaNguoiNhan());
             CuaHang cuaHang = cuaHangService.findByMaCuaHang(chatMessage.getMaCuaHang());
+            
+            if (nguoiGui == null || nguoiNhan == null || cuaHang == null) {
+                throw new RuntimeException("Không tìm thấy thông tin người dùng hoặc cửa hàng");
+            }
             
             // Tạo tin nhắn mới
             TinNhan tinNhan = TinNhan.builder()
@@ -58,20 +65,27 @@ public class ChatWebSocketController {
             
             // Convert sang DTO
             ChatMessageDTO responseMessage = chatService.convertToDTO(savedMessage);
+            responseMessage.setTenNguoiGui(nguoiGui.getTenNguoiDung()); // Thêm tên người gửi
             
-            // Gửi tin nhắn đến người nhận qua WebSocket
+            System.out.println("💾 Message saved to DB: " + savedMessage.getMaTinNhan());
+            System.out.println("📤 Sending to receiver: " + nguoiNhan.getMaNguoiDung());
+            System.out.println("📩 Sending to sender: " + nguoiGui.getMaNguoiDung());
+            
+            // Gửi tin nhắn đến người nhân
             messagingTemplate.convertAndSendToUser(
                     nguoiNhan.getMaNguoiDung().toString(),
                     "/queue/messages",
                     responseMessage
             );
             
-            // Gửi lại cho người gửi để xác nhận
+            // Gửi lại cho người gửi để xác nhận (đảm bảo hiển thị ngay lập tức)
             messagingTemplate.convertAndSendToUser(
                     nguoiGui.getMaNguoiDung().toString(),
-                    "/queue/messages",
+                    "/queue/messages", 
                     responseMessage
             );
+            
+            System.out.println("✅ Message sent successfully to both parties");
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,12 +102,21 @@ public class ChatWebSocketController {
     
     @MessageMapping("/chat.typing")
     public void userTyping(@Payload Map<String, Object> typingInfo) {
-        // Gửi thông báo đang gõ đến người nhận
-        Integer nguoiNhanId = (Integer) typingInfo.get("nguoiNhanId");
-        messagingTemplate.convertAndSendToUser(
-                nguoiNhanId.toString(),
-                "/queue/typing",
-                typingInfo
-        );
+        try {
+            Integer nguoiNhanId = (Integer) typingInfo.get("nguoiNhanId");
+            Integer nguoiGuiId = (Integer) typingInfo.get("nguoiGuiId");
+            Boolean isTyping = (Boolean) typingInfo.get("isTyping");
+            
+            System.out.println("⌨️ Typing event: " + nguoiGuiId + " -> " + nguoiNhanId + " = " + isTyping);
+            
+            // Gửi thông báo đang gõ đến người nhận
+            messagingTemplate.convertAndSendToUser(
+                    nguoiNhanId.toString(),
+                    "/queue/typing",
+                    typingInfo
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -62,7 +62,11 @@ public class WebController {
     }
     
     @GetMapping("/reset-password")
-    public String resetPasswordPage() {
+    public String resetPasswordPage(@RequestParam String email, 
+                                   @RequestParam String otp, 
+                                   Model model) {
+        model.addAttribute("email", email);
+        model.addAttribute("otp", otp);
         return "web/reset-password";
     }
 }

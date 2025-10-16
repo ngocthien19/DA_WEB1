@@ -374,8 +374,8 @@ public class DatHangServiceImpl implements DatHangService {
             datHangChiTietRepository.save(chiTiet);
 
             // Cập nhật tồn kho
-            sanPham.setSoLuongConLai(sanPham.getSoLuongConLai() - matHang.getSoLuongDat());
-            sanPhamService.save(sanPham);
+            //sanPham.setSoLuongConLai(sanPham.getSoLuongConLai() - matHang.getSoLuongDat());
+            //sanPhamService.save(sanPham);
 
             tongTien = tongTien.add(thanhTien);
         }

@@ -13,6 +13,59 @@ body {
     justify-content: center;
 }
 
+/* Warning message styles */
+.warning-message {
+    background: #fff3cd;
+    color: #856404;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ffeaa7;
+    font-size: 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: slideDown 0.3s ease;
+}
+
+.warning-message i {
+    color: #f39c12;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hiệu ứng shake khi nhập sai */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* OTP input error state */
+.otp-input.error {
+    border-color: #e74c3c;
+    background-color: #fff5f7;
+    animation: shake 0.5s ease-in-out;
+}
+
+.otp-input.success {
+    border-color: #27ae60;
+    background-color: #d5f4e6;
+}
+
 .verify-wrapper {
     position: relative;
     width: 100%;

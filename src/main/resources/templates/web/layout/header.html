@@ -12,7 +12,7 @@
             <div class="container d_flex" data-aos="fade-right">
                 <div class="left row1">
                 	<label id="registerStoreLink">
-                		<a th:href="@{/register-store}"><i class="fas fa-store me-2"></i> Đăng ký cửa hàng</a>
+                		<a th:href="@{/register-store}" class="register-store"><i class="fas fa-store me-2"></i> Đăng ký cửa hàng</a>
                 	</label>
                     <i class="fa fa-phone"></i>
                     <label>+8437 8240 914</label>
@@ -51,7 +51,7 @@
                         />
                         <button type="submit" style="display: none;"></button>
                     </form>
-                    <span>Tất cả danh mục</span>
+                    <span><a th:href="@{/products}">Tất cả danh mục</a></span>
                     
                     <!-- Modal Search -->
                     <div class="modal-search hide">

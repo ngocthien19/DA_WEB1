@@ -85,15 +85,14 @@ function connect() {
     stompClient.connect({}, function(frame) {
         console.log('✅ WebSocket Connected:', frame);
         
-        // Subscribe để nhận tin nhắn
+        // Subscribe để nhận tin nhắn - FIXED LOGIC
         stompClient.subscribe('/user/' + vendorId + '/queue/messages', function(message) {
             const chatMessage = JSON.parse(message.body);
             console.log('📩 Received message:', chatMessage);
             console.log('   Current customer ID:', currentCustomerId);
-            console.log('   Message from:', chatMessage.maNguoiGui, 'to:', chatMessage.maNguoiNhan);
             
             // Tạo unique ID cho tin nhắn để tránh duplicate
-            const msgId = chatMessage.maTinNhan || `${chatMessage.maNguoiGui}-${chatMessage.thoiGian}`;
+            const msgId = chatMessage.maTinNhan || `${chatMessage.maNguoiGui}-${Date.now()}`;
             
             // Kiểm tra đã hiển thị chưa
             if (sentMessageIds.has(msgId)) {
@@ -107,12 +106,17 @@ function connect() {
             const nguoiNhanStr = String(chatMessage.maNguoiNhan);
             const vendorIdStr = String(vendorId);
             
-            // Kiểm tra xem tin nhắn có liên quan đến cuộc trò chuyện hiện tại không
-            const isRelatedToCurrentChat = currentCustomerId && 
-                (nguoiGuiStr === currentCustIdStr || nguoiNhanStr === currentCustIdStr);
+            console.log('   Current Customer:', currentCustIdStr, 'Sender:', nguoiGuiStr, 'Receiver:', nguoiNhanStr);
             
-            if (isRelatedToCurrentChat) {
-                console.log('   ✅ Displaying message in chat window');
+            // HIỂN THỊ TIN NHẮN NẾU:
+            // 1. Tin nhắn từ customer hiện tại gửi cho vendor
+            // 2. Tin nhắn từ vendor gửi cho customer hiện tại
+            const isRelevantToCurrentChat = currentCustomerId && 
+                ((nguoiGuiStr === currentCustIdStr && nguoiNhanStr === vendorIdStr) ||
+                 (nguoiGuiStr === vendorIdStr && nguoiNhanStr === currentCustIdStr));
+            
+            if (isRelevantToCurrentChat) {
+                console.log('   ✅ Displaying message in current chat');
                 displayMessage(chatMessage, true);
                 scrollToBottom();
                 sentMessageIds.add(msgId);
@@ -129,8 +133,8 @@ function connect() {
                     playNotificationSound();
                 }
             } else {
-                console.log('   ℹ️ Message not related to current chat, updating list only');
-                // Vẫn phát âm thanh nếu là tin nhắn mới từ người khác
+                console.log('   ℹ️ Message not for current chat, updating list');
+                // Vẫn phát âm thanh nếu là tin nhắn mới từ customer khác
                 if (nguoiGuiStr !== vendorIdStr) {
                     playNotificationSound();
                 }
@@ -144,6 +148,7 @@ function connect() {
         // Subscribe để nhận thông báo đang gõ
         stompClient.subscribe('/user/' + vendorId + '/queue/typing', function(message) {
             const typingInfo = JSON.parse(message.body);
+            console.log('⌨️ Received typing event:', typingInfo);
             if (currentCustomerId && typingInfo.nguoiGuiId == currentCustomerId) {
                 showTypingIndicator(typingInfo.isTyping);
             }
@@ -549,33 +554,69 @@ function playNotificationSound() {
     audio.play().catch(e => console.log('Audio play failed:', e));
 }
 
-// Mở ảnh trong modal
+// Mở ảnh trong modal (improved version)
 function openImage(src) {
     const modal = document.createElement('div');
+    modal.className = 'image-modal';
     modal.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.9);
+        background: rgba(0,0,0,0.95);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 10000;
-        cursor: pointer;
     `;
     
     modal.innerHTML = `
-        <img src="${src}" style="max-width: 90%; max-height: 90%; border-radius: 10px;">
+        <button class="image-modal-close">
+            <i class="fa-solid fa-times"></i>
+        </button>
+        <img src="${src}" style="max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
     `;
     
-    modal.onclick = function() {
-        modal.remove();
+    const closeModal = function() {
+        modal.style.animation = 'fadeOut 0.3s ease';
+        setTimeout(() => modal.remove(), 300);
     };
     
+    modal.querySelector('.image-modal-close').onclick = closeModal;
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    };
+    
+    // Close with ESC key
+    const escHandler = function(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
+    
     document.body.appendChild(modal);
+    
+    // Add fade in animation
+    modal.style.animation = 'fadeIn 0.3s ease';
 }
+// Thêm keyframe animation cho modal
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
 
 // Disconnect khi đóng trang
 window.addEventListener('beforeunload', function() {

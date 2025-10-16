@@ -24,6 +24,7 @@ import vn.iotstar.service.impl.ExcelExportService;
 import vn.iotstar.service.impl.UserDetailsServiceImpl;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -238,7 +239,7 @@ public class AdminSalesHistoryController {
             String storeName = selectedStore != null ? 
                 selectedStore.getTenCuaHang().replaceAll("\\s+", "_") : "TatCaCuaHang";
             String filename = "LichSuBanHang_Admin_" + storeName + 
-                            "_" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + ".xlsx";
+                    "_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyy_HHmmss")) + ".xlsx";
             
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -254,57 +255,77 @@ public class AdminSalesHistoryController {
         }
     }
     
-    @PostMapping("/export-selected")
-    public ResponseEntity<byte[]> exportSelectedSalesHistory(
-            @RequestParam("orderIds") String orderIdsStr) {
-        
-        try {
-            // Parse order IDs
-            List<Integer> orderIds = Arrays.stream(orderIdsStr.split(","))
-                    .map(String::trim)
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList());
-            
-            // Lấy các chi tiết đơn hàng đã chọn
-            List<DatHangChiTiet> salesHistory = new ArrayList<>();
-            for (Integer orderId : orderIds) {
-                DatHang order = datHangService.findByMaDatHang(orderId);
-                if (order != null && "Hoàn thành".equals(order.getTrangThai())) {
-                    // Ép load các quan hệ cần thiết
-                    order.getDatHangChiTiets().size(); // Force load
-                    if (order.getVanChuyens() != null) {
-                        order.getVanChuyens().size(); // Force load
-                    }
-                    if (order.getThanhToans() != null) {
-                        order.getThanhToans().size(); // Force load
-                    }
-                    
-                    salesHistory.addAll(order.getDatHangChiTiets());
-                }
-            }
-            
-            // Tính toán thống kê cho đơn hàng đã chọn
-            Map<String, Object> salesStats = calculateStatsForSelectedOrders(salesHistory);
-            
-            byte[] excelData = excelExportService.exportAdminSalesHistoryToExcel(
-                salesHistory, null, salesStats, false);
-            
-            String filename = "LichSuBanHang_DaChon_Admin_" + 
-                            LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyyyy")) + ".xlsx";
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-            headers.setContentDispositionFormData("attachment", filename);
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(excelData);
-                    
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
+
+	@PostMapping("/export-selected")
+	public ResponseEntity<byte[]> exportSelectedSalesHistory(
+	        @RequestParam("orderIds") String orderIdsStr) {
+	    
+	    try {
+	        // Parse order IDs
+	        List<Integer> orderIds = Arrays.stream(orderIdsStr.split(","))
+	                .map(String::trim)
+	                .map(Integer::parseInt)
+	                .collect(Collectors.toList());
+	        
+	        System.out.println("=== EXPORTING SELECTED ORDERS ===");
+	        System.out.println("Order IDs: " + orderIds);
+	        
+	        // Lấy các chi tiết đơn hàng đã chọn - BỎ FILTER TRẠNG THÁI
+	        List<DatHangChiTiet> salesHistory = new ArrayList<>();
+	        for (Integer orderId : orderIds) {
+	            DatHang order = datHangService.findByMaDatHang(orderId);
+	            if (order != null) {
+	                System.out.println("Order " + orderId + " - Status: " + order.getTrangThai());
+	                
+	                // Eager load các quan hệ cần thiết
+	                order.getDatHangChiTiets().size(); // Force load
+	                if (order.getVanChuyens() != null) {
+	                    order.getVanChuyens().size(); // Force load
+	                }
+	                if (order.getThanhToans() != null) {
+	                    order.getThanhToans().size(); // Force load
+	                }
+	                
+	                // THÊM TẤT CẢ đơn hàng, không filter theo trạng thái
+	                salesHistory.addAll(order.getDatHangChiTiets());
+	                
+	                System.out.println("Added " + order.getDatHangChiTiets().size() + " items from order " + orderId);
+	            } else {
+	                System.out.println("Order " + orderId + " not found");
+	            }
+	        }
+	        
+	        System.out.println("Total items to export: " + salesHistory.size());
+	        
+	        if (salesHistory.isEmpty()) {
+	            System.out.println("WARNING: No data to export!");
+	        }
+	        
+	        // Tính toán thống kê cho đơn hàng đã chọn
+	        Map<String, Object> salesStats = calculateStatsForSelectedOrders(salesHistory);
+	        
+	        byte[] excelData = excelExportService.exportAdminSalesHistoryToExcel(
+	            salesHistory, null, salesStats, false);
+	        
+	        String filename = "LichSuBanHang_DaChon_Admin_" + 
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyy_HHmmss")) + ".xlsx";
+	        
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+	        headers.setContentDispositionFormData("attachment", filename);
+	        
+	        System.out.println("=== EXPORT COMPLETED ===");
+	        
+	        return ResponseEntity.ok()
+	                .headers(headers)
+	                .body(excelData);
+	                
+	    } catch (Exception e) {
+	        System.err.println("ERROR during export: " + e.getMessage());
+	        e.printStackTrace();
+	        return ResponseEntity.internalServerError().build();
+	    }
+	}
     
     private Map<String, Object> calculateStatsForSelectedOrders(List<DatHangChiTiet> salesHistory) {
         Map<String, Object> stats = new HashMap<>();
