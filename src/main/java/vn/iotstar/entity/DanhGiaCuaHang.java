@@ -41,8 +41,7 @@ public class DanhGiaCuaHang {
     @Column(name = "SoSao")
     private Integer soSao;
     
-    @NotBlank(message = "Bình luận không được để trống")
-    @Size(min = 10, max = 1000, message = "Bình luận phải từ 10 đến 1000 ký tự")
+    @Size(min = 10, max = 1000)
     @Column(name = "BinhLuan", columnDefinition = "NVARCHAR(MAX)")
     private String binhLuan;
     

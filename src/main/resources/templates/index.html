@@ -529,8 +529,8 @@
 	</div>
 	
 	<!-- Hidden data for JavaScript -->
-    <input type="hidden" id="currentUserId" th:value="${nguoiDung.maNguoiDung}">
-    <input type="hidden" id="currentUserName" th:value="${nguoiDung.tenNguoiDung}">
+    <input type="hidden" id="currentUserId" 
+       th:value="${nguoiDung?.maNguoiDung} ?: 0">
 
     <!-- Products Data for Search -->
     <script id="products-data" type="application/json" th:inline="javascript">

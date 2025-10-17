@@ -79,9 +79,6 @@ public class SanPham {
     @Column(name = "SaoDanhGia")
     private Integer saoDanhGia;
     
-    @OneToOne(mappedBy = "sanPham", cascade = CascadeType.ALL)
-    private ThuCung thuCung;
-    
     @OneToMany(mappedBy = "sanPham", cascade = CascadeType.ALL)
     private List<MatHang> matHangs;
     
